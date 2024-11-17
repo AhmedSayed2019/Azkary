@@ -9,14 +9,14 @@ enum PopUpMenu { ShowAllDescription, About }
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool description, sliderFont;
-  final Function onTapDescription, onTapFontButton;
+  final VoidCallback onTapDescription, onTapFontButton;
 
   CustomAppBar({
-    this.title,
-    this.description,
-    this.sliderFont,
-    this.onTapDescription,
-    this.onTapFontButton,
+   required this.title,
+   required this.description,
+   required this.sliderFont,
+   required this.onTapDescription,
+   required this.onTapFontButton,
   });
 
   @override
@@ -88,7 +88,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   PopupMenuItem<PopUpMenu> _buildMenuItem(
-      {PopUpMenu value, bool enable = true, Widget icon, String text}) {
+      {required PopUpMenu value, bool enable = true,required Widget icon,required String text}) {
     return PopupMenuItem<PopUpMenu>(
       value: value,
       enabled: enable,
@@ -101,7 +101,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Text(
               text,
               style: new TextStyle(
-                color: enable ? teal[900] : teal[900].withAlpha(125),
+                color: enable ? teal[900] : teal[900]!.withAlpha(125),
                 fontWeight: FontWeight.w300,
                 fontSize: 14,
               ),

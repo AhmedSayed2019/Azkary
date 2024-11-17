@@ -1,24 +1,16 @@
 class CategoryModel {
-  int _id, _sectionId, _favorite;
-  String _nameWithDiacritics, _nameWithoutDiacritics, _azkarIndex;
+  final int _id, _sectionId;
 
-  CategoryModel(
-    this._id,
-    this._sectionId,
-    this._nameWithDiacritics,
-    this._nameWithoutDiacritics,
-    this._favorite,
-    this._azkarIndex,
-  );
+  final String _nameWithDiacritics, _nameWithoutDiacritics, _azkarIndex;
+  int _favorite;
 
-  CategoryModel.fromMap(Map<String, dynamic> map) {
-    _id = map['id'];
-    _sectionId = map['section_id'];
-    _nameWithDiacritics = map['name_with_diacritics'];
-    _nameWithoutDiacritics = map['name_without_diacritics'];
-    _favorite = map['favorite'];
-    _azkarIndex = map['azkar_index'];
-  }
+  factory CategoryModel.fromMap(Map<String, dynamic> map) => CategoryModel(
+      id: map['id'] ?? 0,
+      sectionId: map['section_id'] ?? 0,
+      favorite: map['favorite'] ?? 0,
+      nameWithDiacritics: map['name_with_diacritics'] ?? '',
+      nameWithoutDiacritics: map['name_without_diacritics'] ?? '',
+      azkarIndex: map['azkar_index'] ?? '');
 
   void setFavorite(int value) {
     _favorite = value;
@@ -35,4 +27,18 @@ class CategoryModel {
   int get favorite => _favorite;
 
   String get azkarIndex => _azkarIndex;
+
+  CategoryModel({
+    required int id,
+    required int sectionId,
+    required int favorite,
+    required String nameWithDiacritics,
+    required String nameWithoutDiacritics,
+    required String azkarIndex,
+  })  : _id = id,
+        _sectionId = sectionId,
+        _favorite = favorite,
+        _nameWithDiacritics = nameWithDiacritics,
+        _nameWithoutDiacritics = nameWithoutDiacritics,
+        _azkarIndex = azkarIndex;
 }

@@ -15,8 +15,8 @@ class SebhaPage extends StatefulWidget {
 }
 
 class _SebhaPageState extends State<SebhaPage> {
-  int currentCounter, round;
-  double percentage;
+  late int currentCounter, round;
+  late double percentage;
 
   @override
   void initState() {
@@ -97,7 +97,7 @@ class _SebhaPageState extends State<SebhaPage> {
           child: Stack(
             children: <Widget>[
               Container(
-                color: teal[900].withAlpha(10),
+                color: teal[900]!.withAlpha(10),
               ),
               Align(
                 alignment: Alignment.center,

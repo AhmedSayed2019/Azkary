@@ -1,3 +1,6 @@
+import 'package:azkark/generated/assets.dart';
+import 'package:azkark/pages/compass/qibla_compass.dart';
+
 import '../../util/helpers.dart';
 import '../../pages/search/search_azkar.dart';
 import '../../util/navigate_between_pages/fade_route.dart';
@@ -16,6 +19,7 @@ import '../../providers/sections_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../util/colors.dart';
+import '../quran/quran_screen.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -29,11 +33,11 @@ class HomePage extends StatelessWidget {
         Scaffold(
           appBar: AppBar(
             elevation: 0.0,
-            backgroundColor: Colors.teal,
+            // backgroundColor: teal,
             title: Text(
               translate(context, 'home_bar'),
               style: new TextStyle(
-                color: Colors.teal[50],
+                color: teal[50],
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
               ),
@@ -43,11 +47,7 @@ class HomePage extends StatelessWidget {
             children: <Widget>[
               SearchBar(
                 title: '${translate(context, 'search_for_zekr')} . . . ',
-                onTap: () => Navigator.push(
-                    context,
-                    FadeRoute(
-                      page: SearchForZekr(),
-                    )),
+                onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr())),
               ),
               Expanded(
                 child: SingleChildScrollView(
@@ -93,12 +93,26 @@ class HomePage extends StatelessWidget {
           ),
           _buildItemsCard(
             context: context,
+            text: translate(context, 'quran'),
+            pathIcon: Assets.sectionsQuran,
+            onTap: () => Navigator.push(context, ScaleRoute(page: QuranListScreen())),
+          ),
+
+          _buildItemsCard(
+            context: context,
             text: translate(context, 'sebha_bar'),
             pathIcon: 'assets/images/icons/sebha/sebha_256px.png',
             onTap: () => Navigator.push(
               context,
               ScaleRoute(page: ItemsSebha()),
             ),
+          ),
+          _buildItemsCard(
+            context: context,
+            text: translate(context, 'compass'),
+            pathIcon: Assets.sectionsCampass,
+            onTap: () => Navigator.push(context, ScaleRoute(page: QiblaCompassScreen())),
+
           ),
           _buildItemsCard(
             context: context,
@@ -135,8 +149,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildItemsCard(
-      {BuildContext context, String text, String pathIcon, Function onTap}) {
+  Widget _buildItemsCard({required BuildContext context,required String text, required String pathIcon,required GestureTapCallback? onTap}) {
     final size = MediaQuery.of(context).size;
     return Column(
       children: <Widget>[

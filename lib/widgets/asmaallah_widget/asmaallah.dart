@@ -3,28 +3,31 @@ import '../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class AsmaAllah extends StatefulWidget {
-  final AsmaAllahModel asmaallah;
-  final double fontSize;
-  final bool showDescription;
-  final Function onTap;
-
-  AsmaAllah({
-    this.asmaallah,
-    this.fontSize,
-    this.showDescription,
-    this.onTap,
-  });
+  final AsmaAllahModel _asmaallah;
+  final double _fontSize;
+  final bool _showDescription;
+  final GestureTapCallback? _onTap;
 
   @override
   _AsmaAllahState createState() => _AsmaAllahState();
+
+  const AsmaAllah({
+    required AsmaAllahModel asmaallah,
+    required double fontSize,
+    required bool showDescription,
+     GestureTapCallback? onTap,
+  })  : _asmaallah = asmaallah,
+        _fontSize = fontSize,
+        _showDescription = showDescription,
+        _onTap = onTap;
 }
 
 class _AsmaAllahState extends State<AsmaAllah> {
-  bool _showDescription;
+  late bool _showDescription ;
 
   @override
   void initState() {
-    _showDescription = widget.showDescription;
+    _showDescription = widget._showDescription;
     super.initState();
   }
 
@@ -41,13 +44,9 @@ class _AsmaAllahState extends State<AsmaAllah> {
           highlightColor: Colors.transparent,
           splashColor: teal[100],
           borderRadius: BorderRadius.circular(10),
-          onTap: widget.onTap == null
-              ? () {
-                  setState(() {
-                    _showDescription = !_showDescription;
-                  });
-                }
-              : widget.onTap,
+          onTap: widget._onTap == null
+              ? () {setState(() {_showDescription = !_showDescription;});}
+              : widget._onTap,
           child: Stack(
             children: <Widget>[
               Align(
@@ -57,15 +56,14 @@ class _AsmaAllahState extends State<AsmaAllah> {
               Align(
                 alignment: Alignment.center,
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                      top: 15.0, bottom: 10.0, left: 10.0, right: 10.0),
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 10.0, left: 10.0, right: 10.0),
                   child: Column(
                     children: <Widget>[
                       _buildNameField(),
                       Align(
                           alignment: Alignment.centerRight,
                           child: _buildDescriptionButton()),
-                      if (widget.showDescription) _buildDescriptionField(size),
+                      if (widget._showDescription) _buildDescriptionField(size),
                     ],
                   ),
                 ),
@@ -85,7 +83,7 @@ class _AsmaAllahState extends State<AsmaAllah> {
           borderRadius: BorderRadius.only(
               topRight: Radius.circular(10), bottomLeft: Radius.circular(10))),
       child: Text(
-        '${widget.asmaallah.id}',
+        '${widget._asmaallah.id}',
         textAlign: TextAlign.center,
         style: new TextStyle(
           color: teal[700],
@@ -100,12 +98,12 @@ class _AsmaAllahState extends State<AsmaAllah> {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Text(
-        widget.asmaallah.name,
+        widget._asmaallah.name,
         textAlign: TextAlign.center,
         style: new TextStyle(
           color: teal,
           fontWeight: FontWeight.w700,
-          fontSize: widget.fontSize,
+          fontSize: widget._fontSize,
         ),
       ),
     );
@@ -116,9 +114,9 @@ class _AsmaAllahState extends State<AsmaAllah> {
       margin: EdgeInsets.only(top: 10),
       padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0),
       decoration: BoxDecoration(
-        color: widget.showDescription ? teal[200] : Colors.transparent,
-        border: Border.all(color: teal[200]),
-        borderRadius: widget.showDescription
+        color: widget._showDescription ? teal[200] : Colors.transparent,
+        border: Border.all(color: teal[200]??Color(0xFFCEEDEA)),
+        borderRadius: widget._showDescription
             ? BorderRadius.only(
                 topRight: Radius.circular(10), topLeft: Radius.circular(10))
             : BorderRadius.circular(10),
@@ -127,7 +125,7 @@ class _AsmaAllahState extends State<AsmaAllah> {
         'المعني',
         textAlign: TextAlign.center,
         style: new TextStyle(
-          color: widget.showDescription ? teal[700] : teal[700],
+          color: widget._showDescription ? teal[700] : teal[700],
           // fontWeight: FontWeight.w700,
           fontSize: 12,
         ),
@@ -149,10 +147,10 @@ class _AsmaAllahState extends State<AsmaAllah> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
-          widget.asmaallah.description,
+          widget._asmaallah.description,
           style: new TextStyle(
             color: teal[600],
-            fontSize: widget.fontSize - 2,
+            fontSize: widget._fontSize - 2,
           ),
         ),
       ),

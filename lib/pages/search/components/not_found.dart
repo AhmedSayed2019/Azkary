@@ -13,7 +13,7 @@ class NotFound extends StatelessWidget {
       child: Image.asset(
         'assets/images/icons/not_fount/no_found.png',
         fit: BoxFit.contain,
-        color: teal[300].withAlpha(200),
+        color: teal[300]!.withAlpha(200),
         colorBlendMode: BlendMode.modulate,
         height: size.height * 0.4,
       ),

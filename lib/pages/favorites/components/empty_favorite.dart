@@ -16,7 +16,7 @@ class EmptyFavorite extends StatelessWidget {
           color: Colors.transparent,
           child: Image.asset(
             'assets/images/icons/favorites/empty.png',
-            color: teal[400].withAlpha(200),
+            color: teal[400]!.withAlpha(200),
             colorBlendMode: BlendMode.modulate,
             fit: BoxFit.contain,
             // height: size.height,

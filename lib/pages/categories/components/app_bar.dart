@@ -4,16 +4,16 @@ import '../../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final AnimationController animationController;
-  final String title;
-  final Function onTap;
-
-  CustomAppBar({
-    this.title,
-    this.onTap,
-    this.animationController,
-  });
-
+  final AnimationController? _animationController;
+  final String _title;
+  final VoidCallback?  _onTap;
+  const CustomAppBar({
+     AnimationController? animationController,
+    required String title,
+     VoidCallback? onTap,
+  })  : _animationController = animationController,
+        _title = title,
+        _onTap = onTap;
   @override
   Size get preferredSize =>
       Size.fromHeight(AppBar().preferredSize.height); //50.0);
@@ -23,7 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       elevation: 0.0,
       title: Text(
-        title,
+        _title,
         style: new TextStyle(
           color: teal[50],
           fontWeight: FontWeight.w700,
@@ -43,7 +43,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Navigator.push(context, FadeRoute(page: SearchForZekr()));
               }),
         ),
-        if (animationController != null) _buildMenuButton(),
+        if (_animationController != null) _buildMenuButton(),
       ],
     );
   }
@@ -54,13 +54,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: IconButton(
         highlightColor: teal[700],
         splashColor: teal[700],
-        onPressed: onTap,
+        onPressed: _onTap,
         icon: AnimatedIcon(
           icon: AnimatedIcons.menu_close,
-          progress: animationController,
+          progress: _animationController!,
           color: teal[50],
         ),
       ),
     );
   }
+
+
 }

@@ -11,7 +11,7 @@ import 'prayer_provider.dart';
 import 'sebha_provider.dart';
 
 class SectionsProvider with ChangeNotifier {
-  List<SectionModel> _sections = List<SectionModel>();
+  List<SectionModel> _sections =[];
   DatabaseHelper databaseHelper = new DatabaseHelper();
   bool _newUser = true;
 

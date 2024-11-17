@@ -6,14 +6,13 @@ import 'package:flutter/material.dart';
 import 'delete_dialog.dart';
 
 class PopUpMenuSebha extends StatelessWidget {
-  final SebhaModel tasbih;
-  final BuildContext buildContext;
-
-  PopUpMenuSebha({
-    this.tasbih,
-    this.buildContext,
-  });
-
+  final SebhaModel _tasbih;
+  final BuildContext _buildContext;
+  const PopUpMenuSebha({
+    required SebhaModel tasbih,
+    required BuildContext buildContext,
+  })  : _tasbih = tasbih,
+        _buildContext = buildContext;
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -32,7 +31,7 @@ class PopUpMenuSebha extends StatelessWidget {
               icon: Icons.content_copy,
               onTap: () async {
                 Navigator.pop(context);
-                copyText(buildContext, tasbih.name);
+                copyText(_buildContext, _tasbih.name);
               },
             ),
             SizedBox(
@@ -47,7 +46,7 @@ class PopUpMenuSebha extends StatelessWidget {
                   context: context,
                   builder: (BuildContext context) => EditTasbih(
                     title: translate(context, 'sebha_edit_dialog'),
-                    tasbih: tasbih,
+                    tasbih: _tasbih,
                   ),
                 );
               },
@@ -63,8 +62,8 @@ class PopUpMenuSebha extends StatelessWidget {
                 await showDialog<bool>(
                   context: context,
                   builder: (BuildContext context) => DeleteDialog(
-                    tasbihFavorite: tasbih.favorite,
-                    tasbihId: tasbih.id,
+                    tasbihFavorite: _tasbih.favorite,
+                    tasbihId: _tasbih.id,
                   ),
                 );
               },
@@ -75,7 +74,7 @@ class PopUpMenuSebha extends StatelessWidget {
     );
   }
 
-  Widget _buildButton({String title, Function onTap, IconData icon}) {
+  Widget _buildButton({required String title,required GestureTapCallback onTap,required IconData icon}) {
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
@@ -109,4 +108,6 @@ class PopUpMenuSebha extends StatelessWidget {
       ),
     );
   }
+
+
 }

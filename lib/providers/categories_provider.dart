@@ -3,7 +3,7 @@ import '../models/category_model.dart';
 import 'package:flutter/foundation.dart';
 
 class CategoriesProvider with ChangeNotifier {
-  List<CategoryModel> _categories = List<CategoryModel>();
+  List<CategoryModel> _categories = [];
   DatabaseHelper databaseHelper = new DatabaseHelper();
 
   String get table => 'categories';
@@ -15,7 +15,7 @@ class CategoriesProvider with ChangeNotifier {
   }
 
   List<String> get allCategoriesName {
-    List<String> tempList = List<String>();
+    List<String> tempList =[];
     for (int i = 0; i < length; i++)
       tempList.add(_categories[i].nameWithoutDiacritics);
     return tempList;

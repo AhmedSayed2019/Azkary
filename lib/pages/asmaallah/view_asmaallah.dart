@@ -19,9 +19,9 @@ class ViewAsmaAllah extends StatefulWidget {
 enum PopUpMenu { ShowAllDescription, About }
 
 class _ViewAsmaAllahState extends State<ViewAsmaAllah> {
-  double fontSize;
-  bool showSliderFont, showAllDescription;
-  List<bool> showDescription;
+  late double fontSize;
+  late bool showSliderFont, showAllDescription;
+  late List<bool> showDescription;
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class _ViewAsmaAllahState extends State<ViewAsmaAllah> {
     showAllDescription = false;
     fontSize = Provider.of<SettingsProvider>(context, listen: false)
         .getsettingField('font_size');
-    showDescription = List<bool>();
+    showDescription =[];
     for (int i = 0;
         i < Provider.of<AsmaAllahProvider>(context, listen: false).length;
         i++) showDescription.add(false);

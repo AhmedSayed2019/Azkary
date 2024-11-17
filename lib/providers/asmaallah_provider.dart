@@ -3,7 +3,7 @@ import '../database/database_helper.dart';
 import 'package:flutter/foundation.dart';
 
 class AsmaAllahProvider with ChangeNotifier {
-  List<AsmaAllahModel> _asmaallah = List<AsmaAllahModel>();
+  List<AsmaAllahModel> _asmaallah = [];
   DatabaseHelper databaseHelper = new DatabaseHelper();
 
   String get table => 'asmaallah';
@@ -15,7 +15,7 @@ class AsmaAllahProvider with ChangeNotifier {
   }
 
   List<String> get allAmaAllah {
-    List<String> tempList = List<String>();
+    List<String> tempList = [];
     for (int i = 0; i < length; i++) tempList.add(_asmaallah[i].name);
     return tempList;
   }

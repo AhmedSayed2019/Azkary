@@ -5,26 +5,27 @@ import '../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class SettingFontType extends StatefulWidget {
-  final BorderRadius borderRadius;
-
-  const SettingFontType({this.borderRadius});
+  final BorderRadius _borderRadius;
 
   @override
   _SettingFontTypeState createState() => _SettingFontTypeState();
+
+  const SettingFontType({
+    required BorderRadius borderRadius,
+  }) : _borderRadius = borderRadius;
 }
 
 class _SettingFontTypeState extends State<SettingFontType>
     with SingleTickerProviderStateMixin {
-  bool _showBoxFonts;
-  int _fontType;
-  AnimationController _animationController;
-  Animation<double> _heightAnimation, _arrowAnimation;
+ late bool _showBoxFonts;
+ late int _fontType;
+ late AnimationController _animationController;
+ late Animation<double> _heightAnimation, _arrowAnimation;
 
   @override
   void initState() {
     super.initState();
-    _fontType = Provider.of<SettingsProvider>(context, listen: false)
-        .getsettingField('font_family');
+    _fontType = Provider.of<SettingsProvider>(context, listen: false).getsettingField('font_family');
     _showBoxFonts = false;
     _animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
@@ -52,7 +53,7 @@ class _SettingFontTypeState extends State<SettingFontType>
     return InkWell(
       highlightColor: Colors.transparent,
       splashColor: teal[200],
-      borderRadius: widget.borderRadius,
+      borderRadius: widget._borderRadius,
       onTap: () {
         setState(() {
           _showBoxFonts = !_showBoxFonts;
@@ -99,7 +100,7 @@ class _SettingFontTypeState extends State<SettingFontType>
             margin: EdgeInsets.all(10),
             foregroundDecoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: teal[600])),
+                border: Border.all(color: teal[600]!)),
             // color: ruby,
             child: SingleChildScrollView(
               child: Column(

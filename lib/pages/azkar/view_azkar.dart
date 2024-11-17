@@ -15,18 +15,18 @@ class ViewAzkar extends StatefulWidget {
 }
 
 class _ViewAzkarState extends State<ViewAzkar> {
-  int onFavorite;
-  bool showSliderFont, isCounterOpen, isDiacriticsOpen, isSanadOpen;
-  double fontSize;
-  List<int> counter;
-  List<bool> showSanad;
+  late int onFavorite;
+  late bool showSliderFont, isCounterOpen, isDiacriticsOpen, isSanadOpen;
+  late double fontSize;
+  late List<int> counter;
+  late List<bool> showSanad;
 
   @override
   void initState() {
     super.initState();
     showSliderFont = false;
-    counter = List<int>();
-    showSanad = List<bool>();
+    counter = [];
+    showSanad = [];
     int id = Provider.of<AzkarProvider>(context, listen: false)
         .getZekr(0)
         .categoryId;

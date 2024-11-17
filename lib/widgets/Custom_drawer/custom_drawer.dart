@@ -7,17 +7,19 @@ import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatefulWidget {
   final double maxWidth, minWidth;
-  final Function onTap, onPressedIndex, onSwipeLeft, onSwipeRight;
+  final GestureDetector?  onSwipeLeft, onSwipeRight;
+  final Function  onPressedIndex;
+  final GestureTapCallback?  onTap;
   final int currentIndex;
   final AnimationController animationController;
 
   CustomDrawer({
-    @required this.animationController,
-    @required this.minWidth,
-    @required this.maxWidth,
-    @required this.onTap,
-    @required this.onPressedIndex,
-    @required this.currentIndex,
+    required this.animationController,
+    required this.minWidth,
+    required this.maxWidth,
+    required this.onTap,
+    required this.onPressedIndex,
+    required this.currentIndex,
     this.onSwipeLeft,
     this.onSwipeRight,
   });
@@ -26,36 +28,28 @@ class CustomDrawer extends StatefulWidget {
   _CustomDrawerState createState() => _CustomDrawerState();
 }
 
-class _CustomDrawerState extends State<CustomDrawer>
-    with SingleTickerProviderStateMixin {
-  Animation<double> widthAnimation;
-  Animation<double> shadowAnimation;
-  int currentIndex;
+class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderStateMixin {
+ late Animation<double> widthAnimation;
+ late Animation<double> shadowAnimation;
+ late int currentIndex;
 
   @override
   void initState() {
     super.initState();
     currentIndex = widget.currentIndex;
-    widthAnimation = Tween<double>(begin: widget.minWidth, end: widget.maxWidth)
-        .animate(widget.animationController);
-    shadowAnimation =
-        Tween<double>(begin: 0, end: 0.4).animate(widget.animationController);
+    widthAnimation = Tween<double>(begin: widget.minWidth, end: widget.maxWidth).animate(widget.animationController);
+    shadowAnimation = Tween<double>(begin: 0, end: 0.4).animate(widget.animationController);
   }
 
   AnimationController get animationController => widget.animationController;
 
   double get minWidth => widget.minWidth;
-
-  Function get onTap => widget.onTap;
-
-  Function get onSwipeLeft => widget.onSwipeLeft;
-
-  Function get onSwipeRight => widget.onSwipeRight;
+  GestureTapCallback? get onTap => widget.onTap;
+  GestureDetector? get onSwipeLeft => widget.onSwipeLeft;
+  GestureDetector? get onSwipeRight => widget.onSwipeRight;
 
   void onPressedIndex(int index) {
-    setState(() {
-      currentIndex = index;
-    });
+    setState(() {currentIndex = index;});
     widget.onPressedIndex(currentIndex);
   }
 
@@ -80,7 +74,7 @@ class _CustomDrawerState extends State<CustomDrawer>
                   child: Container(
                       width: size.width,
                       height: size.height,
-                      color: teal[900].withOpacity(shadowAnimation.value)),
+                      color: teal[900]!.withOpacity(shadowAnimation.value)),
                 ),
               ),
             Align(
@@ -101,7 +95,7 @@ class _CustomDrawerState extends State<CustomDrawer>
                       animationController: animationController,
                     ),
                     Divider(
-                      color: teal[100].withAlpha(50),
+                      color: teal[100]!.withAlpha(50),
                       thickness: 2,
                       height: 10.0,
                       indent: 7.5,
@@ -112,9 +106,7 @@ class _CustomDrawerState extends State<CustomDrawer>
                         itemCount: sectionsProvider.length,
                         itemBuilder: (context, index) {
                           return DrawerListTitle(
-                            onTap: currentIndex == index
-                                ? onTap
-                                : () => onPressedIndex(index),
+                            onTap: currentIndex == index ? onTap : () => onPressedIndex(index),
                             isSelected: currentIndex == index,
                             title: sectionsProvider.getSection(index).name,
                             pathIcon: currentIndex == index

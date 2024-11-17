@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.hemeda.azkary">
+    package="com.muslim.azkar.app">
    <application
-        android:label="Azkary"
+        android:label="azkar"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

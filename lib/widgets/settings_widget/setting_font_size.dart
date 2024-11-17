@@ -5,24 +5,25 @@ import '../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class SettingFontSize extends StatefulWidget {
-  final BorderRadius borderRadius;
-
-  const SettingFontSize({this.borderRadius});
+  final BorderRadius _borderRadius;
 
   @override
   _SettingFontSizeState createState() => _SettingFontSizeState();
+
+  const SettingFontSize({
+    required BorderRadius borderRadius,
+  }) : _borderRadius = borderRadius;
 }
 
 class _SettingFontSizeState extends State<SettingFontSize> {
-  double fontSize;
-  bool showSlider;
+ late double fontSize;
+ late bool showSlider;
 
   @override
   void initState() {
     super.initState();
 
-    fontSize = Provider.of<SettingsProvider>(context, listen: false)
-        .getsettingField('font_size');
+    fontSize = Provider.of<SettingsProvider>(context, listen: false).getsettingField('font_size');
     showSlider = false;
   }
 
@@ -38,7 +39,7 @@ class _SettingFontSizeState extends State<SettingFontSize> {
           showSlider = !showSlider;
         });
       },
-      borderRadius: widget.borderRadius,
+      borderRadius: widget._borderRadius,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(

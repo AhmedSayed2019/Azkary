@@ -19,9 +19,9 @@ class CategoriesOfSection extends StatefulWidget {
 
 class _CategoriesOfSectionState extends State<CategoriesOfSection>
     with SingleTickerProviderStateMixin {
-  bool _isCollapsed;
-  AnimationController _animationController;
-  int _currentIndex;
+  late bool _isCollapsed;
+  late AnimationController _animationController;
+  late int _currentIndex;
 
   @override
   void initState() {

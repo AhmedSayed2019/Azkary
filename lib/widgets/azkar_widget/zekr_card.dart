@@ -10,28 +10,28 @@ class Zekr extends StatefulWidget {
   final ZekrModel zekr;
   final int numberZekr, counter;
   final bool isCounterOpen, isDiacriticsOpen, showSanad;
-  final Function onTap, onRefresh, onSanad;
+  final GestureTapCallback onTap, onRefresh, onSanad;
   final double fontSize;
-
-  Zekr({
-    this.zekr,
-    this.numberZekr,
-    this.isCounterOpen,
-    this.isDiacriticsOpen,
-    this.showSanad,
-    this.counter,
-    this.onTap,
-    this.onRefresh,
-    this.onSanad,
-    this.fontSize,
-  });
 
   @override
   _ZekrState createState() => _ZekrState();
+
+  const Zekr({
+    required this.zekr,
+    required this.numberZekr,
+    required this.counter,
+    required this.isCounterOpen,
+    required this.isDiacriticsOpen,
+    required this.showSanad,
+    required this.onTap,
+    required this.onRefresh,
+    required this.onSanad,
+    required this.fontSize,
+  });
 }
 
 class _ZekrState extends State<Zekr> {
-  String _fontType;
+  late String _fontType;
 
   @override
   void initState() {
@@ -142,7 +142,7 @@ class _ZekrState extends State<Zekr> {
     );
   }
 
-  Widget _buildButton({Function onTap, IconData icon}) {
+  Widget _buildButton({required GestureTapCallback onTap,required IconData icon}) {
     return Padding(
       padding: const EdgeInsets.only(right: 10.0),
       child: InkWell(

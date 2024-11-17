@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 
 class ExpansionTileSebha extends StatefulWidget {
   final Widget title, child;
-  final ValueChanged<bool> onExpansionChanged;
+  final ValueChanged<bool>? onExpansionChanged;
   final bool initiallyExpanded;
 
   const ExpansionTileSebha({
-    @required this.title,
+    required this.title,
     this.onExpansionChanged,
-    this.child,
+    required  this.child,
     this.initiallyExpanded = false,
   }) : assert(initiallyExpanded != null);
 
@@ -17,19 +17,17 @@ class ExpansionTileSebha extends StatefulWidget {
   _ExpansionTileSebhaState createState() => _ExpansionTileSebhaState();
 }
 
-class _ExpansionTileSebhaState extends State<ExpansionTileSebha>
-    with SingleTickerProviderStateMixin {
-  static final Animatable<double> _easeInTween =
-      CurveTween(curve: Curves.easeIn);
-  static final Animatable<double> _halfTween =
-      Tween<double>(begin: 0.0, end: 0.5);
+class _ExpansionTileSebhaState extends State<ExpansionTileSebha> with SingleTickerProviderStateMixin {
 
+  static final Animatable<double> _easeInTween = CurveTween(curve: Curves.easeIn);
+  static final Animatable<double> _halfTween = Tween<double>(begin: 0.0, end: 0.5);
   final ColorTween _iconColorTween = ColorTween();
+  // static final ColorTween _iconColorTween = CurveTween(curve: Curves.easeIn);
 
-  AnimationController _controller;
-  Animation<double> _heightFactor;
-  Animation<double> _iconTurns;
-  Animation<Color> _iconColor;
+  late AnimationController _controller;
+  late Animation<double> _heightFactor;
+  late Animation<double> _iconTurns;
+  late Animation<Color?> _iconColor;
   bool _isExpanded = false;
 
   @override
@@ -41,8 +39,10 @@ class _ExpansionTileSebhaState extends State<ExpansionTileSebha>
     _iconColor = _controller.drive(_iconColorTween.chain(_easeInTween));
     _iconTurns = _controller.drive(_halfTween.chain(_easeInTween));
 
-    _isExpanded = PageStorage.of(context)?.readState(context) as bool ??
-        widget.initiallyExpanded;
+
+
+
+    _isExpanded = PageStorage.of(context)?.readState(context) ?? widget.initiallyExpanded;
     if (_isExpanded) _controller.value = 1.0;
   }
 
@@ -68,7 +68,7 @@ class _ExpansionTileSebhaState extends State<ExpansionTileSebha>
       PageStorage.of(context)?.writeState(context, _isExpanded);
     });
     if (widget.onExpansionChanged != null)
-      widget.onExpansionChanged(_isExpanded);
+      widget.onExpansionChanged!(_isExpanded);
   }
 
   @override
@@ -79,7 +79,7 @@ class _ExpansionTileSebhaState extends State<ExpansionTileSebha>
     super.didChangeDependencies();
   }
 
-  Widget _buildChildren(BuildContext context, Widget child) {
+  Widget _buildChildren(BuildContext context, Widget? child) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[

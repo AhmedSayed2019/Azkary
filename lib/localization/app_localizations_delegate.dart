@@ -19,9 +19,9 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
 
   @override
   bool shouldReload(AppLocalizationsDelegate old) => false;
-
-  static Locale resolution(
-      Locale currentLocale, Iterable<Locale> supportedLocales) {
+  // Function(Locale? locale, Iterable<Locale> supportedLocales)
+  //typedef LocaleResolutionCallback = Locale? Function(Locale? locale, Iterable<Locale> supportedLocales);
+  static Locale resolution(Locale? currentLocale, Iterable<Locale> supportedLocales) {
     if (currentLocale != null) {
       for (Locale supportedLocale in supportedLocales) {
         if (supportedLocale.languageCode == currentLocale.languageCode)

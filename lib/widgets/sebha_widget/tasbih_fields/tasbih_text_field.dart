@@ -3,19 +3,20 @@ import 'package:azkark/util/helpers.dart';
 import 'package:flutter/material.dart';
 
 class TasbihTextField extends StatefulWidget {
-  final String text, hintText, errorText;
+  final String text, hintText;
+  final String? errorText;
   final int maxLines, maxlength;
   final ValueChanged<String> onSubmitted, onChanged;
   final bool isNumber, autoFocus, isFinalField;
 
   TasbihTextField({
-    this.text,
-    @required this.hintText,
+    required this.text,
+    required this.hintText,
     this.errorText,
-    this.maxLines,
-    this.maxlength,
-    this.onSubmitted,
-    this.onChanged,
+    required  this.maxLines,
+    required  this.maxlength,
+    required  this.onSubmitted,
+    required   this.onChanged,
     this.isNumber = false,
     this.isFinalField = false,
     this.autoFocus = false,
@@ -26,7 +27,7 @@ class TasbihTextField extends StatefulWidget {
 }
 
 class _TasbihTextFieldState extends State<TasbihTextField> {
-  TextEditingController _controller;
+ late TextEditingController _controller;
 
   @override
   void initState() {
@@ -76,12 +77,12 @@ class _TasbihTextFieldState extends State<TasbihTextField> {
           ),
           hintText: widget.hintText,
           hintStyle: TextStyle(
-            color: teal[400].withAlpha(175),
+            color: teal[400]!.withAlpha(175),
           ),
           contentPadding: EdgeInsets.all(15.0),
           border: InputBorder.none,
           counterStyle: TextStyle(
-            color: teal[400].withAlpha(175),
+            color: teal[400]!.withAlpha(175),
           ),
         ),
       ),

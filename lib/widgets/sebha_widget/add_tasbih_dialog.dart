@@ -6,22 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AddTasbih extends StatefulWidget {
-  final String title;
-
-  AddTasbih({
-    this.title,
-  });
+  final String _title;
 
   @override
   _AddTasbihState createState() => _AddTasbihState();
+
+  const AddTasbih({
+    required String title,
+  }) : _title = title;
 }
 
 class _AddTasbihState extends State<AddTasbih> {
-  SebhaModel _tasbih;
+  late SebhaModel _tasbih;
 
   @override
   void initState() {
-    _tasbih = SebhaModel(-1, '', 0, 0);
+    _tasbih = SebhaModel(id: -1, name: '',counter:  0,favorite:  0);
     super.initState();
   }
 

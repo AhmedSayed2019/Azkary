@@ -16,7 +16,7 @@ enum PopUpMenu {
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool favorite, counter, diacritics, sanad, sliderFont;
-  final Function onTapFontButton,
+  final VoidCallback onTapFontButton,
       onTapFavorite,
       onTapCounter,
       onTapDiacritics,
@@ -24,18 +24,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       onTapRefresh;
 
   CustomAppBar({
-    this.title,
-    this.favorite,
-    this.counter,
-    this.diacritics,
-    this.sanad,
-    this.sliderFont,
-    this.onTapFavorite,
-    this.onTapCounter,
-    this.onTapDiacritics,
-    this.onTapRefresh,
-    this.onTapSanad,
-    this.onTapFontButton,
+   required this.title,
+   required this.favorite,
+   required this.counter,
+   required this.diacritics,
+   required this.sanad,
+   required this.sliderFont,
+   required this.onTapFavorite,
+   required this.onTapCounter,
+   required this.onTapDiacritics,
+   required this.onTapRefresh,
+   required this.onTapSanad,
+   required this.onTapFontButton,
   });
 
   @override
@@ -178,7 +178,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   PopupMenuItem<PopUpMenu> _buildMenuItem(
-      {PopUpMenu value, bool enable = true, Widget icon, String text}) {
+      {required PopUpMenu value, bool enable = true,required Widget icon,required String text}) {
     return PopupMenuItem<PopUpMenu>(
       value: value,
       enabled: enable,
@@ -191,7 +191,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Text(
               text,
               style: new TextStyle(
-                color: enable ? teal[900] : teal[900].withAlpha(125),
+                color: enable ? teal[900] : teal[900]!.withAlpha(125),
                 fontWeight: FontWeight.w300,
                 fontSize: 14,
               ),

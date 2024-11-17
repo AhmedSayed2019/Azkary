@@ -6,21 +6,26 @@ import '../../../models/sebha_model.dart';
 import '../../../util/colors.dart';
 
 class TasbihForm extends StatelessWidget {
-  final String title;
-  final SebhaModel tasbih;
-  final Function onTapCancle, onTapDone;
-  final ValueChanged<String> onChangedName, onChangedCounter;
+  final String _title;
+  final SebhaModel _tasbih;
+  final GestureTapCallback? _onTapCancle, _onTapDone;
+  final ValueChanged<String> _onChangedName, _onChangedCounter;
 
-  TasbihForm({
-    @required this.title,
-    this.tasbih,
-    @required this.onChangedName,
-    @required this.onChangedCounter,
-    @required this.onTapCancle,
-    @required this.onTapDone,
-  });
+  const TasbihForm({
+    required String title,
+    required SebhaModel tasbih,
+    required GestureTapCallback? onTapCancle,
+    required GestureTapCallback? onTapDone,
+    required ValueChanged<String> onChangedName,
+    required ValueChanged<String> onChangedCounter,
+  })  : _title = title,
+        _tasbih = tasbih,
+        _onTapCancle = onTapCancle,
+        _onTapDone = onTapDone,
+        _onChangedName = onChangedName,
+        _onChangedCounter = onChangedCounter;
 
-  bool get _isAdd => tasbih.id == -1;
+  bool get _isAdd => _tasbih.id == -1;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +43,7 @@ class TasbihForm extends StatelessWidget {
       right: -16.0,
       top: -16.0,
       child: InkResponse(
-        onTap: onTapCancle,
+        onTap: _onTapCancle,
         child: CircleAvatar(
           radius: 18,
           child: Icon(
@@ -61,22 +66,22 @@ class TasbihForm extends StatelessWidget {
           children: <Widget>[
             _buildTitle(),
             TasbihTextField(
-              text: tasbih.name,
+              text: _tasbih.name,
               hintText: translate(context, 'sebha_hint_text_tasbih'),
               maxlength: 250,
               maxLines: 2,
               autoFocus: true,
-              onChanged: onChangedName,
+              onChanged: _onChangedName,
               onSubmitted: (text) => FocusScope.of(context).nextFocus(),
             ),
             TasbihTextField(
-              text: tasbih.counter.toString(),
+              text: _tasbih.counter.toString(),
               hintText: translate(context, 'sebha_hint_text_counter'),
               maxLines: 1,
               maxlength: 4,
               isNumber: true,
               isFinalField: true,
-              onChanged: onChangedCounter,
+              onChanged: _onChangedCounter,
               onSubmitted: (text) {
                 FocusScope.of(context).unfocus();
               },
@@ -84,8 +89,8 @@ class TasbihForm extends StatelessWidget {
             RowButtons(
               titleFirst: translate(context, _isAdd ? 'add' : 'edit'),
               titleSecond: translate(context, 'cancle'),
-              onTapFirst: onTapDone,
-              onTapSecond: onTapCancle,
+              onTapFirst: _onTapDone,
+              onTapSecond: _onTapCancle,
             ),
           ],
         ),
@@ -98,7 +103,7 @@ class TasbihForm extends StatelessWidget {
       alignment: Alignment.center,
       padding: EdgeInsets.symmetric(vertical: 15.0),
       child: Text(
-        title,
+        _title,
         style: TextStyle(
           color: teal[700],
           fontSize: 16,
@@ -106,4 +111,5 @@ class TasbihForm extends StatelessWidget {
       ),
     );
   }
+
 }

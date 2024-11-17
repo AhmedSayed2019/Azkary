@@ -3,13 +3,14 @@ import '../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class ButtonFontSize extends StatelessWidget {
-  final bool showSider;
-  final Function onTap;
+  final bool _showSider;
+  final VoidCallback _onTap;
 
-  ButtonFontSize({
-    this.showSider,
-    this.onTap,
-  });
+  const ButtonFontSize({
+    required bool showSider,
+    required VoidCallback onTap,
+  })  : _showSider = showSider,
+        _onTap = onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +22,17 @@ class ButtonFontSize extends StatelessWidget {
       icon: Container(
         padding: EdgeInsets.only(top: 2.5, bottom: 2.5, left: 5.0, right: 5.0),
         decoration: BoxDecoration(
-            color: showSider ? teal[50] : Colors.transparent,
+            color: _showSider ? teal[50] : Colors.transparent,
             borderRadius: BorderRadius.circular(10)),
         child: FaIcon(
           FontAwesomeIcons.font,
-          color: showSider ? teal[800] : teal[50],
+          color: _showSider ? teal[800] : teal[50],
           size: 20,
         ),
       ),
-      onPressed: onTap,
+      onPressed: _onTap,
     );
   }
+
+
 }

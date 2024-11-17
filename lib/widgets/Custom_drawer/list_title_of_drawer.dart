@@ -5,12 +5,12 @@ class DrawerListTitle extends StatefulWidget {
   final String title, pathIcon;
   final AnimationController animationController;
   final bool isSelected;
-  final Function onTap;
+  final GestureTapCallback? onTap;
 
   DrawerListTitle(
-      {@required this.title,
-      @required this.pathIcon,
-      @required this.animationController,
+      {required this.title,
+      required this.pathIcon,
+      required this.animationController,
       this.isSelected = false,
       this.onTap});
 
@@ -19,13 +19,12 @@ class DrawerListTitle extends StatefulWidget {
 }
 
 class _DrawerListTitleState extends State<DrawerListTitle> {
-  Animation<double> fontSizeAnimation;
+  late Animation<double> fontSizeAnimation;
 
   @override
   void initState() {
     super.initState();
-    fontSizeAnimation =
-        Tween<double>(begin: 0, end: 16).animate(widget.animationController);
+    fontSizeAnimation = Tween<double>(begin: 0, end: 16).animate(widget.animationController);
   }
 
   @override

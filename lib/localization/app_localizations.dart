@@ -7,11 +7,11 @@ class AppLocalizations {
 
   AppLocalizations(this.locale);
 
-  static AppLocalizations of(BuildContext context) {
+  static AppLocalizations? of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  Map<String, String> _localizedValues;
+  Map<String, String> _localizedValues ={};
 
   Future loadFileKeys() async {
     String langFile = await rootBundle
@@ -23,6 +23,6 @@ class AppLocalizations {
   }
 
   String translate(String key) {
-    return _localizedValues[key];
+    return _localizedValues[key]??key;
   }
 }

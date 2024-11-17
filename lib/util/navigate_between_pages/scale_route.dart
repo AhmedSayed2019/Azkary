@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 class ScaleRoute extends PageRouteBuilder {
-  final Widget page;
+  final Widget _page;
 
-  ScaleRoute({this.page})
-      : super(
+  ScaleRoute({
+    required Widget page,
+  })  : _page = page,
+        super(
           pageBuilder: (
             BuildContext context,
             Animation<double> animation,

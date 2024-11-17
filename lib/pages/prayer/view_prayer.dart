@@ -19,9 +19,9 @@ enum PopUpMenu { ShowAllAyat }
 
 class _ViewPrayerState extends State<ViewPrayer>
     with SingleTickerProviderStateMixin {
-  bool _showSliderFont, _showAllAyat;
-  List<bool> _showAlAyat;
-  double _fontSize;
+ late bool _showSliderFont, _showAllAyat;
+ late List<bool> _showAlAyat;
+ late double _fontSize;
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class _ViewPrayerState extends State<ViewPrayer>
     _showAllAyat = false;
     _fontSize = Provider.of<SettingsProvider>(context, listen: false)
         .getsettingField('font_size');
-    _showAlAyat = List<bool>();
+    _showAlAyat = [];
     for (int i = 0;
         i < Provider.of<PrayerProvider>(context, listen: false).allSurah.length;
         i++) _showAlAyat.add(false);

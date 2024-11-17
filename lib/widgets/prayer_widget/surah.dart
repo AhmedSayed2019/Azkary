@@ -2,19 +2,23 @@ import '../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class Surah extends StatelessWidget {
-  final int number;
-  final double fontSize;
-  final String surah;
-  final bool showAlAyat;
-  final Function onTap;
+  final int _number;
+  final double _fontSize;
+  final String _surah;
+  final bool _showAlAyat;
+  final  GestureTapCallback? _onTap;
 
   const Surah({
-    this.number,
-    this.fontSize,
-    this.surah,
-    this.onTap,
-    this.showAlAyat,
-  });
+    required int number,
+    required double fontSize,
+    required String surah,
+    required bool showAlAyat,
+    required  GestureTapCallback? onTap,
+  })  : _number = number,
+        _fontSize = fontSize,
+        _surah = surah,
+        _showAlAyat = showAlAyat,
+        _onTap = onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +29,7 @@ class Surah extends StatelessWidget {
         highlightColor: Colors.transparent,
         splashColor: teal[200],
         borderRadius: BorderRadius.circular(10),
-        onTap: onTap,
+        onTap: _onTap,
         child: Stack(
           children: <Widget>[
             Align(alignment: Alignment.topRight, child: _buildNumberField()),
@@ -37,7 +41,7 @@ class Surah extends StatelessWidget {
                 children: <Widget>[
                   _buildNameField(),
                   Icon(
-                    showAlAyat
+                    _showAlAyat
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
                     color: teal[700],
@@ -59,7 +63,7 @@ class Surah extends StatelessWidget {
           borderRadius: BorderRadius.only(
               topRight: Radius.circular(10), bottomLeft: Radius.circular(10))),
       child: Text(
-        '$number',
+        '$_number',
         textAlign: TextAlign.center,
         style: new TextStyle(
           color: teal[700],
@@ -74,14 +78,16 @@ class Surah extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Text(
-        'سورة $surah',
+        'سورة $_surah',
         textAlign: TextAlign.center,
         style: new TextStyle(
           color: teal,
           fontWeight: FontWeight.w700,
-          fontSize: fontSize,
+          fontSize: _fontSize,
         ),
       ),
     );
   }
+
+
 }

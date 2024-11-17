@@ -7,13 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class DeleteDialog extends StatelessWidget {
-  final int tasbihId, tasbihFavorite;
+  final int _tasbihId, _tasbihFavorite;
 
   const DeleteDialog({
-    this.tasbihId,
-    this.tasbihFavorite,
-  });
-
+    required int tasbihId,
+    required int tasbihFavorite,
+  })  : _tasbihId = tasbihId,
+        _tasbihFavorite = tasbihFavorite;
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -33,11 +33,11 @@ class DeleteDialog extends StatelessWidget {
                 titleFirst: translate(context, 'delete'),
                 titleSecond: translate(context, 'cancle'),
                 onTapFirst: () async {
-                  if (tasbihFavorite == 1)
+                  if (_tasbihFavorite == 1)
                     await Provider.of<FavoritesProvider>(context, listen: false)
-                        .deleteFavorite(2, tasbihId);
+                        .deleteFavorite(2, _tasbihId);
                   await Provider.of<SebhaProvider>(context, listen: false)
-                      .deleteItemFromSebha(tasbihId);
+                      .deleteItemFromSebha(_tasbihId);
                   Navigator.of(context).pop(true);
                 },
                 onTapSecond: () => Navigator.of(context).pop(false),
@@ -94,4 +94,5 @@ class DeleteDialog extends StatelessWidget {
       ),
     );
   }
+
 }

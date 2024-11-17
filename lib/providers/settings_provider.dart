@@ -3,7 +3,7 @@ import '../database/database_helper.dart';
 import 'package:flutter/foundation.dart';
 
 class SettingsProvider with ChangeNotifier {
-  SettingsModel _settings;
+ late SettingsModel _settings;
   DatabaseHelper databaseHelper = new DatabaseHelper();
 
   String get table => 'settings';

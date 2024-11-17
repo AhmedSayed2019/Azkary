@@ -3,20 +3,21 @@ import 'package:azkark/util/helpers.dart';
 import 'package:flutter/material.dart';
 
 class SearchField extends StatefulWidget {
-  final ValueChanged<String> onChanged;
-  final String title;
-
-  const SearchField({
-    this.title,
-    this.onChanged,
-  });
+  final ValueChanged<String> _onChanged;
+  final String _title;
 
   @override
   _SearchFieldState createState() => _SearchFieldState();
+
+  const SearchField({
+    required ValueChanged<String> onChanged,
+    required String title,
+  })  : _onChanged = onChanged,
+        _title = title;
 }
 
 class _SearchFieldState extends State<SearchField> {
-  TextEditingController _textController;
+  late TextEditingController _textController;
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _SearchFieldState extends State<SearchField> {
                       onPressed: () {
                         print('You clicked on clear Text');
                         _textController.clear();
-                        widget.onChanged(_textController.text);
+                        widget._onChanged(_textController.text);
                       },
                       padding: EdgeInsets.all(6),
                       tooltip: translate(context, 'delete'),
@@ -74,9 +75,9 @@ class _SearchFieldState extends State<SearchField> {
                       width: 0,
                       height: 0,
                     ),
-              hintText: widget.title,
+              hintText: widget._title,
               hintStyle: TextStyle(color: teal[300], fontSize: 12)),
-          onChanged: widget.onChanged,
+          onChanged: widget._onChanged,
         ),
       ],
     );

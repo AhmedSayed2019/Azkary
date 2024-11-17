@@ -45,7 +45,7 @@ class Settings extends StatelessWidget {
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
           topLeft: Radius.circular(20)),
-      border: Border.all(color: teal[600]),
+      border: Border.all(color: teal[600]!),
     );
   }
 

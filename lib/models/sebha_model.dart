@@ -2,19 +2,13 @@ class SebhaModel {
   int _id, _counter, _favorite;
   String _name;
 
-  SebhaModel(
-    this._id,
-    this._name,
-    this._counter,
-    this._favorite,
-  );
+  factory SebhaModel.fromMap(Map<String, dynamic> map) => SebhaModel(
 
-  SebhaModel.fromMap(Map<String, dynamic> map) {
-    _id = map['id'];
-    _name = map['name'];
-    _counter = map['counter'];
-    _favorite = map['favorite'];
-  }
+    id : map['id'],
+    name : map['name'],
+    counter : map['counter'],
+    favorite : map['favorite'],
+  );
 
   Map<String, dynamic> toMap() {
     return {
@@ -48,4 +42,14 @@ class SebhaModel {
   int get counter => _counter;
 
   int get favorite => _favorite;
+
+  SebhaModel({
+    required int id,
+    required int counter,
+    required int favorite,
+    required String name,
+  })  : _id = id,
+        _counter = counter,
+        _favorite = favorite,
+        _name = name;
 }

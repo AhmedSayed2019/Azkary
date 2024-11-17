@@ -13,8 +13,8 @@ class SearchForZekr extends StatefulWidget {
 }
 
 class _SearchForZekrState extends State<SearchForZekr> {
-  List<String> _history, searchItems;
-  String query;
+ late List<String> _history, searchItems;
+ late String query;
 
   @override
   void initState() {
@@ -22,7 +22,7 @@ class _SearchForZekrState extends State<SearchForZekr> {
     query = '';
     searchItems = Provider.of<CategoriesProvider>(context, listen: false)
         .allCategoriesName;
-    _history = List<String>();
+    _history = [];
     _history = [
       'أذكار الاستيقاظ من النوم',
       'أذكار النوم',
@@ -65,38 +65,40 @@ class _SearchForZekrState extends State<SearchForZekr> {
 }
 
 class _WordSuggestionList extends StatelessWidget {
-  final List<String> suggestions;
-  final String query;
-
+  final List<String> _suggestions;
+  final String _query;
   const _WordSuggestionList({
-    this.suggestions,
-    this.query,
-  });
+    required List<String> suggestions,
+    required String query,
+  })  : _suggestions = suggestions,
+        _query = query;
 
   @override
   Widget build(BuildContext context) {
     final categoriesProvider =
         Provider.of<CategoriesProvider>(context, listen: false);
 
-    return suggestions.length == 0
+    return _suggestions.length == 0
         ? NotFound()
         : ListView.builder(
             physics: BouncingScrollPhysics(),
-            itemCount: suggestions.length,
+            itemCount: _suggestions.length,
             itemBuilder: (context, index) {
               return Padding(
                 padding: index == 0
                     ? const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0)
-                    : index == suggestions.length - 1
+                    : index == _suggestions.length - 1
                         ? const EdgeInsets.only(
                             bottom: 5.0, left: 5.0, right: 5.0)
                         : const EdgeInsets.only(left: 5.0, right: 5.0),
                 child: Category(
                   categoriesProvider.getCategory(categoriesProvider
                       .allCategoriesName
-                      .indexOf(suggestions[index])),
+                      .indexOf(_suggestions[index])),
                 ),
               );
             });
   }
+
+
 }

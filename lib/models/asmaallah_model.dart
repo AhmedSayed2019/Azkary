@@ -1,6 +1,6 @@
 class AsmaAllahModel {
-  int _id;
-  String _name, _description;
+ final int _id;
+ final String _name, _description;
 
   AsmaAllahModel(
     this._id,
@@ -8,11 +8,9 @@ class AsmaAllahModel {
     this._description,
   );
 
-  AsmaAllahModel.fromMap(Map<String, dynamic> map) {
-    _id = map['id'];
-    _name = map['name'];
-    _description = map['description'];
-  }
+ factory AsmaAllahModel.fromMap(Map<String, dynamic> map) =>
+      AsmaAllahModel(map['id']??0, map['name']??'', map['description']??'');
+
 
   int get id => _id;
 

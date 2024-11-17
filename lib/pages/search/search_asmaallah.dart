@@ -9,25 +9,25 @@ import 'components/not_found.dart';
 import 'components/search_field.dart';
 
 class SearchForAsmaAllah extends StatefulWidget {
-  final List<String> searchItems;
-
-  const SearchForAsmaAllah({
-    this.searchItems,
-  });
+  final List<String> _searchItems;
 
   @override
   _SearchForAsmaAllahState createState() => _SearchForAsmaAllahState();
+
+  const SearchForAsmaAllah({
+    required List<String> searchItems,
+  }) : _searchItems = searchItems;
 }
 
 class _SearchForAsmaAllahState extends State<SearchForAsmaAllah> {
-  List<String> _history;
-  String query;
+ late  List<String> _history;
+ late  String query;
 
   @override
   void initState() {
     super.initState();
     query = '';
-    _history = List<String>();
+    _history = [];
     _history = [
       'الرحمن',
       'الرحيم',
@@ -57,7 +57,7 @@ class _SearchForAsmaAllahState extends State<SearchForAsmaAllah> {
   Widget buildSuggestions() {
     final List<String> suggestions = query.isEmpty
         ? _history
-        : widget.searchItems.where((word) => word.startsWith(query)).toList();
+        : widget._searchItems.where((word) => word.startsWith(query)).toList();
 
     return _WordSuggestionList(
       query: this.query,
@@ -67,36 +67,37 @@ class _SearchForAsmaAllahState extends State<SearchForAsmaAllah> {
 }
 
 class _WordSuggestionList extends StatelessWidget {
-  final List<String> suggestions;
-  final String query;
+  final List<String> _suggestions;
+  final String _query;
 
   const _WordSuggestionList({
-    this.suggestions,
-    this.query,
-  });
+    required List<String> suggestions,
+    required String query,
+  })  : _suggestions = suggestions,
+        _query = query;
 
   @override
   Widget build(BuildContext context) {
     final asmaAllahProvider =
         Provider.of<AsmaAllahProvider>(context, listen: false);
 
-    return suggestions.length == 0
+    return _suggestions.length == 0
         ? NotFound()
         : ListView.builder(
             physics: BouncingScrollPhysics(),
-            itemCount: suggestions.length,
+            itemCount: _suggestions.length,
             itemBuilder: (context, index) {
               return Padding(
                 padding: index == 0
                     ? const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0)
-                    : index == suggestions.length - 1
+                    : index == _suggestions.length - 1
                         ? const EdgeInsets.only(
                             bottom: 5.0, left: 5.0, right: 5.0)
                         : const EdgeInsets.only(left: 5.0, right: 5.0),
                 child: AsmaAllah(
                   asmaallah: asmaAllahProvider.getAsmaAllah(asmaAllahProvider
                       .allAmaAllah
-                      .indexOf(suggestions[index])),
+                      .indexOf(_suggestions[index])),
                   fontSize:
                       Provider.of<SettingsProvider>(context, listen: false)
                           .getsettingField('font_size'),
@@ -105,4 +106,6 @@ class _WordSuggestionList extends StatelessWidget {
               );
             });
   }
+
+
 }

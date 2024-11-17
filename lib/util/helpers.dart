@@ -5,7 +5,7 @@ import 'colors.dart';
 import 'package:intl/intl.dart';
 
 String translate(BuildContext context, String key) {
-  return AppLocalizations.of(context).translate(key);
+  return AppLocalizations.of(context)!.translate(key);
 }
 
 bool isTextDirectionRTL(String text) {

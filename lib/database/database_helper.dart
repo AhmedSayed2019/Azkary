@@ -1,25 +1,24 @@
 import 'dart:io';
 import 'package:azkark/models/sebha_model.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper _instance = new DatabaseHelper.internal();
+  static final DatabaseHelper _instance = DatabaseHelper.internal();
 
   DatabaseHelper.internal();
 
   factory DatabaseHelper() => _instance;
 
-  Database _database;
+  Database? _database;
 
   Future<Database> get database async {
-    if (_database != null) return _database;
+    if (_database != null) return _database!;
 
     _database = await initialDatabase();
-    return _database;
+    return _database!;
   }
 
   Future<bool> isFileExists() async {
@@ -64,9 +63,9 @@ class DatabaseHelper {
   }
 
   Future<int> delete(
-      {@required String table,
+      {required String table,
       String tableField = 'id',
-      @required int id}) async {
+      required int id}) async {
     var dbClient = await database;
     int result =
         await dbClient.delete(table, where: '$tableField = ?', whereArgs: [id]);

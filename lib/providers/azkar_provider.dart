@@ -3,7 +3,7 @@ import '../database/database_helper.dart';
 import 'package:flutter/foundation.dart';
 
 class AzkarProvider with ChangeNotifier {
-  List<ZekrModel> _azkar = List<ZekrModel>();
+  List<ZekrModel> _azkar = [];
   DatabaseHelper databaseHelper = new DatabaseHelper();
 
   String get table => 'azkar';

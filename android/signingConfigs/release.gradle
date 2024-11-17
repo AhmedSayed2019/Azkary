@@ -1,0 +1,17 @@
+// TODO Must be re-created.
+signingConfigs {
+    release {
+        storeFile file("keyMuslimStore.jks")
+        storePassword "masterPlan@2023"
+        keyAlias "keyMuslimStore"
+        keyPassword "muslim@2023"
+    }
+}
+
+
+//alias pass:   Sera@2022
+//alias: Sera
+//signingConfigs pass: Sera@2022
+//keytool -genkey -v -keystore c:\Users\PC\keyMuslimStore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias Muslim
+//keytool -genkey -v -keystore c:\Users\Dell\keyStore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias Sera
+

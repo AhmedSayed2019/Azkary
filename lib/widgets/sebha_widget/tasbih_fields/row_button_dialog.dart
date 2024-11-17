@@ -2,12 +2,17 @@ import '../../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class RowButtons extends StatelessWidget {
-  final String titleFirst, titleSecond;
-  final Function onTapFirst, onTapSecond;
-
-  const RowButtons(
-      {this.titleFirst, this.titleSecond, this.onTapFirst, this.onTapSecond});
-
+  final String _titleFirst, _titleSecond;
+  final GestureTapCallback? _onTapFirst, _onTapSecond;
+  const RowButtons({
+    required String titleFirst,
+    required String titleSecond,
+    required GestureTapCallback? onTapFirst,
+    required GestureTapCallback? onTapSecond,
+  })  : _titleFirst = titleFirst,
+        _titleSecond = titleSecond,
+        _onTapFirst = onTapFirst,
+        _onTapSecond = onTapSecond;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -17,18 +22,18 @@ class RowButtons extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: _buildButton(
-                text: titleFirst,
+                text: _titleFirst,
                 isClose: false,
-                onTap: onTapFirst,
+                onTap: _onTapFirst,
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: _buildButton(
-              text: titleSecond,
+              text: _titleSecond,
               isClose: true,
-              onTap: onTapSecond,
+              onTap: _onTapSecond,
             ),
           )
         ],
@@ -36,12 +41,12 @@ class RowButtons extends StatelessWidget {
     );
   }
 
-  Widget _buildButton({String text, Function onTap, bool isClose}) {
+  Widget _buildButton({required String text,required GestureTapCallback? onTap,required bool isClose}) {
     return Material(
       color: isClose ? teal[200] : teal[600],
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        highlightColor: teal[500].withAlpha(100),
+        highlightColor: teal[500]!.withAlpha(100),
         splashColor: isClose ? teal[300] : teal[700],
         borderRadius: BorderRadius.circular(10),
         onTap: onTap,
@@ -58,4 +63,6 @@ class RowButtons extends StatelessWidget {
       ),
     );
   }
+
+
 }

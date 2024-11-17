@@ -5,29 +5,32 @@ import 'package:flutter/material.dart';
 
 class SettingsItem extends StatefulWidget 
 {
-  final String activeTitle,inactiveTitle,nameField;
-  final BorderRadius borderRadius;
-
-  const SettingsItem({
-    this.activeTitle,
-    this.inactiveTitle,
-    this.borderRadius,
-    @required this.nameField,
-  });
+  final String _activeTitle,_inactiveTitle,_nameField;
+  final BorderRadius? _borderRadius;
 
   @override
   _SettingsItemState createState() => _SettingsItemState();
+
+  const SettingsItem({
+    required String activeTitle,
+    required String inactiveTitle,
+    required String nameField,
+     BorderRadius? borderRadius,
+  })  : _activeTitle = activeTitle,
+        _inactiveTitle = inactiveTitle,
+        _nameField = nameField,
+        _borderRadius = borderRadius;
 }
 
 class _SettingsItemState extends State<SettingsItem> 
 {
-  bool switchValue;
+  late bool switchValue;
   
   @override
   void initState() 
   {
     super.initState();
-    switchValue=Provider.of<SettingsProvider>(context,listen: false).getsettingField(widget.nameField);
+    switchValue=Provider.of<SettingsProvider>(context,listen: false).getsettingField(widget._nameField);
   }
 
   @override
@@ -43,9 +46,9 @@ class _SettingsItemState extends State<SettingsItem>
         });
         print('InkWell $switchValue');
         int value= switchValue ? 1: 0;
-        await settingsProvider.updateSettings(widget.nameField,value);
+        await settingsProvider.updateSettings(widget._nameField,value);
       },
-      borderRadius: widget.borderRadius,
+      borderRadius: widget._borderRadius,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -54,7 +57,7 @@ class _SettingsItemState extends State<SettingsItem>
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Text(
-                switchValue ? widget.activeTitle : widget.inactiveTitle,
+                switchValue ? widget._activeTitle : widget._inactiveTitle,
                 style: new TextStyle(
                   color: teal,
                   fontSize: 14,
@@ -68,7 +71,7 @@ class _SettingsItemState extends State<SettingsItem>
                   switchValue=value;
                 });
                 int valueInt= switchValue ? 1: 0;
-                await settingsProvider.updateSettings(widget.nameField,valueInt);
+                await settingsProvider.updateSettings(widget._nameField,valueInt);
               },
               value: switchValue,
               activeColor: teal[700],

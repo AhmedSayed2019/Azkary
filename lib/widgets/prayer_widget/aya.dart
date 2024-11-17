@@ -7,23 +7,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Aya extends StatefulWidget {
-  final PrayerModel prayer;
-  final double fontSize;
-
-  Aya({
-    this.prayer,
-    this.fontSize,
-  });
+  final PrayerModel _prayer;
+  final double _fontSize;
 
   @override
   _AyaState createState() => _AyaState();
+
+  const Aya({
+    required PrayerModel prayer,
+    required double fontSize,
+  })  : _prayer = prayer,
+        _fontSize = fontSize;
 }
 
 class _AyaState extends State<Aya> {
   String get text =>
-      'بسم الله الرحمن الرحيم \n ﴿ ${widget.prayer.aya} ﴾ \n***********\nسورة : ' +
-      widget.prayer.surah +
-      '\n***********\nالأية : ${widget.prayer.ayaNumber}';
+      'بسم الله الرحمن الرحيم \n ﴿ ${widget._prayer.aya} ﴾ \n***********\nسورة : ' +
+      widget._prayer.surah +
+      '\n***********\nالأية : ${widget._prayer.ayaNumber}';
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +70,12 @@ class _AyaState extends State<Aya> {
       padding: const EdgeInsets.only(
           top: 10.0, bottom: 15.0, right: 10.0, left: 10.0),
       child: Text(
-        '﴿ ${widget.prayer.aya} ﴾',
+        '﴿ ${widget._prayer.aya} ﴾',
         style: new TextStyle(
           color: teal,
           fontFamily: '3',
           // fontWeight: FontWeight.w700,
-          fontSize: widget.fontSize + 2,
+          fontSize: widget._fontSize + 2,
         ),
       ),
     );
@@ -92,25 +93,25 @@ class _AyaState extends State<Aya> {
         onTap: () async {
           print('You clicked on Favorite');
           setState(() {
-            widget.prayer.favorite == 1
-                ? widget.prayer.setFavorite(0)
-                : widget.prayer.setFavorite(1);
+            widget._prayer.favorite == 1
+                ? widget._prayer.setFavorite(0)
+                : widget._prayer.setFavorite(1);
           });
           await parayerProvider.updateFavorite(
-              widget.prayer.favorite, widget.prayer.id);
-          if (widget.prayer.favorite == 1)
+              widget._prayer.favorite, widget._prayer.id);
+          if (widget._prayer.favorite == 1)
             await Provider.of<FavoritesProvider>(context, listen: false)
-                .addFavorite(1, widget.prayer.id);
-          else if (widget.prayer.favorite == 0)
+                .addFavorite(1, widget._prayer.id);
+          else if (widget._prayer.favorite == 0)
             await Provider.of<FavoritesProvider>(context, listen: false)
-                .deleteFavorite(1, widget.prayer.id);
+                .deleteFavorite(1, widget._prayer.id);
         },
         child: Container(
           height: 35,
           width: 35,
           padding: EdgeInsets.all(5.0),
           child: Image.asset(
-            widget.prayer.favorite == 1
+            widget._prayer.favorite == 1
                 ? 'assets/images/icons/favorites/favorite_128px.png'
                 : 'assets/images/icons/favorites/nonfavorite_128px.png',
             fit: BoxFit.contain,
@@ -141,7 +142,7 @@ class _AyaState extends State<Aya> {
 
   Widget _buildNameSurahField() {
     return Text(
-      'سورة ${widget.prayer.surah}',
+      'سورة ${widget._prayer.surah}',
       style: new TextStyle(
         color: teal[50],
         fontSize: 13,
@@ -151,7 +152,7 @@ class _AyaState extends State<Aya> {
 
   Widget _buildAyaNumberField() {
     return Text(
-      'الآية ${widget.prayer.ayaNumber}',
+      'الآية ${widget._prayer.ayaNumber}',
       style: new TextStyle(
         color: teal[50],
         fontSize: 13,

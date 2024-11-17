@@ -1,15 +1,16 @@
 class FavoriteModel {
-  int _id, _itemId;
+  final int _id, _itemId;
 
-  FavoriteModel(
-    this._id,
-    this._itemId,
-  );
+  factory FavoriteModel.fromMap(Map<String, dynamic> map) =>FavoriteModel(id:  map['id']??0, itemId:  map['item_id']??0);
 
-  FavoriteModel.fromMap(Map<String, dynamic> map) {
-    _id = map['id'];
-    _itemId = map['item_id'];
-  }
+  const FavoriteModel({
+    required int id,
+    required int itemId,
+  })
+      : _id = id,
+        _itemId = itemId;
+
+
 
   Map<String, dynamic> toMap() {
     return {

@@ -3,7 +3,7 @@ import '../database/database_helper.dart';
 import 'package:flutter/foundation.dart';
 
 class PrayerProvider with ChangeNotifier {
-  List<PrayerModel> _prayer = List<PrayerModel>();
+  List<PrayerModel> _prayer = [];
   Map<String, List<int>> _prayerGuide = Map<String, List<int>>();
   DatabaseHelper databaseHelper = new DatabaseHelper();
 
@@ -18,11 +18,11 @@ class PrayerProvider with ChangeNotifier {
   }
 
   List<int> getAyatSurah(String surah) {
-    return _prayerGuide[surah];
+    return _prayerGuide[surah]!;
   }
 
   int getAyaOfSurah(String surah, int index) {
-    return _prayerGuide[surah][index];
+    return _prayerGuide[surah]![index];
   }
 
   Future<bool> updateFavorite(int favorite, int id) async {
@@ -44,16 +44,16 @@ class PrayerProvider with ChangeNotifier {
       print('tempPrayer.length : ${tempPrayer.length}');
 
       String nameSurah = tempPrayer[0]['surah'];
-      _prayerGuide[nameSurah] = List<int>();
+      _prayerGuide[nameSurah] = [];
       for (int i = 0; i < tempPrayer.length; i++) {
         _prayer.add(PrayerModel.fromMap(tempPrayer[i]));
 
         String tempNameSurah = _prayer[i].surah;
         if (nameSurah != tempNameSurah) {
-          _prayerGuide[tempNameSurah] = List<int>();
+          _prayerGuide[tempNameSurah] = [];
           nameSurah = tempNameSurah;
         }
-        _prayerGuide[tempNameSurah].add(_prayer[i].id);
+        _prayerGuide[tempNameSurah]!.add(_prayer[i].id);
       }
 
       print('_prayer.length : ${_prayer.length}');

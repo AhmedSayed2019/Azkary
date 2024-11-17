@@ -19,14 +19,12 @@ class Category extends StatefulWidget {
 }
 
 class _CategoryState extends State<Category> {
-  double fontSize;
+ late double fontSize;
 
   @override
   void initState() {
     super.initState();
-    fontSize = Provider.of<SettingsProvider>(context, listen: false)
-            .getsettingField('font_size') -
-        2;
+     fontSize = Provider.of<SettingsProvider>(context, listen: false).getsettingField('font_size') - 2;
   }
 
   @override

@@ -2,10 +2,10 @@ import '../../util/colors.dart';
 import 'package:flutter/material.dart';
 
 class DraggableButton extends StatelessWidget {
-  final Function onDrag;
-
-  const DraggableButton({this.onDrag});
-
+  final Function _onDrag;
+  const DraggableButton({
+    required Function onDrag,
+  }) : _onDrag = onDrag;
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -25,7 +25,7 @@ class DraggableButton extends StatelessWidget {
             child: _buildButton(),
             childWhenDragging: Container(),
             onDragEnd: (details) {
-              onDrag();
+              _onDrag();
             }),
       ],
     );
@@ -38,7 +38,7 @@ class DraggableButton extends StatelessWidget {
       children: <Widget>[
         Icon(
           Icons.arrow_drop_up,
-          color: teal[200].withAlpha(150),
+          color: teal[200]!.withAlpha(150),
           size: 25,
         ),
         Row(
@@ -47,7 +47,7 @@ class DraggableButton extends StatelessWidget {
           children: <Widget>[
             Icon(
               Icons.arrow_left,
-              color: teal[200].withAlpha(150),
+              color: teal[200]!.withAlpha(150),
               size: 25,
             ),
             Icon(
@@ -57,17 +57,19 @@ class DraggableButton extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_right,
-              color: teal[200].withAlpha(150),
+              color: teal[200]!.withAlpha(150),
               size: 25,
             ),
           ],
         ),
         Icon(
           Icons.arrow_drop_down,
-          color: teal[200].withAlpha(150),
+          color: teal[200]!.withAlpha(150),
           size: 25,
         ),
       ],
     );
   }
+
+
 }

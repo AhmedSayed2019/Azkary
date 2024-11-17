@@ -11,16 +11,18 @@ import 'pop_up_menu.dart';
 import '../../util/helpers.dart';
 
 class Tasbih extends StatefulWidget {
-  final SebhaModel tasbih;
-  final int number;
-
-  Tasbih({
-    this.tasbih,
-    this.number,
-  });
+  final SebhaModel _tasbih;
+  final int _number;
 
   @override
   _TasbihState createState() => _TasbihState();
+
+  const Tasbih({
+    required SebhaModel tasbih,
+    required int number,
+  })
+      : _tasbih = tasbih,
+        _number = number;
 }
 
 class _TasbihState extends State<Tasbih> {
@@ -36,9 +38,9 @@ class _TasbihState extends State<Tasbih> {
         splashColor: teal[100],
         borderRadius: BorderRadius.circular(10),
         onTap: () =>
-            Navigator.push(context, SizeRoute(page: SebhaPage(widget.tasbih))),
+            Navigator.push(context, SizeRoute(page: SebhaPage(widget._tasbih))),
         onLongPress: _showModalBottomSheet,
-        onDoubleTap: () => copyText(context, widget.tasbih.name),
+        onDoubleTap: () => copyText(context, widget._tasbih.name),
         child: Column(
           children: <Widget>[
             Row(
@@ -68,7 +70,7 @@ class _TasbihState extends State<Tasbih> {
       backgroundColor: Colors.transparent,
       builder: (BuildContext buildContext) {
         return PopUpMenuSebha(
-          tasbih: widget.tasbih,
+          tasbih: widget._tasbih,
           buildContext: context,
         );
       },
@@ -80,7 +82,7 @@ class _TasbihState extends State<Tasbih> {
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        highlightColor: teal[400].withAlpha(100),
+        highlightColor: teal[400]!.withAlpha(100),
         splashColor: teal[400],
         borderRadius: BorderRadius.circular(10),
         onTap: _showModalBottomSheet,
@@ -104,7 +106,7 @@ class _TasbihState extends State<Tasbih> {
           borderRadius: BorderRadius.only(
               topRight: Radius.circular(10), bottomLeft: Radius.circular(10))),
       child: Text(
-        '${widget.number}',
+        '${widget._number}',
         textAlign: TextAlign.center,
         style: new TextStyle(
           color: teal[700],
@@ -121,7 +123,7 @@ class _TasbihState extends State<Tasbih> {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Text(
-        widget.tasbih.name,
+        widget._tasbih.name,
         textAlign: TextAlign.center,
         style: new TextStyle(
           color: teal,
@@ -139,31 +141,28 @@ class _TasbihState extends State<Tasbih> {
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        highlightColor: teal[400].withAlpha(100),
+        highlightColor: teal[400]!.withAlpha(100),
         splashColor: teal[400],
         borderRadius: BorderRadius.circular(10),
         onTap: () async {
           print('You clicked on Favorite');
           setState(() {
-            widget.tasbih.favorite == 1
-                ? widget.tasbih.setFavorite(0)
-                : widget.tasbih.setFavorite(1);
+            widget._tasbih.favorite == 1
+                ? widget._tasbih.setFavorite(0)
+                : widget._tasbih.setFavorite(1);
           });
-          await sebhaProvider.updateFavorite(
-              widget.tasbih.favorite, widget.tasbih.id, widget.number - 1);
-          if (widget.tasbih.favorite == 1)
-            await Provider.of<FavoritesProvider>(context, listen: false)
-                .addFavorite(2, widget.tasbih.id);
-          else if (widget.tasbih.favorite == 0)
-            await Provider.of<FavoritesProvider>(context, listen: false)
-                .deleteFavorite(2, widget.tasbih.id);
+          await sebhaProvider.updateFavorite(widget._tasbih.favorite, widget._tasbih.id, widget._number - 1);
+          if (widget._tasbih.favorite == 1)
+            await Provider.of<FavoritesProvider>(context, listen: false).addFavorite(2, widget._tasbih.id);
+          else if (widget._tasbih.favorite == 0)
+            await Provider.of<FavoritesProvider>(context, listen: false).deleteFavorite(2, widget._tasbih.id);
         },
         child: Container(
           height: 35,
           width: 35,
           padding: EdgeInsets.all(5.0),
           child: Image.asset(
-            widget.tasbih.favorite == 1
+            widget._tasbih.favorite == 1
                 ? 'assets/images/icons/favorites/favorite_128px.png'
                 : 'assets/images/icons/favorites/nonfavorite_128px.png',
             fit: BoxFit.contain,
@@ -185,7 +184,7 @@ class _TasbihState extends State<Tasbih> {
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),
           )),
-      child: widget.tasbih.counter == 0
+      child: widget._tasbih.counter == 0
           ? Text(
               'عدد الحبات : بدون',
               style: new TextStyle(
@@ -197,7 +196,7 @@ class _TasbihState extends State<Tasbih> {
               ),
             )
           : Text(
-              'عدد الحبات : ${widget.tasbih.counter}',
+              'عدد الحبات : ${widget._tasbih.counter}',
               style: new TextStyle(
                 color: teal[700],
                 fontFamily:

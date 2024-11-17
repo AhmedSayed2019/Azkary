@@ -3,7 +3,7 @@ import '../models/sebha_model.dart';
 import 'package:flutter/foundation.dart';
 
 class SebhaProvider with ChangeNotifier {
-  List<SebhaModel> _sebha = List<SebhaModel>();
+  List<SebhaModel> _sebha = [];
   DatabaseHelper databaseHelper = new DatabaseHelper();
 
   String get table => 'tasbih';

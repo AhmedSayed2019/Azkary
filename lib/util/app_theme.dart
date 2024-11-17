@@ -6,8 +6,8 @@ class AppTheme {
   static ThemeData appTheme(BuildContext context) {
     return ThemeData(
       fontFamily: '0',
-      primarySwatch: Colors.teal,
-      primaryColor: Colors.teal,
+      primarySwatch: teal,
+      primaryColor: teal,
       scaffoldBackgroundColor: Colors.transparent,
       appBarTheme: Theme.of(context).appBarTheme.copyWith(
             brightness: Brightness.dark,

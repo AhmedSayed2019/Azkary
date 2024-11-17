@@ -5,17 +5,20 @@ import 'surah.dart';
 import 'alayat.dart';
 
 class Prayer extends StatelessWidget {
-  final double fontSize;
-  final bool showAlAyat;
-  final int surahNumber;
-  final Function onTap;
+  final double _fontSize;
+  final bool _showAlAyat;
+  final int _surahNumber;
+  final  GestureTapCallback? _onTap;
 
-  Prayer({
-    this.fontSize,
-    this.surahNumber,
-    this.onTap,
-    this.showAlAyat,
-  });
+  const Prayer({
+    required double fontSize,
+    required bool showAlAyat,
+    required int surahNumber,
+    required  GestureTapCallback? onTap,
+  })  : _fontSize = fontSize,
+        _showAlAyat = showAlAyat,
+        _surahNumber = surahNumber,
+        _onTap = onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -27,22 +30,23 @@ class Prayer extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Surah(
-            fontSize: fontSize,
-            number: surahNumber + 1,
-            surah: prayerProvider.allSurah[surahNumber],
-            onTap: onTap,
-            showAlAyat: showAlAyat,
+            fontSize: _fontSize,
+            number: _surahNumber + 1,
+            surah: prayerProvider.allSurah[_surahNumber],
+            onTap: _onTap,
+            showAlAyat: _showAlAyat,
           ),
-          if (showAlAyat)
+          if (_showAlAyat)
             Padding(
               padding: const EdgeInsets.all(5.0),
               child: AlAyat(
-                fontSize: fontSize,
-                surah: prayerProvider.allSurah[surahNumber],
+                fontSize: _fontSize,
+                surah: prayerProvider.allSurah[_surahNumber],
               ),
             ),
         ],
       ),
     );
   }
+
 }
