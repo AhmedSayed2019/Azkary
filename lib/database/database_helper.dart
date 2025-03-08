@@ -55,6 +55,8 @@ class DatabaseHelper {
     return result;
   }
 
+
+
   Future<int> insert(String table, Map<String, dynamic> map) async {
     var dbClient = await database;
     int result = await dbClient.insert(table, map);

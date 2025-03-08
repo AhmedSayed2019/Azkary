@@ -30,8 +30,7 @@ class _CategoryState extends State<Category> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final categoriesProvider =
-        Provider.of<CategoriesProvider>(context, listen: false);
+    final categoriesProvider = Provider.of<CategoriesProvider>(context, listen: false);
     final azkarProvider = Provider.of<AzkarProvider>(context, listen: false);
 
     return Card(
@@ -43,8 +42,7 @@ class _CategoryState extends State<Category> {
           highlightColor: teal[100],
           borderRadius: BorderRadius.circular(10),
           onTap: () async {
-            await azkarProvider.initialAllAzkar(
-                categoriesProvider.getCategory(widget._category.id).azkarIndex);
+            await azkarProvider.initialAllAzkar(categoriesProvider.getCategory(widget._category.id).azkarIndex);
             Navigator.push(context, FadeRoute(page: ViewAzkar()));
           },
           child: Column(

@@ -10,9 +10,8 @@ class CategoriesProvider with ChangeNotifier {
 
   int get length => _categories.length;
 
-  CategoryModel getCategory(int index) {
-    return _categories[index];
-  }
+  CategoryModel getCategory(int index) =>_categories[index];
+
 
   List<String> get allCategoriesName {
     List<String> tempList =[];
