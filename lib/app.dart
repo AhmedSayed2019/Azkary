@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
-import 'core/res/theme/theme.dart';
 
 import 'localization/app_localizations_delegate.dart';
 import 'pages/home/home_page.dart';
@@ -35,7 +34,7 @@ class MyApp extends StatelessWidget {
       color:Theme.of(context).scaffoldBackgroundColor,
 
 
-      title: 'Oun',
+      title: 'أذكار المسلم',
       debugShowCheckedModeBanner: false,
 
       home: Directionality(

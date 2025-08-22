@@ -52,7 +52,7 @@ buildQuranImagesList({int? fromIndex , int? toIndex}){
   quranImages=[];
   for(int index=(fromIndex??1);index<=(toIndex??604);index++){
    String name =  _getQuranImageName(index);
-    print('add iamge $name');
+    // print('add iamge $name');
     quranImages.add(name);
   }
 }

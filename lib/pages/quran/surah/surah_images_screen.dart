@@ -122,17 +122,17 @@ class _SurahImagesBuilderState extends State<SurahImagesBuilder> {
               elevation: 0.0,
               title: Text(widget._sura['name'], style:  TextStyle(color: teal[50], fontWeight: FontWeight.w700, fontSize: 18)),
               actions: [
-                Tooltip(
-                  message: _isView?'عرض بطريقة النص':'عرض بطريقة التتابع',
-                  child: TextButton(
-                    child: const Icon(Icons.chrome_reader_mode, color: Colors.white),
-                    onPressed: () {
-                      setState(() {
-                        _isView = !_isView;
-                      });
-                    },
-                  ),
-                ),
+                // Tooltip(
+                //   message: _isView?'عرض بطريقة النص':'عرض بطريقة التتابع',
+                //   child: TextButton(
+                //     child: const Icon(Icons.chrome_reader_mode, color: Colors.white),
+                //     onPressed: () {
+                //       setState(() {
+                //         _isView = !_isView;
+                //       });
+                //     },
+                //   ),
+                // ),
               ]
             ),
             body: _singleSuraBuilder(),
