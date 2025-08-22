@@ -1,8 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../localization/app_localizations.dart';
 import 'colors.dart';
-import 'package:intl/intl.dart';
 
 String translate(BuildContext context, String key) {
   return AppLocalizations.of(context)!.translate(key);
@@ -18,14 +19,14 @@ void copyText(BuildContext context, String text) {
 
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     content: Text(
-      translate(context, 'done_copy'),
-      style: new TextStyle(
+      tr( 'done_copy'),
+      style: TextStyle(
         color: teal[100],
         fontFamily: '0',
         fontSize: 14,
       ),
     ),
     backgroundColor: teal,
-    duration: Duration(milliseconds: 500),
+    duration: const Duration(milliseconds: 500),
   ));
 }

@@ -1,11 +1,11 @@
-import 'package:azkark/util/helpers.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+
 import '../../util/background.dart';
+import '../../util/colors.dart';
 import '../../widgets/settings_widget/setting_font_size.dart';
 import '../../widgets/settings_widget/setting_font_type.dart';
 import '../../widgets/settings_widget/settings_item.dart';
-import 'package:flutter/cupertino.dart';
-import '../../util/colors.dart';
-import 'package:flutter/material.dart';
 
 class Settings extends StatelessWidget {
   @override
@@ -25,7 +25,7 @@ class Settings extends StatelessWidget {
           ),
         ),
         body: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
+          physics: const BouncingScrollPhysics(),
           child: Column(
             children: <Widget>[
               _buildPublicSettings(),
@@ -41,7 +41,7 @@ class Settings extends StatelessWidget {
   BoxDecoration _decoration() {
     return BoxDecoration(
       color: teal[50],
-      borderRadius: BorderRadius.only(
+      borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
           topLeft: Radius.circular(20)),
@@ -63,22 +63,22 @@ class Settings extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 SettingsItem(
-                  activeTitle: translate(context, 'popup_menu_counter_true'),
-                  inactiveTitle: translate(context, 'popup_menu_counter_false'),
+                  activeTitle: tr( 'popup_menu_counter_true'),
+                  inactiveTitle: tr( 'popup_menu_counter_false'),
                   nameField: 'counter',
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20)),
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(20)),
                 ),
                 SettingsItem(
-                  activeTitle: translate(context, 'popup_menu_diacritics_true'),
+                  activeTitle: tr( 'popup_menu_diacritics_true'),
                   inactiveTitle:
-                      translate(context, 'popup_menu_diacritics_false'),
+                      tr( 'popup_menu_diacritics_false'),
                   nameField: 'diacritics',
                 ),
                 SettingsItem(
-                  activeTitle: translate(context, 'popup_menu_sanad_true'),
-                  inactiveTitle: translate(context, 'popup_menu_sanad_false'),
+                  activeTitle: tr( 'popup_menu_sanad_true'),
+                  inactiveTitle: tr( 'popup_menu_sanad_false'),
                   nameField: 'sanad',
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
                   ),
@@ -105,7 +105,7 @@ class Settings extends StatelessWidget {
           ),
           Container(
             decoration: _decoration(),
-            child: Column(
+            child: const Column(
               children: <Widget>[
                 SettingFontType(
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(20)),
@@ -128,7 +128,7 @@ class Settings extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: teal[600],
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),

@@ -1,10 +1,12 @@
-import '../../providers/settings_provider.dart';
-import '../../util/helpers.dart';
+import 'package:azkark/util/helpers.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../models/zekr_model.dart';
 import '../../providers/azkar_provider.dart';
-import 'package:provider/provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../util/colors.dart';
-import 'package:flutter/material.dart';
 
 class Zekr extends StatefulWidget {
   final ZekrModel zekr;
@@ -44,9 +46,7 @@ class _ZekrState extends State<Zekr> {
   bool get isFinish => widget.counter == widget.zekr.counterNumber;
 
   String get text => widget.isDiacriticsOpen
-      ? widget.zekr.textWithDiacritics +
-          '\n***********\nالسند :\n' +
-          widget.zekr.sanad
+      ? '${widget.zekr.textWithDiacritics}\n***********\nالسند :\n${widget.zekr.sanad}'
       : widget.zekr.textWithoutDiacritics +
           '\n***********\nالسند :\n' +
           widget.zekr.sanad;
@@ -65,7 +65,7 @@ class _ZekrState extends State<Zekr> {
         onTap: widget.isCounterOpen ? widget.onTap : null,
         onLongPress: () => copyText(context, text),
         child: Padding(
-          padding: EdgeInsets.all(15.0),
+          padding: const EdgeInsets.all(15.0),
           child: Column(
             children: <Widget>[
               _buildRefreshButton(size),
@@ -81,7 +81,7 @@ class _ZekrState extends State<Zekr> {
   }
 
   Widget _buildRefreshButton(Size size) {
-    if (isFinish)
+    if (isFinish) {
       return Align(
         alignment: Alignment.topLeft,
         child: InkWell(
@@ -92,10 +92,11 @@ class _ZekrState extends State<Zekr> {
           ),
         ),
       );
-    else
-      return SizedBox(
+    } else {
+      return const SizedBox(
         height: 24,
       );
+    }
   }
 
   Widget _buildTextZekr(Size size) {
@@ -104,7 +105,7 @@ class _ZekrState extends State<Zekr> {
           ? widget.zekr.textWithDiacritics
           : widget.zekr.textWithoutDiacritics,
       textAlign: TextAlign.center,
-      style: new TextStyle(
+      style: TextStyle(
         color: isFinish ? teal[400] : teal[900],
         fontFamily: _fontType,
         fontSize: widget.fontSize,
@@ -159,7 +160,7 @@ class _ZekrState extends State<Zekr> {
     return Text(
       'الذكر ${widget.numberZekr} من ${Provider.of<AzkarProvider>(context, listen: false).length}',
       textAlign: TextAlign.center,
-      style: new TextStyle(
+      style: TextStyle(
         color: teal[400],
         fontFamily: _fontType,
         fontSize: 14,
@@ -170,15 +171,15 @@ class _ZekrState extends State<Zekr> {
   Widget _buildTextSanad(Size size) {
     return Container(
       width: size.width,
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      margin: EdgeInsets.only(top: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      margin: const EdgeInsets.only(top: 10.0),
       decoration: BoxDecoration(
         color: isFinish ? teal[100] : teal[200],
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         widget.zekr.sanad,
-        style: new TextStyle(
+        style: TextStyle(
           color: isFinish ? teal[400] : teal[600],
           fontFamily: _fontType,
           fontSize: widget.fontSize - 2,
@@ -189,14 +190,14 @@ class _ZekrState extends State<Zekr> {
 
   Widget _buildCounter() {
     return Container(
-      padding: EdgeInsets.only(top: 5.0, bottom: 5.0, left: 15.0, right: 15.0),
+      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 15.0, right: 15.0),
       decoration: BoxDecoration(
         color: isFinish ? teal[300] : teal[500],
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(
         '${widget.counter} / ${widget.zekr.counterNumber}',
-        style: new TextStyle(
+        style: TextStyle(
           color: isFinish ? teal[400] : teal[100],
           fontSize: 14,
         ),
@@ -206,12 +207,10 @@ class _ZekrState extends State<Zekr> {
 
   Widget _buildNumberRepetitions(Size size) {
     return Container(
-      padding: EdgeInsets.only(top: 20.0, bottom: 5.0, left: 15.0, right: 15.0),
+      padding: const EdgeInsets.only(top: 20.0, bottom: 5.0, left: 15.0, right: 15.0),
       child: Text(
-        widget.zekr.counterText == null
-            ? translate(context, 'zekr_repeated_once')
-            : widget.zekr.counterText,
-        style: new TextStyle(
+        widget.zekr.counterText ?? tr( 'zekr_repeated_once'),
+        style: TextStyle(
           fontFamily: _fontType,
           color: isFinish ? teal[400] : teal[700],
           fontSize: 12,

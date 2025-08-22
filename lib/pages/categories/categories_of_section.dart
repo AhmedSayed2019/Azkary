@@ -1,11 +1,12 @@
-import '../../util/helpers.dart';
-import '../../widgets/Custom_drawer/custom_drawer.dart';
-import '../../util/background.dart';
-import '../../widgets/categories_widget/category.dart';
-import '../../providers/sections_provider.dart';
-import '../../providers/categories_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/categories_provider.dart';
+import '../../providers/sections_provider.dart';
+import '../../util/background.dart';
+import '../../widgets/Custom_drawer/custom_drawer.dart';
+import '../../widgets/categories_widget/category.dart';
 import 'components/app_bar.dart';
 
 class CategoriesOfSection extends StatefulWidget {
@@ -38,7 +39,7 @@ class _CategoriesOfSectionState extends State<CategoriesOfSection>
   }
 
   String get title => _currentIndex == 8
-      ? translate(context, 'all_categories')
+      ? tr( 'all_categories')
       : Provider.of<SectionsProvider>(context, listen: false)
           .getSection(_currentIndex)
           .name;

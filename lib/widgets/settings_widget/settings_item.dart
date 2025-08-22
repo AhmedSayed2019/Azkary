@@ -1,7 +1,8 @@
-import '../../providers/settings_provider.dart';
-import 'package:provider/provider.dart';
-import '../../util/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/settings_provider.dart';
+import '../../util/colors.dart';
 
 class SettingsItem extends StatefulWidget 
 {
@@ -58,7 +59,7 @@ class _SettingsItemState extends State<SettingsItem>
               padding: const EdgeInsets.only(right: 8.0),
               child: Text(
                 switchValue ? widget._activeTitle : widget._inactiveTitle,
-                style: new TextStyle(
+                style: const TextStyle(
                   color: teal,
                   fontSize: 14,
                 ),

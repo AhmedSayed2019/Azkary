@@ -1,9 +1,9 @@
 import 'package:azkark/providers/settings_provider.dart';
-import '../database/database_helper.dart';
-import '../models/section_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../database/database_helper.dart';
+import '../models/section_model.dart';
 import 'asmaallah_provider.dart';
 import 'categories_provider.dart';
 import 'favorites_provider.dart';
@@ -64,18 +64,12 @@ class SectionsProvider with ChangeNotifier {
     await initialAllSections();
     print('initialAllSections');
     try {
-      await Provider.of<SettingsProvider>(context, listen: false)
-          .initialSettings();
-      await Provider.of<CategoriesProvider>(context, listen: false)
-          .initialAllCategories();
-      await Provider.of<SebhaProvider>(context, listen: false)
-          .initialAllItemsOfSebha();
-      await Provider.of<FavoritesProvider>(context, listen: false)
-          .initialAllFavorites();
-      await Provider.of<PrayerProvider>(context, listen: false)
-          .initialAllPrayer();
-      await Provider.of<AsmaAllahProvider>(context, listen: false)
-          .initialAllAsmaAllah();
+      await Provider.of<SettingsProvider>(context, listen: false).initialSettings();
+      await Provider.of<CategoriesProvider>(context, listen: false).initialAllCategories();
+      await Provider.of<SebhaProvider>(context, listen: false).initialAllItemsOfSebha();
+      await Provider.of<FavoritesProvider>(context, listen: false).initialAllFavorites();
+      await Provider.of<PrayerProvider>(context, listen: false).initialAllPrayer();
+      await Provider.of<AsmaAllahProvider>(context, listen: false).initialAllAsmaAllah();
       print('initialAll Categories, AllItemsOfSebha, AllFavorites, AllPrayer');
     } catch (e) {
       print('_initial e  : $e');

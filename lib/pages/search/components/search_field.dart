@@ -1,5 +1,5 @@
 import 'package:azkark/util/colors.dart';
-import 'package:azkark/util/helpers.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class SearchField extends StatefulWidget {
@@ -64,7 +64,7 @@ class _SearchFieldState extends State<SearchField> {
                         widget._onChanged(_textController.text);
                       },
                       padding: EdgeInsets.all(6),
-                      tooltip: translate(context, 'delete'),
+                      tooltip: tr( 'delete'),
                       icon: Icon(
                         Icons.clear,
                         color: teal[50],

@@ -1,9 +1,10 @@
 import 'package:azkark/widgets/sebha_widget/tasbih_fields/row_button_dialog.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'tasbih_text_field.dart';
-import '../../../util/helpers.dart';
+
 import '../../../models/sebha_model.dart';
 import '../../../util/colors.dart';
+import 'tasbih_text_field.dart';
 
 class TasbihForm extends StatelessWidget {
   final String _title;
@@ -67,7 +68,7 @@ class TasbihForm extends StatelessWidget {
             _buildTitle(),
             TasbihTextField(
               text: _tasbih.name,
-              hintText: translate(context, 'sebha_hint_text_tasbih'),
+              hintText: tr( 'sebha_hint_text_tasbih'),
               maxlength: 250,
               maxLines: 2,
               autoFocus: true,
@@ -76,7 +77,7 @@ class TasbihForm extends StatelessWidget {
             ),
             TasbihTextField(
               text: _tasbih.counter.toString(),
-              hintText: translate(context, 'sebha_hint_text_counter'),
+              hintText: tr( 'sebha_hint_text_counter'),
               maxLines: 1,
               maxlength: 4,
               isNumber: true,
@@ -87,8 +88,8 @@ class TasbihForm extends StatelessWidget {
               },
             ),
             RowButtons(
-              titleFirst: translate(context, _isAdd ? 'add' : 'edit'),
-              titleSecond: translate(context, 'cancle'),
+              titleFirst: tr( _isAdd ? 'add' : 'edit'),
+              titleSecond: tr( 'cancle'),
               onTapFirst: _onTapDone,
               onTapSecond: _onTapCancle,
             ),

@@ -1,5 +1,6 @@
-import '../../util/colors.dart';
 import 'package:flutter/material.dart';
+
+import '../../util/colors.dart';
 
 class Surah extends StatelessWidget {
   final int _number;

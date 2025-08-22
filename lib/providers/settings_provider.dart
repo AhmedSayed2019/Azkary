@@ -1,6 +1,7 @@
-import '../models/settings_model.dart';
-import '../database/database_helper.dart';
 import 'package:flutter/foundation.dart';
+
+import '../database/database_helper.dart';
+import '../models/settings_model.dart';
 
 class SettingsProvider with ChangeNotifier {
  late SettingsModel _settings;

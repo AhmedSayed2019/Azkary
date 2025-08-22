@@ -1,8 +1,10 @@
 import 'dart:math';
+
 import 'package:azkark/providers/settings_provider.dart';
-import 'package:provider/provider.dart';
-import '../../util/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../util/colors.dart';
 
 class SettingFontType extends StatefulWidget {
   final BorderRadius _borderRadius;

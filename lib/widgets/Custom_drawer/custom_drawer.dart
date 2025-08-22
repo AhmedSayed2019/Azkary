@@ -1,9 +1,10 @@
-import 'package:azkark/util/helpers.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/sections_provider.dart';
 import '../../util/colors.dart';
 import 'list_title_of_drawer.dart';
-import 'package:provider/provider.dart';
-import '../../providers/sections_provider.dart';
-import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatefulWidget {
   final double maxWidth, minWidth;
@@ -88,7 +89,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                       onTap:
                           currentIndex == 8 ? onTap : () => onPressedIndex(8),
                       isSelected: currentIndex == 8,
-                      title: translate(context, 'all_categories'),
+                      title: tr( 'all_categories'),
                       pathIcon: currentIndex == 8
                           ? 'assets/images/sections/8_128px.png'
                           : 'assets/images/sections/8_white_108px.png',

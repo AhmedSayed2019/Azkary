@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+
 import '../database/database_helper.dart';
 import '../models/favorite_model.dart';
-import 'package:flutter/foundation.dart';
 
 class FavoritesProvider with ChangeNotifier {
   Map<String, List<FavoriteModel>> _favorites = Map<String, List<FavoriteModel>>();

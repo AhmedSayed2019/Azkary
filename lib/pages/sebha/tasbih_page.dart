@@ -1,9 +1,10 @@
 import 'package:azkark/widgets/sebha_widget/Expansion_tile_sebha.dart';
 import 'package:azkark/widgets/sebha_widget/button_drag.dart';
-import '../../models/sebha_model.dart';
-import '../../util/helpers.dart';
-import '../../util/colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
+import '../../models/sebha_model.dart';
+import '../../util/colors.dart';
 
 class SebhaPage extends StatefulWidget {
   final SebhaModel _tasbih;
@@ -51,7 +52,7 @@ class _SebhaPageState extends State<SebhaPage> {
       appBar: AppBar(
         elevation: 0.0,
         title: Text(
-          translate(context, 'sebha_bar'),
+          tr( 'sebha_bar'),
           style: new TextStyle(
             color: teal[50],
             fontWeight: FontWeight.w700,

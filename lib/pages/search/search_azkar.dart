@@ -1,9 +1,10 @@
-import '../../util/helpers.dart';
-import '../../providers/categories_provider.dart';
-import '../../widgets/categories_widget/category.dart';
-import 'package:provider/provider.dart';
-import '../../util/background.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/categories_provider.dart';
+import '../../util/background.dart';
+import '../../widgets/categories_widget/category.dart';
 import 'components/not_found.dart';
 import 'components/search_field.dart';
 
@@ -38,7 +39,7 @@ class _SearchForZekrState extends State<SearchForZekr> {
             title: Hero(
               tag: 'search',
               child: SearchField(
-                title: '${translate(context, 'search_for_zekr')} . . . ',
+                title: '${tr( 'search_for_zekr')} . . . ',
                 onChanged: (value) {
                   setState(() {
                     query = value;

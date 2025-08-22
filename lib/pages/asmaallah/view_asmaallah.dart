@@ -1,14 +1,15 @@
-import '../../util/helpers.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../pages/search/search_asmaallah.dart';
-import '../../util/navigate_between_pages/fade_route.dart';
+import '../../providers/asmaallah_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../util/background.dart';
+import '../../util/navigate_between_pages/fade_route.dart';
+import '../../widgets/asmaallah_widget/asmaallah.dart';
 import '../../widgets/search_widget/search_bar.dart';
 import '../../widgets/slider_font_size/slider_font_size.dart';
-import '../../widgets/asmaallah_widget/asmaallah.dart';
-import '../../providers/asmaallah_provider.dart';
-import 'package:provider/provider.dart';
-import '../../util/background.dart';
-import 'package:flutter/material.dart';
 import 'components/app_bar.dart';
 
 class ViewAsmaAllah extends StatefulWidget {
@@ -49,14 +50,13 @@ class _ViewAsmaAllahState extends State<ViewAsmaAllah> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final asmaAllahProvider =
-        Provider.of<AsmaAllahProvider>(context, listen: false);
+    final asmaAllahProvider = Provider.of<AsmaAllahProvider>(context, listen: false);
 
     return Stack(children: <Widget>[
       Background(),
       Scaffold(
         appBar: CustomAppBar(
-          title: translate(context, 'asmaallah_bar'),
+          title: tr( 'asmaallah_bar'),
           description: showAllDescription,
           sliderFont: showSliderFont,
           onTapDescription: onTapDescription,
@@ -71,43 +71,26 @@ class _ViewAsmaAllahState extends State<ViewAsmaAllah> {
               height: size.height,
               child: Column(
                 children: <Widget>[
-                  SearchBar(
-                    title:
-                        '${translate(context, 'search_for_asmaallah')} . . . ',
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          FadeRoute(
-                            page: SearchForAsmaAllah(
-                              searchItems: asmaAllahProvider.allAmaAllah,
-                            ),
-                          ));
-                    },
+                  CustomSearchBar(
+                    title: '${tr( 'search_for_asmaallah')} . . . ',
+                    onTap: () => Navigator.push(context, FadeRoute(page: SearchForAsmaAllah(searchItems: asmaAllahProvider.allAmaAllah))),
                   ),
                   Expanded(
                     child: ListView.builder(
-                        physics: BouncingScrollPhysics(),
+                        physics: const BouncingScrollPhysics(),
                         itemCount: asmaAllahProvider.length,
                         itemBuilder: (context, index) {
                           return Padding(
                             padding: index == 0
-                                ? const EdgeInsets.only(
-                                    top: 5.0, left: 5.0, right: 5.0)
+                                ? const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0)
                                 : index == asmaAllahProvider.length - 1
-                                    ? const EdgeInsets.only(
-                                        bottom: 5.0, left: 5.0, right: 5.0)
-                                    : const EdgeInsets.only(
-                                        left: 5.0, right: 5.0),
+                                    ? const EdgeInsets.only(bottom: 5.0, left: 5.0, right: 5.0)
+                                    : const EdgeInsets.only(left: 5.0, right: 5.0),
                             child: AsmaAllah(
                               asmaallah: asmaAllahProvider.getAsmaAllah(index),
                               fontSize: fontSize,
                               showDescription: showDescription[index],
-                              onTap: () {
-                                setState(() {
-                                  showDescription[index] =
-                                      !showDescription[index];
-                                });
-                              },
+                              onTap: () => setState(() {showDescription[index] = !showDescription[index];}),
                             ),
                           );
                         }),
@@ -117,7 +100,7 @@ class _ViewAsmaAllahState extends State<ViewAsmaAllah> {
             ),
             if (showSliderFont)
               Padding(
-                padding: EdgeInsets.only(bottom: 15.0),
+                padding: const EdgeInsets.only(bottom: 15.0),
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: SliderFontSize(

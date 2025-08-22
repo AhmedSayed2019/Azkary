@@ -1,3 +1,4 @@
+import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:flutter/material.dart';
 
 final size = MediaQueryData.fromWindow(WidgetsBinding.instance.window);
@@ -21,3 +22,6 @@ const double kAppbarTextSize = 18.0;
 const double kFormRadiusSmall = 10.0;
 const double kFormRadius = 16.0;
 const double kFormRadiusLarge = 30.0;
+
+
+EdgeInsets kScreenPadding = EdgeInsets.all(kScreenPaddingNormal.r)/*.copyWith(top: 0)*/;

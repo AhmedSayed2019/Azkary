@@ -1,6 +1,7 @@
-import '../models/asmaallah_model.dart';
-import '../database/database_helper.dart';
 import 'package:flutter/foundation.dart';
+
+import '../database/database_helper.dart';
+import '../models/asmaallah_model.dart';
 
 class AsmaAllahProvider with ChangeNotifier {
   List<AsmaAllahModel> _asmaallah = [];
@@ -22,11 +23,9 @@ class AsmaAllahProvider with ChangeNotifier {
 
   Future<bool> initialAllAsmaAllah() async {
     try {
-      List<Map<String, dynamic>> tempAsmaallah =
-          await databaseHelper.getData(table, '-1');
+      List<Map<String, dynamic>> tempAsmaallah = await databaseHelper.getData(table, '-1');
 
-      for (int i = 0; i < tempAsmaallah.length; i++)
-        _asmaallah.add(AsmaAllahModel.fromMap(tempAsmaallah[i]));
+      for (int i = 0; i < tempAsmaallah.length; i++)_asmaallah.add(AsmaAllahModel.fromMap(tempAsmaallah[i]));
 
       print('_asmaallah.length : ${_asmaallah.length}');
       notifyListeners();

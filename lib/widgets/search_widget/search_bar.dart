@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../util/colors.dart';
 
-class SearchBar extends StatelessWidget {
+class CustomSearchBar extends StatelessWidget {
   final String _title;
   final  GestureTapCallback? _onTap;
 
-  const SearchBar({
+  const CustomSearchBar({super.key,
     required String title,
     required GestureTapCallback? onTap,
   })  : _title = title,
@@ -21,7 +21,7 @@ class SearchBar extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: teal[200],
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),
           ),

@@ -4,22 +4,33 @@ import 'package:flutter/services.dart';
 import '../color.dart';
 
 
-AppBarTheme appBarTheme = const AppBarTheme(
-  color: appBarColor,
+AppBarTheme appBarTheme =  const AppBarTheme(
+  // color: appBarColor,
+
   systemOverlayStyle: SystemUiOverlayStyle(
     statusBarColor: primaryColor,
+
+
     statusBarIconBrightness: Brightness.dark ,
     statusBarBrightness: Brightness.light,
+    systemNavigationBarColor: primaryColor,
+    systemNavigationBarDividerColor: primaryColor,
+
   ),
-  toolbarTextStyle: TextStyle(color: appBarIconsColor),
+  backgroundColor: appBarColor,
+
+
+  toolbarTextStyle: TextStyle(color: appBarIconsColorDark),
   iconTheme: IconThemeData(
-    color: appBarIconsColor,
+    color: appBarIconsColorDark,
+
+
   ),
 );
 
 
 AppBarTheme appBarThemeDark = const AppBarTheme(
-  color: appBarColor,
+
   systemOverlayStyle: SystemUiOverlayStyle(
     statusBarColor: appBarIconsColor,
     statusBarIconBrightness: Brightness.light ,

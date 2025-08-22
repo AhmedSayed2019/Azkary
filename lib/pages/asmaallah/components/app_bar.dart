@@ -1,8 +1,9 @@
-import '../../../util/helpers.dart';
-import '../../../widgets/slider_font_size/button_font_size.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../../util/colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import '../../../util/colors.dart';
+import '../../../widgets/slider_font_size/button_font_size.dart';
 
 enum PopUpMenu { ShowAllDescription, About }
 
@@ -27,8 +28,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       elevation: 0.0,
       title: Text(
-        translate(context, 'asmaallah_bar'),
-        style: new TextStyle(
+        tr( 'asmaallah_bar'),
+        style: TextStyle(
           color: teal[50],
           fontWeight: FontWeight.w700,
           fontSize: 18,
@@ -48,7 +49,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 5.0),
       child: PopupMenuButton<PopUpMenu>(
-        offset: Offset(0, 50),
+        offset: const Offset(0, 50),
         onSelected: (PopUpMenu result) async {
           switch (result) {
             case PopUpMenu.ShowAllDescription:
@@ -63,8 +64,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           _buildMenuItem(
             value: PopUpMenu.ShowAllDescription,
             text: description
-                ? translate(context, 'popup_menu_asmaallah_true')
-                : translate(context, 'popup_menu_asmaallah_false'),
+                ? tr( 'popup_menu_asmaallah_true')
+                : tr( 'popup_menu_asmaallah_false'),
             icon: FaIcon(
               description
                   ? FontAwesomeIcons.toggleOn
@@ -75,8 +76,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           _buildMenuItem(
             value: PopUpMenu.About,
-            text: translate(context, 'about'),
-            icon: Icon(
+            text: tr( 'about'),
+            icon: const Icon(
               Icons.help_outline,
               color: teal,
               size: 25,
@@ -100,7 +101,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             alignment: Alignment.centerRight,
             child: Text(
               text,
-              style: new TextStyle(
+              style: TextStyle(
                 color: enable ? teal[900] : teal[900]!.withAlpha(125),
                 fontWeight: FontWeight.w300,
                 fontSize: 14,

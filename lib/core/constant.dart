@@ -2,11 +2,8 @@ import 'dart:convert';
 
 import 'package:azkark/data/models/surah_model.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
-import '../generated/assets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 int bookmarkedAyah = 1;
 int bookmarkedSura = 1;
@@ -48,33 +45,33 @@ getSurahImage(int index){
 
 List<String> quranImages = [];
 
-buildQuranImagesList({int? fromIndex , int? toIndex}){
-  quranImages=[];
-  for(int index=(fromIndex??1);index<=(toIndex??604);index++){
-   String name =  _getQuranImageName(index);
-    // print('add iamge $name');
-    quranImages.add(name);
-  }
-}
+// buildQuranImagesList({int? fromIndex , int? toIndex}){
+//   quranImages=[];
+//   for(int index=(fromIndex??1);index<=(toIndex??604);index++){
+//    String name =  _getQuranImageName(index);
+//     print('add iamge $name');
+//     quranImages.add(name);
+//   }
+// }
 
 
-_getQuranImageName(int index)=>'assets/images/quran/${index}.png';
-
-
-///old pages
-_getOldQuranImageName(int index){
-  String name = '';
-  if(index<10){
-    name = '00${index}';
-  }else if(index<100){
-    name = '0${index}';
-
-  }else{
-    name = '${index}';
-
-  }
-  return 'assets/images/quran/${name}_0.png';
-}
+// _getQuranImageName(int index)=>'assets/images/quran/${index}.png';
+//
+//
+// ///old pages
+// _getOldQuranImageName(int index){
+//   String name = '';
+//   if(index<10){
+//     name = '00${index}';
+//   }else if(index<100){
+//     name = '0${index}';
+//
+//   }else{
+//     name = '${index}';
+//
+//   }
+//   return 'assets/images/quran/${name}_0.png';
+// }
 
 
 

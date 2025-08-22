@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'app_localizations.dart';
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

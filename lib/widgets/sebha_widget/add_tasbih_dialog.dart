@@ -1,9 +1,10 @@
-import '../../util/helpers.dart';
-import 'tasbih_fields/tasbih_form.dart';
-import '../../models/sebha_model.dart';
-import '../../providers/sebha_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../models/sebha_model.dart';
+import '../../providers/sebha_provider.dart';
+import 'tasbih_fields/tasbih_form.dart';
 
 class AddTasbih extends StatefulWidget {
   final String _title;
@@ -40,7 +41,7 @@ class _AddTasbihState extends State<AddTasbih> {
       ),
       elevation: 0.0,
       child: TasbihForm(
-        title: translate(context, 'sebha_add_dialog'),
+        title: tr( 'sebha_add_dialog'),
         tasbih: _tasbih,
         onChangedName: (value) => setState(() {
           _tasbih.setName = value;

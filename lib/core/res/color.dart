@@ -1,5 +1,29 @@
 import 'package:flutter/material.dart';
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Color converter: https://www.w3schools.com/colors/colors_converter.asp
 // Transparency list
 // 100% FF
@@ -31,7 +55,9 @@ import 'package:flutter/material.dart';
 // 0%   00
 /* ------------------------Theme Colors ----------------------------------*/
 // scaffold background
-// const scaffoldBackgroundColor = Colors.blue;
+// const scaffoldBackgroundColor = Theme.of(context).primaryColor;
+
+
 ///appColors
 
 const bornColor = Color(0xff0F62A5);
@@ -42,7 +68,7 @@ const marriageColorHighLite = Color(0x222F604A);
 
 
 
-const scaffoldBackgroundColor = Color(0xffd8e3d8);
+const scaffoldBackgroundColor = Colors.transparent;
 const cardColor = Color(0xFF05480C);
 const scaffoldBackgroundColorDark = Color(0xFF262424);
 
@@ -80,7 +106,7 @@ const errorColor =  Color(0xffc52828);
 const errorColorDark = Colors.redAccent;
 
 // primary color
-const primaryColor =  Color(0xFF05480C);
+const primaryColor =  Color(0xFF0C650F);
 const primaryColorDark =Color(0xff947c4a );
 const primaryColorLight =Color(0xffc1c9c1);
 const unselectedWidgetColor = Color(0xDD000000);
@@ -137,6 +163,7 @@ const textSelectionHandleDark = Colors.grey;
 
 const textSelection = Colors.grey;
 const textSelectionDark = Colors.grey;
+const shadowColor = Color(0xff515151);
 
 /*-----------------------------Other Colors----------------------------------*/
 Color get backgroundColor => const Color(0xFFFFFFFF);
@@ -150,6 +177,9 @@ const rateBackground = Color(0xFF333333);
 
 const highLiteColor = Color(0xFFADADAD);
 const hoverColor = Color(0xFFE7EBEB);
+const dialogColor = Color(0xffffffff);
+const disabledColor = Color(0xffEEEEEE);
+
 // const hoverColor = Color(0xFFE7EBEB);
 const hintColor = Color(0xFF717784);
 // const hintColor = Color(0xFFADADAD);

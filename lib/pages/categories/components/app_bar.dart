@@ -1,7 +1,8 @@
-import '../../../pages/search/search_azkar.dart';
-import '../../../util/navigate_between_pages/fade_route.dart';
-import '../../../util/colors.dart';
 import 'package:flutter/material.dart';
+
+import '../../../pages/search/search_azkar.dart';
+import '../../../util/colors.dart';
+import '../../../util/navigate_between_pages/fade_route.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final AnimationController? _animationController;

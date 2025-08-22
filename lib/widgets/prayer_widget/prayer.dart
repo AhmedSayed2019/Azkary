@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/prayer_provider.dart';
-import 'surah.dart';
 import 'alayat.dart';
+import 'surah.dart';
 
 class Prayer extends StatelessWidget {
   final double _fontSize;

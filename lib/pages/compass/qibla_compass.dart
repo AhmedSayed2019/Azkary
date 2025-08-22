@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' show pi;
+
 import 'package:azkark/generated/assets.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_qiblah/flutter_qiblah.dart';
@@ -9,7 +11,6 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../util/background.dart';
 import '../../util/colors.dart';
-import '../../util/helpers.dart';
 import 'widget/location_error_widget.dart';
 
 
@@ -42,7 +43,7 @@ class _QiblaCompassScreenState extends State<QiblaCompassScreen> {
           appBar: AppBar(
             elevation: 0.0,
             title: Text(
-              translate(context, 'compass'),
+              tr( 'compass'),
               style: new TextStyle(
                 color: teal[50],
                 fontWeight: FontWeight.w700,

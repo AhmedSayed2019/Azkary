@@ -1,13 +1,16 @@
 
-import 'package:azkark/pages/home/loading_page.dart';
+import 'dart:ui'as ui;
+
+import 'package:azkark/features/home/home_page.dart';
+import 'package:azkark/features/home/loading_page.dart';
 import 'package:azkark/providers/sections_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+// import 'core/res/theme/theme.dart';
 
 import 'localization/app_localizations_delegate.dart';
-import 'pages/home/home_page.dart';
 import 'util/app_theme.dart';
 
 BuildContext? appContext;
@@ -20,12 +23,27 @@ class MyApp extends StatelessWidget {
     appContext = context;
     return MaterialApp(
 
-      localizationsDelegates: [
-        const AppLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizationsDelegate.supportedLocales(),
+      //
+      // debugShowCheckedModeBanner: false,
+      // localizationsDelegates: const [
+      //   AppLocalizations.delegate,
+      //   GlobalMaterialLocalizations.delegate,
+      // ],
+      // supportedLocales: AppLocalizations.supportedLocales,
+      // title: 'Quran',
+      // theme: AppTheme().defaultTheme(),
+      // onGenerateRoute: RouteGenerator.generateRoute,
+      // home: AppStartupPage(),
+
+
+      // localizationsDelegates: const [
+      //   AppLocalizationsDelegate(),
+      //   GlobalMaterialLocalizations.delegate,
+      //   GlobalWidgetsLocalizations.delegate,
+      // ],
+      // supportedLocales: AppLocalizationsDelegate.supportedLocales(),
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
       localeResolutionCallback: AppLocalizationsDelegate.resolution,
 
 
@@ -34,15 +52,15 @@ class MyApp extends StatelessWidget {
       color:Theme.of(context).scaffoldBackgroundColor,
 
 
+
       title: 'أذكار المسلم',
       debugShowCheckedModeBanner: false,
 
       home: Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection:ui. TextDirection.rtl,
         child: Consumer<SectionsProvider>(
             builder: (context, sectionProvider, widget) {
-              return sectionProvider.isNewUser
-                  ? FutureBuilder(
+              return sectionProvider.isNewUser ? FutureBuilder(
                 future: sectionProvider.tryToGetData(context),
                 builder: (context, result) {
                   if (result.connectionState == ConnectionState.waiting) {
@@ -50,12 +68,12 @@ class MyApp extends StatelessWidget {
                     return LoadingPage();
                   } else {
                     print(' Username is Hemeda ');
-                    return HomePage();
+                    return const HomePage();
                     // return HomePage();
                   }
                 },
               )
-                  : HomePage();
+                  : const HomePage();
             }),
       ),
     );

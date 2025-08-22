@@ -1,7 +1,7 @@
 import '../../providers/favorites_provider.dart';
 import '../../providers/sebha_provider.dart';
 import '../../util/colors.dart';
-import '../../util/helpers.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../widgets/sebha_widget/tasbih_fields/row_button_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 class DeleteDialog extends StatelessWidget {
   final int _tasbihId, _tasbihFavorite;
 
-  const DeleteDialog({
+  const DeleteDialog({super.key,
     required int tasbihId,
     required int tasbihFavorite,
   })  : _tasbihId = tasbihId,
@@ -30,8 +30,8 @@ class DeleteDialog extends StatelessWidget {
               _buildTitle(context),
               _buildSubTitle(context),
               RowButtons(
-                titleFirst: translate(context, 'delete'),
-                titleSecond: translate(context, 'cancle'),
+                titleFirst: tr( 'delete'),
+                titleSecond: tr( 'cancle'),
                 onTapFirst: () async {
                   if (_tasbihFavorite == 1)
                     await Provider.of<FavoritesProvider>(context, listen: false)
@@ -58,10 +58,10 @@ class DeleteDialog extends StatelessWidget {
         onTap: () => Navigator.of(context).pop(false),
         child: CircleAvatar(
           radius: 18,
-          child: Icon(
+          backgroundColor: teal[600],
+          child: const Icon(
             Icons.close,
           ),
-          backgroundColor: teal[600],
         ),
       ),
     );
@@ -70,9 +70,9 @@ class DeleteDialog extends StatelessWidget {
   Widget _buildTitle(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(vertical: 15.0),
+      padding: const EdgeInsets.symmetric(vertical: 15.0),
       child: Text(
-        translate(context, 'sebha_delete_dialog_title'),
+        tr( 'sebha_delete_dialog_title'),
         style: TextStyle(
           color: teal[700],
           fontSize: 18,
@@ -84,9 +84,9 @@ class DeleteDialog extends StatelessWidget {
   Widget _buildSubTitle(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
       child: Text(
-        translate(context, 'sebha_delete_dialog_subtitle'),
+        tr( 'sebha_delete_dialog_subtitle'),
         style: TextStyle(
           color: teal[500],
           fontSize: 16,

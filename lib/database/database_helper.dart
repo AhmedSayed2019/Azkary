@@ -44,10 +44,17 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getData(String table, String ids) async {
     var dbClient = await database;
     String sqlCommand;
-    if (ids == '-1')
+
+    if (ids == '-1') {
       sqlCommand = 'SELECT * FROM $table';
-    else
-      sqlCommand = 'SELECT * FROM $table WHERE id IN ($ids)';
+    } else {
+      final orderCase = StringBuffer();
+      final idList = ids.split(',').map((e) => e.trim()).toList();
+      for (int i = 0; i < idList.length; i++) {orderCase.write('WHEN ${idList[i]} THEN $i ');}
+
+      sqlCommand = 'SELECT * FROM $table WHERE id IN ($ids) ORDER BY CASE id $orderCase END';
+      // sqlCommand = 'SELECT * FROM $table WHERE id IN ($ids)';
+    }
 
     List<Map<String, dynamic>> result = await dbClient.rawQuery(sqlCommand);
 
@@ -104,3 +111,5 @@ class DatabaseHelper {
     return result;
   }
 }
+//98,119,99,298,100,101,103,111,104,105,110,102,114,299,106,107,108,112,113,109,118,301,302,300,116,115,117
+// (اللَّهُمَّ عَالِمَ الغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطانِ وَشَرَكِهِ، وَأَنْ أَقْتَرِفَ عَلَى  نَفْسِي سُوءاً، أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ)

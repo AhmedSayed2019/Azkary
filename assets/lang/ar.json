@@ -1,12 +1,13 @@
 {
+    "calender": "التقويم الهجري",
     "home_bar" : "الصفحة الرئيسية",
     "search_bar" : "البحث",
     "settings_bar" : "الضبط",
     "favorite_bar" : "المفضلة",
     "prayer_bar" : "دعاء من القرآن",
-    "sebha_bar" : "المسبحة الإلكترونية",
+    "sebha_bar" : "السبحة",
     "compass" : "بوصلة",
-    "quran" : "المصحف",
+    "quran": "القرأن الكريم",
     "asmaallah_bar" : "أسماء الله الحسني",
     "all_categories" : "كل الأذكار",
 

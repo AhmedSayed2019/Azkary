@@ -1,10 +1,11 @@
-import '../../util/helpers.dart';
-import '../../providers/settings_provider.dart';
-import '../../providers/asmaallah_provider.dart';
-import '../../widgets/asmaallah_widget/asmaallah.dart';
-import 'package:provider/provider.dart';
-import '../../util/background.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/asmaallah_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../util/background.dart';
+import '../../widgets/asmaallah_widget/asmaallah.dart';
 import 'components/not_found.dart';
 import 'components/search_field.dart';
 
@@ -41,7 +42,7 @@ class _SearchForAsmaAllahState extends State<SearchForAsmaAllah> {
       Scaffold(
           appBar: AppBar(
             title: SearchField(
-              title: '${translate(context, 'search_for_asmaallah')} . . . ',
+              title: '${tr( 'search_for_asmaallah')} . . . ',
               onChanged: (value) {
                 setState(() {
                   query = value;

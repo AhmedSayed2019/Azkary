@@ -1,69 +1,105 @@
+import 'dart:io';
+
+import 'package:azkark/core/quran_library/quran_library.dart';
+import 'package:azkark/core/utils/hive_helper.dart';
+import 'package:azkark/core/utils/work_manager_helper.dart';
+import 'package:azkark/data/local/cache_consumer.dart';
+import 'package:azkark/firebase_options.dart';
+// import 'package:azkark/features/quran/common/storage/provider/pref_provider.dart';
 import 'package:azkark/providers.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:metadata_god/metadata_god.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
-import 'localization/app_localizations_delegate.dart';
-import 'pages/home/home_page.dart';
-import 'pages/home/loading_page.dart';
-import 'providers/sections_provider.dart';
-import 'util/app_theme.dart';
+// import 'features/quran/common/storage/repository/storage_manager.dart';
 
-void main(){
+
+
+
+// void start() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//
+//   final sharedPreferences = await SharedPreferences.getInstance();
+//   await StorageManager.init();
+//
+//   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]).then((_) {
+//     runApp(ProviderScope(
+//       overrides: [
+//         prefServiceProvider.overrideWithValue(PrefService(sharedPreferences)),
+//       ],
+//       child: App(),
+//     ));
+//   });
+// }
+
+Future<void> safeInitMetadataGod() async {
+  if (!Platform.isAndroid && !Platform.isIOS) return;
+  try {
+    await MetadataGod.initialize();
+  } catch (e, st) {
+    debugPrint('MetadataGod init skipped: $e');
+    // optionally report/log
+  }
+}
+
+
+void main()async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
+
+  await QuranLibrary.init();
+  await QuranLibrary.initTafsir();
+
+
+  // await safeInitMetadataGod(); // <- won’t crash if .so not found
+
+  await EasyLocalization.ensureInitialized();
+  WorkManagerHelper.init();
+
+  CacheConsumer.init();
+  await initializeHive();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
 
-  runApp(
-      GenerateMultiProvider(
-        child:  const MyApp(),
+
+  //المصحف
+  final sharedPreferences = await SharedPreferences.getInstance();
+  // await StorageManager.init();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]).then((_) {
+
+    runApp(
+      ProviderScope(
+        overrides: [
+          // prefServiceProvider.overrideWithValue(PrefService(sharedPreferences)),
+        ],
+        child: EasyLocalization(
+          supportedLocales: const [
+            Locale("ar"),
+            Locale('en'),
+            Locale('de'),
+            Locale("am"),
+            // Locale("jp"),
+            Locale("ms"),
+            Locale("pt"),
+            Locale("tr"),
+            Locale("ru")
+          ],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ar'),
+          startLocale: const Locale('ar'),
+          child: const GenerateMultiProvider(
+            child:  MyApp(),
+          ),
+        ),
       ));
-
+  });
 }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     SystemChrome.setPreferredOrientations([
-//       DeviceOrientation.portraitUp,
-//     ]);
-//
-//     return GenerateMultiProvider(
-//
-//       child: MaterialApp(
-//         title: 'Azkar',
-//         debugShowCheckedModeBanner: false,
-//         theme: AppTheme.appTheme(context),
-//         localizationsDelegates: [
-//           const AppLocalizationsDelegate(),
-//           GlobalMaterialLocalizations.delegate,
-//           GlobalWidgetsLocalizations.delegate,
-//         ],
-//         supportedLocales: AppLocalizationsDelegate.supportedLocales(),
-//         localeResolutionCallback: AppLocalizationsDelegate.resolution,
-//         home: Consumer<SectionsProvider>(
-//             builder: (context, sectionProvider, widget) {
-//           return sectionProvider.isNewUser
-//               ? FutureBuilder(
-//                   future: sectionProvider.tryToGetData(context),
-//                   builder: (context, result) {
-//                     if (result.connectionState == ConnectionState.waiting) {
-//                       print(' The page is  Loading !!');
-//                       return LoadingPage();
-//                     } else {
-//                       print(' Username is Hemeda ');
-//                       return HomePage();
-//                       // return HomePage();
-//                     }
-//                   },
-//                 )
-//               : HomePage();
-//         }),
-//       ),
-//     );
-//   }
-// }

@@ -1,14 +1,15 @@
-import '../../providers/prayer_provider.dart';
-import '../../util/helpers.dart';
-import '../../widgets/prayer_widget/prayer.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../util/colors.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/prayer_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../util/background.dart';
+import '../../util/colors.dart';
+import '../../widgets/prayer_widget/prayer.dart';
 import '../../widgets/slider_font_size/button_font_size.dart';
 import '../../widgets/slider_font_size/slider_font_size.dart';
-import 'package:provider/provider.dart';
-import '../../util/background.dart';
-import 'package:flutter/material.dart';
 
 class ViewPrayer extends StatefulWidget {
   @override
@@ -52,7 +53,7 @@ class _ViewPrayerState extends State<ViewPrayer>
         appBar: AppBar(
           elevation: 0.0,
           title: Text(
-            translate(context, 'prayer_bar'),
+            tr( 'prayer_bar'),
             style: new TextStyle(
               color: teal[50],
               fontWeight: FontWeight.w700,
@@ -132,7 +133,7 @@ class _ViewPrayerState extends State<ViewPrayer>
       padding: const EdgeInsets.only(left: 5.0),
       child: PopupMenuButton<PopUpMenu>(
         offset: Offset(0, 50),
-        tooltip: translate(context, 'popup_menu'),
+        tooltip: tr( 'popup_menu'),
         onSelected: (PopUpMenu result) async {
           switch (result) {
             case PopUpMenu.ShowAllAyat:
@@ -162,8 +163,8 @@ class _ViewPrayerState extends State<ViewPrayer>
                     alignment: Alignment.centerRight,
                     child: Text(
                       _showAllAyat
-                          ? translate(context, 'popup_menu_aya_true')
-                          : translate(context, 'popup_menu_aya_false'),
+                          ? tr( 'popup_menu_aya_true')
+                          : tr( 'popup_menu_aya_false'),
                       style: new TextStyle(
                         color: teal[900],
                         fontWeight: FontWeight.w300,

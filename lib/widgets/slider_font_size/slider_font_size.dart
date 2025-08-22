@@ -1,5 +1,6 @@
-import '../../util/colors.dart';
 import 'package:flutter/material.dart';
+
+import '../../util/colors.dart';
 
 class SliderFontSize extends StatelessWidget {
   final double _fontSize, _min, _max;

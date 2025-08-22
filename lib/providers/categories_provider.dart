@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+
 import '../database/database_helper.dart';
 import '../models/category_model.dart';
-import 'package:flutter/foundation.dart';
 
 class CategoriesProvider with ChangeNotifier {
   List<CategoryModel> _categories = [];

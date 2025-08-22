@@ -1,8 +1,10 @@
-import '../../util/helpers.dart';
-import '../../widgets/sebha_widget/edit_tasbih_dialog.dart';
+import 'package:azkark/util/helpers.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+
 import '../../models/sebha_model.dart';
 import '../../util/colors.dart';
-import 'package:flutter/material.dart';
+import '../../widgets/sebha_widget/edit_tasbih_dialog.dart';
 import 'delete_dialog.dart';
 
 class PopUpMenuSebha extends StatelessWidget {
@@ -17,7 +19,7 @@ class PopUpMenuSebha extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: teal[50],
-      borderRadius: BorderRadius.only(
+      borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(10),
         topRight: Radius.circular(10),
       ),
@@ -27,35 +29,35 @@ class PopUpMenuSebha extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             _buildButton(
-              title: translate(context, 'copy'),
+              title: tr( 'copy'),
               icon: Icons.content_copy,
               onTap: () async {
                 Navigator.pop(context);
                 copyText(_buildContext, _tasbih.name);
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ),
             _buildButton(
-              title: translate(context, 'edit'),
+              title: tr( 'edit'),
               icon: Icons.edit,
               onTap: () async {
                 Navigator.pop(context);
                 await showDialog<bool>(
                   context: context,
                   builder: (BuildContext context) => EditTasbih(
-                    title: translate(context, 'sebha_edit_dialog'),
+                    title: tr( 'sebha_edit_dialog'),
                     tasbih: _tasbih,
                   ),
                 );
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             ),
             _buildButton(
-              title: translate(context, 'delete'),
+              title: tr( 'delete'),
               icon: Icons.delete_outline,
               onTap: () async {
                 Navigator.pop(context);
@@ -94,7 +96,7 @@ class PopUpMenuSebha extends StatelessWidget {
                   color: teal[600],
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 15,
               ),
               Icon(

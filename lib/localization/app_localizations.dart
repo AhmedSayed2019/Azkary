@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,7 +16,7 @@ class AppLocalizations {
 
   Future loadFileKeys() async {
     String langFile = await rootBundle
-        .loadString('assets/lang/${this.locale.languageCode}.json');
+        .loadString('assets/translations/${locale.languageCode}.json');
     Map<String, dynamic> loadedValues = jsonDecode(langFile);
 
     this._localizedValues =

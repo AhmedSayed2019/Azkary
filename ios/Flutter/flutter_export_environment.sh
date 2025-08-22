@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=D:\sdkFlutter\flutter3310\flutter"
-export "FLUTTER_APPLICATION_PATH=F:\work\flutter\templet\azkar\v1\muslim"
+export "FLUTTER_ROOT=D:\sdkFlutter\flutter3.24.0\flutter"
+export "FLUTTER_APPLICATION_PATH=D:\work\flutter\Projects\Quran\My Quran APP\add_new_features_V2\muslim"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"

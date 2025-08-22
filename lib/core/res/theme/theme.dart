@@ -10,10 +10,12 @@ import 'text.dart';
 
 ThemeData get lightTheme {
   return ThemeData(
+    useMaterial3: false,
     fontFamily: '0',
 
     scaffoldBackgroundColor: scaffoldBackgroundColor,
-    backgroundColor: scaffoldBackgroundColor,
+
+    // backgroundColor: scaffoldBackgroundColor,
     cardColor: cardColor,
     brightness: Brightness.light,
     splashColor: primaryColor,
@@ -21,16 +23,17 @@ ThemeData get lightTheme {
     appBarTheme: appBarTheme,
 
     visualDensity: VisualDensity.adaptivePlatformDensity,
-    accentColor: accentColor,
+    // accentColor: accentColor,
     hoverColor: hoverColor,
     floatingActionButtonTheme: floatingActionButtonTheme,
     dividerColor: dividerColor,
-    errorColor: errorColor,
+    // errorColor: errorColor,
     hintColor: textSecondary,
     primaryColor: primaryColor,
     primaryColorDark: primaryColorDark,
     bottomNavigationBarTheme: bottomNavigationBarTheme,
     buttonTheme: buttonTheme,
+    switchTheme: switchThemeData,
 
     unselectedWidgetColor: unselectedWidgetColor,
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
@@ -41,7 +44,7 @@ ThemeData get lightTheme {
 
     primaryColorLight: primaryColorLight,
     disabledColor: unselectedWidgetColor,
-    toggleableActiveColor: primaryColor,
+    // toggleableActiveColor: primaryColor,
 
     /// Text fields
     inputDecorationTheme: kInputDecorationTheme,
@@ -96,10 +99,10 @@ ThemeData get darkTheme {
     highlightColor: highlightColorDark,
     appBarTheme: appBarThemeDark,
     visualDensity: VisualDensity.adaptivePlatformDensity,
-    accentColor: accentColorDark,
+    // accentColor: accentColorDark,
     floatingActionButtonTheme: floatingActionButtonThemeDark,
     dividerColor: dividerColorDark,
-    errorColor: errorColorDark,
+    // errorColor: errorColorDark,
     hintColor: textSecondaryDark,
     primaryColor: primaryColorDark,
     bottomNavigationBarTheme: bottomNavigationBarThemeDark,

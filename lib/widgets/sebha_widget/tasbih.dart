@@ -1,14 +1,15 @@
+import 'package:azkark/util/helpers.dart';
 import 'package:azkark/util/navigate_between_pages/size_route.dart';
-import '../../providers/settings_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/sebha_model.dart';
+import '../../pages/sebha/tasbih_page.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/sebha_provider.dart';
-import 'package:provider/provider.dart';
-import '../../pages/sebha/tasbih_page.dart';
-import '../../models/sebha_model.dart';
+import '../../providers/settings_provider.dart';
 import '../../util/colors.dart';
-import 'package:flutter/material.dart';
 import 'pop_up_menu.dart';
-import '../../util/helpers.dart';
 
 class Tasbih extends StatefulWidget {
   final SebhaModel _tasbih;

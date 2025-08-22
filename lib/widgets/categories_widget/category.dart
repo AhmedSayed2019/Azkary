@@ -1,13 +1,14 @@
-import '../../providers/settings_provider.dart';
-import '../../util/navigate_between_pages/fade_route.dart';
-import '../../providers/favorites_provider.dart';
-import '../../pages/azkar/view_azkar.dart';
-import '../../providers/azkar_provider.dart';
-import '../../models/category_model.dart';
-import '../../providers/categories_provider.dart';
-import '../../util/colors.dart';
+import 'package:azkark/features/azkar/view_azkar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../models/category_model.dart';
+import '../../providers/azkar_provider.dart';
+import '../../providers/categories_provider.dart';
+import '../../providers/favorites_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../util/colors.dart';
+import '../../util/navigate_between_pages/fade_route.dart';
 
 class Category extends StatefulWidget {
   final CategoryModel _category;

@@ -1,10 +1,11 @@
-import '../../util/helpers.dart';
-import '../../providers/favorites_provider.dart';
-import '../../providers/prayer_provider.dart';
-import '../../models/prayer_model.dart';
-import '../../util/colors.dart';
+import 'package:azkark/util/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../models/prayer_model.dart';
+import '../../providers/favorites_provider.dart';
+import '../../providers/prayer_provider.dart';
+import '../../util/colors.dart';
 
 class Aya extends StatefulWidget {
   final PrayerModel _prayer;
@@ -22,9 +23,7 @@ class Aya extends StatefulWidget {
 
 class _AyaState extends State<Aya> {
   String get text =>
-      'بسم الله الرحمن الرحيم \n ﴿ ${widget._prayer.aya} ﴾ \n***********\nسورة : ' +
-      widget._prayer.surah +
-      '\n***********\nالأية : ${widget._prayer.ayaNumber}';
+      'بسم الله الرحمن الرحيم \n ﴿ ${widget._prayer.aya} ﴾ \n***********\nسورة : ${widget._prayer.surah}\n***********\nالأية : ${widget._prayer.ayaNumber}';
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +70,7 @@ class _AyaState extends State<Aya> {
           top: 10.0, bottom: 15.0, right: 10.0, left: 10.0),
       child: Text(
         '﴿ ${widget._prayer.aya} ﴾',
-        style: new TextStyle(
+        style: TextStyle(
           color: teal,
           fontFamily: '3',
           // fontWeight: FontWeight.w700,
@@ -109,7 +108,7 @@ class _AyaState extends State<Aya> {
         child: Container(
           height: 35,
           width: 35,
-          padding: EdgeInsets.all(5.0),
+          padding: const EdgeInsets.all(5.0),
           child: Image.asset(
             widget._prayer.favorite == 1
                 ? 'assets/images/icons/favorites/favorite_128px.png'
@@ -123,10 +122,10 @@ class _AyaState extends State<Aya> {
 
   Widget _buildBottomWidget() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
       decoration: BoxDecoration(
           color: teal[600],
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),
           )),
@@ -143,7 +142,7 @@ class _AyaState extends State<Aya> {
   Widget _buildNameSurahField() {
     return Text(
       'سورة ${widget._prayer.surah}',
-      style: new TextStyle(
+      style: TextStyle(
         color: teal[50],
         fontSize: 13,
       ),
@@ -153,7 +152,7 @@ class _AyaState extends State<Aya> {
   Widget _buildAyaNumberField() {
     return Text(
       'الآية ${widget._prayer.ayaNumber}',
-      style: new TextStyle(
+      style: TextStyle(
         color: teal[50],
         fontSize: 13,
       ),

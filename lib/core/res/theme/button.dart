@@ -20,3 +20,7 @@ const buttonThemeDark = ButtonThemeData(
   buttonColor: colorButtonDark,
   textTheme: ButtonTextTheme.primary, //  <-- this auto selects the right color
 );
+const switchThemeData = SwitchThemeData(
+  // buttonColor: colorButtonDark,
+  // textTheme: ButtonTextTheme.primary, //  <-- this auto selects the right color
+);
