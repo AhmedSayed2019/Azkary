@@ -29,7 +29,7 @@ class PopUpMenuSebha extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             _buildButton(
-              title: tr( 'copy'),
+              context,  title: tr( 'copy'),
               icon: Icons.content_copy,
               onTap: () async {
                 Navigator.pop(context);
@@ -40,7 +40,7 @@ class PopUpMenuSebha extends StatelessWidget {
               height: 15,
             ),
             _buildButton(
-              title: tr( 'edit'),
+              context, title: tr( 'edit'),
               icon: Icons.edit,
               onTap: () async {
                 Navigator.pop(context);
@@ -57,7 +57,7 @@ class PopUpMenuSebha extends StatelessWidget {
               height: 15,
             ),
             _buildButton(
-              title: tr( 'delete'),
+              context,title: tr( 'delete'),
               icon: Icons.delete_outline,
               onTap: () async {
                 Navigator.pop(context);
@@ -76,12 +76,12 @@ class PopUpMenuSebha extends StatelessWidget {
     );
   }
 
-  Widget _buildButton({required String title,required GestureTapCallback onTap,required IconData icon}) {
+  Widget _buildButton(context,{required String title,required GestureTapCallback onTap,required IconData icon}) {
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        highlightColor: teal[300],
+        highlightColor: Theme.of(context).cardColor,
         splashColor: teal[200],
         borderRadius: BorderRadius.circular(10),
         onTap: onTap,

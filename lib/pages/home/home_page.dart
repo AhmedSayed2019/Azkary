@@ -155,7 +155,7 @@
 //     return Column(
 //       children: <Widget>[
 //         Card(
-//           color: teal[300],
+//           color: Theme.of(context).cardColor,
 //           shape:
 //               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 //           child: InkWell(
@@ -201,7 +201,7 @@
 //     return Padding(
 //       padding: const EdgeInsets.all(5.0),
 //       child: Card(
-//         color: teal[300],
+//         color: Theme.of(context).cardColor,
 //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 //         child: InkWell(
 //           highlightColor: teal[400],
@@ -260,7 +260,7 @@
 //     final size = MediaQuery.of(context).size;
 //
 //     return Card(
-//       color: teal[300],
+//       color: Theme.of(context).cardColor,
 //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 //       child: Container(
 //         height: size.height * 0.25,

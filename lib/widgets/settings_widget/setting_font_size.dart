@@ -1,3 +1,4 @@
+import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -53,10 +54,11 @@ class _SettingFontSizeState extends State<SettingFontSize> {
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Text(
                     'حجم الخط',
-                    style: new TextStyle(
-                      color: teal,
-                      fontSize: 14,
-                    ),
+                      style: const TextStyle().semiBoldStyle().primaryTextColor()
+                    // style: new TextStyle(
+                    //   color: teal,
+                    //   fontSize: 14,
+                    // ),
                   ),
                 ),
                 Padding(
@@ -64,21 +66,23 @@ class _SettingFontSizeState extends State<SettingFontSize> {
                       top: 8.0, bottom: 8.0, left: 10.0, right: 8.0),
                   child: Text(
                     '$fontSize',
-                    style: new TextStyle(
-                      color: teal[600],
-                      fontSize: 14,
-                    ),
+                    style:    const TextStyle().semiBoldStyle().primaryTextColor()
+                    // style: new TextStyle(
+                    //   color: teal[600],
+                    //   fontSize: 14,
+                    // ),
                   ),
                 ),
               ],
             ),
             Padding(
-              padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+              padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: SliderFontSize(
                 fontSize: fontSize,
                 min: 14,
                 max: 30,
                 overlayColor: Colors.transparent,
+
                 onChanged: (value) {
                   setState(() {
                     fontSize = value;

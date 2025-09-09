@@ -1,5 +1,4 @@
 import 'package:azkark/core/extensions/num_extensions.dart';
-import 'package:azkark/core/res/color.dart';
 import 'package:azkark/util/background.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -43,12 +42,12 @@ class _CalenderPageState extends State<CalenderPage> {
                   widgetType: WidgetType.JContainer,
                   // pickerType: index == 0 ? PickerType.JHijri : PickerType.JHijri,
                   buttons: const SizedBox(),
-                  primaryColor: primaryColor,
+                  primaryColor: Theme.of(context).primaryColor,
                   calendarTextColor: Colors.black,
                   backgroundColor: Colors.white,
                   borderRadius: const Radius.circular(10),
                   headerTitle: Container(
-                    decoration:   BoxDecoration(color:  teal[300]),
+                    decoration:   BoxDecoration(color:  Theme.of(context).cardColor),
                     child: Row(
                       children: [
                         Expanded(

@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 
-import '../color.dart';
 import '../font_manager.dart';
+import '../color.dart';
 
-BottomNavigationBarThemeData bottomNavigationBarTheme =
-    const BottomNavigationBarThemeData(
-  backgroundColor: primaryColor,
+BottomNavigationBarThemeData bottomNavigationBarTheme = BottomNavigationBarThemeData(
+  backgroundColor: AppColor.primaryColor.lightColor,
   elevation: 0,
-  selectedItemColor: navIconSelected,
-  unselectedItemColor: navIconUnselected,
-  selectedLabelStyle: TextStyle(fontFamily: FontConstants.fontFamily),
-  unselectedLabelStyle: TextStyle(fontFamily: FontConstants.fontFamily),
+  selectedItemColor: AppColor.primaryColor.lightColor,
+  unselectedItemColor: AppColor.hintColor.lightColor,
+  // selectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
+  // unselectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
 );
 
 BottomNavigationBarThemeData bottomNavigationBarThemeDark =
-    const BottomNavigationBarThemeData(
-  selectedItemColor: navIconSelectedDark,
-  unselectedItemColor: navIconUnselectedDark,
+     BottomNavigationBarThemeData(
+      backgroundColor: AppColor.primaryColor.darkColor,
+      elevation: 0,
+      selectedItemColor: AppColor.primaryColor.darkColor,
+      unselectedItemColor: AppColor.hintColor.darkColor,
+      // selectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
+      // unselectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
 );

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,7 @@ class _SettingFontTypeState extends State<SettingFontType>
     _fontType = Provider.of<SettingsProvider>(context, listen: false).getsettingField('font_family');
     _showBoxFonts = false;
     _animationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
 
     _heightAnimation =
         Tween<double>(begin: 0, end: 300).animate(_animationController);
@@ -71,10 +72,11 @@ class _SettingFontTypeState extends State<SettingFontType>
           children: <Widget>[
             Text(
               'نوع الخط',
-              style: new TextStyle(
-                color: teal,
-                fontSize: 14,
-              ),
+              style:  const TextStyle().semiBoldStyle().primaryTextColor(),
+              // style: new TextStyle(
+              //   color: teal,
+              //   fontSize: 14,
+              // ),
             ),
             AnimatedBuilder(
                 animation: _animationController,
@@ -99,7 +101,7 @@ class _SettingFontTypeState extends State<SettingFontType>
         builder: (context, widget) {
           return Container(
             height: _heightAnimation.value,
-            margin: EdgeInsets.all(10),
+            margin: const EdgeInsets.all(10),
             foregroundDecoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: teal[600]!)),
@@ -121,10 +123,10 @@ class _SettingFontTypeState extends State<SettingFontType>
     return Container(
       width: size.width,
       height: 50,
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: teal[200],
-        borderRadius: BorderRadius.only(
+        color: Theme.of(context).primaryColorLight,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(15),
           topRight: Radius.circular(15),
         ),
@@ -132,11 +134,12 @@ class _SettingFontTypeState extends State<SettingFontType>
       child: Center(
         child: Text(
           'بسم الله الرَّحْمَنِ الرَّحِيمِ',
-          style: new TextStyle(
-            fontFamily: _fontType.toString(),
-            color: teal[500],
-            fontSize: 14,
-          ),
+          style: const TextStyle().semiBoldStyle().primaryTextColor().customFontFamily(_fontType.toString()),
+          // style: new TextStyle(
+          //   fontFamily: _fontType.toString(),
+          //   color: teal[500],
+          //   fontSize: 14,
+          // ),
         ),
       ),
     );
@@ -186,20 +189,19 @@ class _SettingFontTypeState extends State<SettingFontType>
   Widget _buildFontContainer(String name, String font, Size size) {
     return InkWell(
       highlightColor: Colors.transparent,
-      splashColor: teal[200],
+      // splashColor: teal[200],
       borderRadius: BorderRadius.circular(15),
       onTap: () async {
         setState(() {
           _fontType = int.parse(font);
         });
-        await Provider.of<SettingsProvider>(context, listen: false)
-            .updateSettings('font_family', _fontType);
+        await Provider.of<SettingsProvider>(context, listen: false).updateSettings('font_family', _fontType);
       },
       child: Container(
         height: 35,
         width: font == '0' ? null : size.width * 0.3,
-        margin: EdgeInsets.all(5),
-        padding: EdgeInsets.all(5),
+        margin: const EdgeInsets.all(5),
+        padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
           color: font == _fontType.toString() ? teal[500] : gray20,
           borderRadius: BorderRadius.circular(15),
@@ -210,13 +212,14 @@ class _SettingFontTypeState extends State<SettingFontType>
             Padding(
               padding: const EdgeInsets.only(left: 8.0, right: 8.0),
               child: Text(
-                '$name',
-                style: TextStyle(
+                name,
+                  style:  const TextStyle().semiBoldStyle().customColor( font == _fontType.toString() ?AppColor.textColor.themeColor:AppColor.primaryColor.themeColor).customFontFamily(font)
+    /*            style: TextStyle(
                   color:
                       font == _fontType.toString() ? Colors.white : teal[500],
                   fontFamily: font,
                   fontSize: 14,
-                ),
+                )*/,
               ),
             ),
             Icon(

@@ -1,28 +1,8 @@
+import 'package:azkark/app.dart';
+import 'package:azkark/core/res/theme/theme.dart';
+import 'package:azkark/core/res/theme_helper.dart';
 import 'package:flutter/material.dart';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import 'package:provider/provider.dart';
 
 // Color converter: https://www.w3schools.com/colors/colors_converter.asp
 // Transparency list
@@ -54,165 +34,100 @@ import 'package:flutter/material.dart';
 // 5%   0D
 // 0%   00
 /* ------------------------Theme Colors ----------------------------------*/
-// scaffold background
-// const scaffoldBackgroundColor = Theme.of(context).primaryColor;
+typedef Clr = ColorModel;
 
 
 ///appColors
+class AppColor {
+  // primary color
+  static Clr primaryColor = const ColorModel(lightColor: Color(0xFF0C650F),darkColor:  Color(0xFF0C650F));
+  static Clr primaryColorDark = const ColorModel(lightColor: Color(0xFF0C650F),darkColor: Color(0xff000000));
+  static Clr primaryColorLight = const ColorModel(lightColor: Color(0xFFC8E6C9),darkColor: Color(0xFF0C650F));//100: Color(0xFFC8E6C9),
+  // static Clr primaryColorLight = const ColorModel(lightColor: Color(0xff2968CD),darkColor: Color(0xff2968CD));
 
-const bornColor = Color(0xff0F62A5);
-const bornColorHighLite = Color(0x22679ECB);
+  static Clr primaryBackgroundColor = const ColorModel(lightColor: Color(0xffF2F8FD),darkColor: Color(0xff363738));
+  static Clr primaryBackgroundDarkColor = const ColorModel(lightColor: Color(0xffFFEDD4),darkColor: Color(0xffFFEDD4));
 
-const marriageColor = primaryColor;
-const marriageColorHighLite = Color(0x222F604A);
+  //Text
+  static Clr textColor = const ColorModel(lightColor: Color(0xFF0C650F),darkColor: Colors.white);
+  // static Clr textColor = const ColorModel(lightColor: Color(0xff0D0D12),darkColor: Colors.white);
+  static Clr textColorLite = const ColorModel(lightColor: Colors.white,darkColor: Colors.black87);
+  static Clr hintColor = const ColorModel(lightColor: Color(0xff96A19A),darkColor:  Color(0xffffffff));
+  // static Clr hintColor = const ColorModel(lightColor: Color(0xff666D80),darkColor:  Color(0xffffffff));
+  // static Clr borderColor = const ColorModel(lightColor: Color(0xffDFE1E7),darkColor:  Color(0xffDFE1E7));
+  static Clr borderColor = const ColorModel(lightColor: Color(0xffDFE1E7),darkColor:  Color(0xff666D80));
+  static Clr textSecondaryDark = const ColorModel(lightColor: Color(0xffB0B0B0),darkColor:  Color(0xffB0B0B0));
 
+  //Error
+  static Clr errorColor = const ColorModel(lightColor: Colors.red,darkColor: Colors.redAccent);
 
+  //FloatingAction
+  static Clr floatingActionButtonColor =  ColorModel(lightColor:primaryColor.lightColor,darkColor: primaryColor.darkColor);
 
-const scaffoldBackgroundColor = Colors.transparent;
-const cardColor = Color(0xFF05480C);
-const scaffoldBackgroundColorDark = Color(0xFF262424);
+  //App bar icons
+  static Clr appBarIconsColor =  const ColorModel(lightColor:Colors.black87,darkColor: Colors.white);
+  static Clr appBarTextColor =  const ColorModel(lightColor:Colors.white,darkColor: Colors.black87);
 
-// Highlight
-// const highlightColor =  Color(0xFFE4E6E8);
-const highlightColor = Color(0xFFF5F5F5);
-const highlightColorDark = Colors.black;
+  //Gray
+  static Clr shadowColor =  const ColorModel(lightColor: Color(0xffa8a7a7),darkColor:  Color(0xffc5c4c4));
+  static Clr highlightColor =  const ColorModel(lightColor: Color(0xFF66BB6A),darkColor:  Color(0xff4b4b48));//400: Color(0xFF66BB6A),
+  static Clr grayScaleLiteColor = const ColorModel(lightColor: Color(0xFFE2E2E2),darkColor:  Color(0xff000000));
 
-// statusBar
-// const statusBarColor = Color(0xffffffff);
-const statusBarColor = primaryColor;
-const statusBarColorDark = primaryColorDark;
-
-// appBar
-const appBarColor = statusBarColor;
-const appBarColorDark = statusBarColorDark;
-
-// fab
-const floatingActionButtonColor = primaryColorLight;
-const floatingActionButtonColorDark = statusBarColorDark;
-
-// accent
-const accentColor = primaryColor;
-const accentColorDark = Color(0xff17c063);
-
-// app
-const appRateActive = Colors.amber;
-const appRateInActive = Colors.grey;
-const appColorDark = Colors.amber;
-const appColor = Color(0xFFFA8072);
-
-// error
-
-const errorColor =  Color(0xffc52828);
-const errorColorDark = Colors.redAccent;
-
-// primary color
-const primaryColor =  Color(0xFF0C650F);
-const primaryColorDark =Color(0xff947c4a );
-const primaryColorLight =Color(0xffc1c9c1);
-const unselectedWidgetColor = Color(0xDD000000);
+  //divider
+  static Clr dividerColor =  const ColorModel(lightColor: Color(0xffECEFF3),darkColor:  Color(0xff464646));
 
 
-// app bar icons
-const appBarIconsColor = Colors.black87;
-const appBarIconsColorDark = Colors.white;
+  //App
+  static Clr scaffoldBackgroundColor =  const ColorModel(lightColor: Color(0xffFCFCFC),darkColor: Color(0xff0D0D0D));
+  // static Clr scaffoldBackgroundColor =  const ColorModel(lightColor: Color(0xffFCFCFC),darkColor: Color(0xff2E2E34));
+  static Clr statusBarColor =   ColorModel(lightColor: scaffoldBackgroundColor.lightColor,darkColor:  scaffoldBackgroundColor.darkColor);
+  static Clr cardColor =  const ColorModel(lightColor: Color(0xFFEAE9D9),darkColor:  Color(0xff222222));//300: Color(0xFFEAE9D9),
+  // static Clr cardColor =  const ColorModel(lightColor: Color(0xffffffff),darkColor:  Color(0xff1A1B25));
+  static Clr dialogColor =  const ColorModel(lightColor: Color(0xffffffff),darkColor:  Color(0xff000000));
+  static Clr backgroundColor =  const ColorModel(lightColor: Color(0xFFFFFFFF),darkColor:  Color(0xff000000));
 
-// app bar text color
-const appBarTextColor = appBarIconsColorDark;
-const appBarTextColorDark = appBarIconsColor;
+  static Clr disabledColor =  const ColorModel(lightColor: Color(0xffEEEEEE),darkColor:  Color(0xffEEEEEE));
+  static Clr unselectedWidgetColor =  const ColorModel(lightColor: Color(0xffB0B0B0),darkColor:  Color(0xffB0B0B0));
+  static Clr hoverColor =  const ColorModel(lightColor: Color(0xffecedec),darkColor:  Color(0xffecedec));
+  static Clr grayScaleColor =  const ColorModel(lightColor: Color(0xFFE2E2E2),darkColor:  Color(0xFFE2E2E2));
 
-//divider
-const dividerColor = Colors.grey;
-const dividerColorDark = Color(0xff464646);
+  static Clr rateColor = const ColorModel(lightColor: Color(0xffFFBE4C),darkColor: Color(0xffFFBE4C));
 
-const shimmerColor = Color(0xFFE0E0E0);
-
-
-// primary text
-const textPrimary =  Colors.black;
-const textPrimaryDark = Colors.white;
-const textSecondary = hintColor;
-const textSecondaryDark = Color(0xffB0B0B0);
-
-
-const unSelectColor = Color(0x97e3e2e2);
-
-// bottom navigation icons
-const navIconSelected = Colors.white;
-const navIconSelectedDark = Color(0x97ffffff);
-
-const navIconUnselected = Colors.grey;
-const navIconUnselectedDark = Colors.grey;
-
-// button
-const colorButton = Color(0xff0F62A5);
-const colorButtonDark = Colors.redAccent;
-
-// text field
-const active = Colors.black;
-const activeDark = Colors.white;
-
-const borderColor = Colors.grey;
-
-// cursor
-const cursor = Colors.grey;
-const cursorDark = Colors.grey;
-
-// textSelectionHandleColor
-const textSelectionHandle = Colors.grey;
-const textSelectionHandleDark = Colors.grey;
-
-const textSelection = Colors.grey;
-const textSelectionDark = Colors.grey;
-const shadowColor = Color(0xff515151);
-
-/*-----------------------------Other Colors----------------------------------*/
-Color get backgroundColor => const Color(0xFFFFFFFF);
-Color? get backgroundLiteColor =>  Colors.grey[200];
-// gray scale
-const grayScaleColor = Color(0xFFE2E2E2);
-
-const grayScaleLiteColor = Color(0xFFE2E2E2);
-const rateBackground = Color(0xFF333333);
-
-
-const highLiteColor = Color(0xFFADADAD);
-const hoverColor = Color(0xFFE7EBEB);
-const dialogColor = Color(0xffffffff);
-const disabledColor = Color(0xffEEEEEE);
-
-// const hoverColor = Color(0xFFE7EBEB);
-const hintColor = Color(0xFF717784);
-// const hintColor = Color(0xFFADADAD);
-// const hintColor = Color(0xFF777777);
+  static Clr shimmer1 = const ColorModel(lightColor: Color(0xFFE0E0E0),darkColor: Color(0xff222222));
+  static Clr shimmer2 = const ColorModel(lightColor: Color(0xFFF5F5F5),darkColor: Color(0xff515151));
 
 
 
-const secondHighLiteColor = Color(0xFFF6EEC9);
-final colorBgPositiveMessage = LinearGradient(
-  colors: [Colors.green.shade800, Colors.greenAccent.shade700],
-  stops:const [0.6, 1],
-);
-final colorBgNeutralMessage = LinearGradient(
-  colors: [Colors.blueGrey.shade800, Colors.blueGrey.shade500],
-  stops:const [0.6, 1],
-);
-final colorBgNegativeMessage = LinearGradient(
-  colors: [Colors.red.shade800, Colors.redAccent.shade700],
-  stops:const [0.6, 1],
-);
-// final colorBlue = Color(0xff009ACE);
-const colorGreen = Colors.green;
-final colorBlueBackground = const Color(0xff0F62A5).withOpacity(.2);
+  //app
+  static Clr badgeColor = const ColorModel(lightColor: Color(0xffFFAC13),darkColor: Color(0xffFFAC13));
 
-
-LinearGradient getMainColorGradient() {
-  return const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      tileMode: TileMode.clamp,
-      stops: [0.3, 0.9],
-      colors: [
-        Color(0xff199A8E),
-        Color(0xff292871),
-      ]);
 }
+
+
+extension ColorTheme on ColorModel {
+  Color get themeColor {
+    if (appContext!=null&&Provider.of<ThemeHelper>(appContext!,listen: false).themeData == darkTheme) {
+    // if (appContext!=null&&appContext!.watch<ThemeHelper>().themeData == darkTheme) {
+      return darkColor;
+    } else {
+      return lightColor;
+    }
+  }
+}
+
+class ColorModel {
+  final Color _lightColor;
+  final Color _darkColor;
+  const ColorModel({
+    required Color lightColor,
+    required Color darkColor,
+  })  : _lightColor = lightColor,
+        _darkColor = darkColor;
+  Color get darkColor => _darkColor;
+  Color get lightColor => _lightColor;
+}
+
+LinearGradient getMainColorGradient() =>   LinearGradient(begin: Alignment.topRight, end: Alignment.topLeft , colors: [AppColor.primaryColor.lightColor, AppColor.primaryColor.lightColor,]);
+LinearGradient getButtonGradient() =>   LinearGradient(begin: Alignment.topRight, end: Alignment.topLeft , colors: [AppColor.primaryColor.lightColor, AppColor.primaryColor.lightColor,]);
+LinearGradient getBackgroundGradient(bool isDarkMode) => LinearGradient(stops: const [0.0,0.3], colors: isDarkMode?[const Color(0xfff11b1b), AppColor.scaffoldBackgroundColor.darkColor]:[const Color(0xffeef9fc), AppColor.scaffoldBackgroundColor.lightColor], begin: Alignment.topCenter, end: Alignment.bottomCenter,);
+LinearGradient getImageGradient() =>LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color.fromRGBO(0, 0, 0, 0.0), Color.fromRGBO(0, 0, 0, 1.0),],);

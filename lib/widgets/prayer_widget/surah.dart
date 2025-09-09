@@ -24,7 +24,7 @@ class Surah extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: teal[300],
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         highlightColor: Colors.transparent,

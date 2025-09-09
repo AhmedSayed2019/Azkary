@@ -44,7 +44,7 @@ class CustomSearchBar extends StatelessWidget {
                 child: Text(
                   _title,
                   style: TextStyle(
-                    color: teal[300],
+                    color: Theme.of(context).cardColor,
                     fontSize: 13,
                   ),
                 ),

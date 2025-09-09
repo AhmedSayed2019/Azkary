@@ -1,0 +1,29 @@
+name: mq_prayer_time
+description: My Quran Prayers times packages
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0-0 <4.0.0"
+  flutter: ^3.32.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  geocoding: ^4.0.0
+  geolocator: ^13.0.2
+  timezone: ^0.10.1
+  flutter_timezone: ^4.1.1
+  adhan_dart: ^1.1.2
+  intl: ^0.20.2
+
+  mq_remote_client:
+    path: ../mq_remote_client
+  mq_storage:
+    path: ../mq_storage
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.4
+  very_good_analysis: ^9.0.0

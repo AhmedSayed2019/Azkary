@@ -1,9 +1,10 @@
 import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/core/res/resources.dart';
-import 'package:azkark/features/QuranPagesTest/QuranPagesTest.dart';
+import 'package:azkark/features/QuranPagesTest1/QuranPagesTest.dart';
 import 'package:azkark/features/calender/calender.dart';
 import 'package:azkark/features/compass/qibla_compass.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
+import 'package:azkark/features/home/widgets/pray_time/pray_time_widget.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:azkark/pages/asmaallah/view_asmaallah.dart';
 import 'package:azkark/pages/favorites/view_favorites.dart';
@@ -28,7 +29,7 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
   Widget _buildItemsCard({required BuildContext context,required String text, required String pathIcon,required GestureTapCallback? onTap}) {
     final size = MediaQuery.of(context).size;
     return Card(
-      color: teal[300],
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         highlightColor: teal[400],
@@ -47,7 +48,7 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
                         : Center(child: Image.asset(pathIcon, fit: BoxFit.contain,width:  size.width * 0.16,height:  size.width * 0.16,)),
                 ),
               ),
-              Text(text, textAlign: TextAlign.center, style: const TextStyle().semiBoldStyle(fontSize: 12).customColor(teal)/*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
+              Text(text, textAlign: TextAlign.center, style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor()/*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
 
               ),
             ],
@@ -60,7 +61,7 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
   Widget _buildLargeItemsCard({required BuildContext context,required String text, required String pathIcon,required GestureTapCallback? onTap}) {
     final size = MediaQuery.of(context).size;
     return Card(
-      color: teal[300],
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         highlightColor: teal[400],
@@ -94,6 +95,7 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
     return Column(
       children: [
 
+
         GridView(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
@@ -105,8 +107,9 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
             mainAxisExtent:110.h,
           ),
           children: <Widget>[
+
             // _buildItemsCard(context: context, text: tr( 'quran'), pathIcon: Assets.sectionsQuran, onTap: () => Navigator.push(context, ScaleRoute(page:  SurahListPage(jsonData: widgejsonData, quarterJsonData: quarterjsonData)))),
-            _buildItemsCard(context: context, text: tr( 'quran'), pathIcon: Assets.sectionsQuran, onTap: () => Navigator.push(context, ScaleRoute(page:  QuranPagesTest()))),
+            _buildItemsCard(context: context, text: tr( 'quran'), pathIcon: Assets.sectionsQuran, onTap: () => Navigator.push(context, ScaleRoute(page:  const QuranPagesTest()))),
             // _buildItemsCard(context: context, text: tr( 'allReciters'), pathIcon: Assets.sectionsQuran, onTap: () => Navigator.push(context, ScaleRoute(page:  RecitersPage(/*jsonData: widgejsonData*/)))),
 
             _buildItemsCard(context: context, text: tr( 'favorite_bar'), pathIcon: Assets.favoritesFavorite256px, onTap: () => Navigator.push(context, ScaleRoute(page: FavoritesView()))),

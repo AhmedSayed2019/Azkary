@@ -1,8 +1,12 @@
 
 import 'dart:ui'as ui;
 
+import 'package:azkark/core/res/theme/theme.dart';
+import 'package:azkark/core/res/theme_helper.dart';
 import 'package:azkark/features/home/home_page.dart';
 import 'package:azkark/features/home/loading_page.dart';
+import 'package:azkark/pages/home/home_page.dart';
+import 'package:azkark/pages/home/loading_page.dart';
 import 'package:azkark/providers/sections_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +19,27 @@ import 'util/app_theme.dart';
 
 BuildContext? appContext;
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+  @override
+  void initState() {
+    Provider.of<ThemeHelper>(context,listen: false).getCurrentTheme();
+    // getIt<SettingViewModel>().getCurrentTheme();
+    super.initState();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
+    bool isDarkMode = context.watch<ThemeHelper>().isDarkMode;
+
     appContext = context;
     return MaterialApp(
 
@@ -47,13 +67,15 @@ class MyApp extends StatelessWidget {
       localeResolutionCallback: AppLocalizationsDelegate.resolution,
 
 
-      theme: AppTheme.appTheme(context),
-      // theme: lightTheme,
+      // theme: AppTheme.appTheme(context),
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       color:Theme.of(context).scaffoldBackgroundColor,
 
 
 
-      title: 'أذكار المسلم',
+      title: 'سكينة',
       debugShowCheckedModeBanner: false,
 
       home: Directionality(

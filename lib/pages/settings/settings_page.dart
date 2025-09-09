@@ -1,5 +1,8 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/core/res/theme_helper.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../util/background.dart';
 import '../../util/colors.dart';
@@ -28,8 +31,9 @@ class Settings extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: <Widget>[
-              _buildPublicSettings(),
+              _buildPublicSettings(context),
               _buildAzkarSettingsCard(context),
+              // _buildThemeCart(context),
               // _buildCommunicate(size)
             ],
           ),
@@ -38,9 +42,9 @@ class Settings extends StatelessWidget {
     ]);
   }
 
-  BoxDecoration _decoration() {
+  BoxDecoration _decoration(BuildContext context) {
     return BoxDecoration(
-      color: teal[50],
+      color: Theme.of(context).cardColor,
       borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
@@ -56,10 +60,10 @@ class Settings extends StatelessWidget {
         children: <Widget>[
           Align(
             alignment: Alignment.topRight,
-            child: _buildTitle('إعدادات الأذكار'),
+            child: _buildTitle(context,'إعدادات الأذكار'),
           ),
           Container(
-            decoration: _decoration(),
+            decoration: _decoration(context),
             child: Column(
               children: <Widget>[
                 SettingsItem(
@@ -91,27 +95,29 @@ class Settings extends StatelessWidget {
     );
   }
 
-  Widget _buildPublicSettings() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-      ),
+  Widget _buildThemeCart(BuildContext context) {
+    bool isDarkMode = context.watch<ThemeHelper>().isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       child: Column(
         children: <Widget>[
           Align(
             alignment: Alignment.topRight,
-            child: _buildTitle('الإعدادات العامة'),
+            child: _buildTitle(context,'اللوان'),
           ),
           Container(
-            decoration: _decoration(),
-            child: const Column(
+            decoration: _decoration(context),
+            child: Column(
               children: <Widget>[
-                SettingFontType(
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20)),
-                ),
-                SettingFontSize(
-                  borderRadius: BorderRadius.only(
+
+                SettingsItem(
+                  activeTitle: tr( 'popup_menu_sanad_true'),
+                  inactiveTitle: tr( 'popup_menu_sanad_false'),
+                  nameField: 'theme',
+                   switchValue: isDarkMode,
+                   onChanged: (isDarkMode)=>Provider.of<ThemeHelper>(context,listen: false).changeTheme(isDarkMode,reload: true),
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
                   ),
@@ -124,10 +130,34 @@ class Settings extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(String text) {
+  Widget _buildPublicSettings(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: <Widget>[
+          Align(alignment: Alignment.topRight, child: _buildTitle(context,'الإعدادات العامة')),
+          Container(
+            decoration: _decoration(context),
+            child:  Column(
+              children: <Widget>[
+                SettingFontType(borderRadius: BorderRadius.only(topLeft: Radius.circular(20))),
+                SettingFontSize(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20),),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitle(BuildContext context,String text) {
     return Container(
       decoration: BoxDecoration(
-        color: teal[600],
+        color: Theme.of(context).primaryColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -137,10 +167,8 @@ class Settings extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
         child: Text(
           text,
-          style: new TextStyle(
-            color: teal[50],
-            fontSize: 14,
-          ),
+          style:  const TextStyle().semiBoldStyle(fontSize: 16).primaryTextColor(),
+          // style:  TextStyle(color: teal[50], fontSize: 14),
         ),
       ),
     );

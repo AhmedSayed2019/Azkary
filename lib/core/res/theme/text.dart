@@ -9,25 +9,25 @@ import '../decoration.dart';
 
 // light
 TextTheme textTheme = ThemeData.light().textTheme.copyWith().apply(
-  bodyColor: hintColor, // bodyText1 (secondary text color)
-  displayColor: textPrimary, // caption ( primary text color)
+  bodyColor:  AppColor.hintColor.lightColor, // bodyText1 (secondary text color)
+  displayColor: AppColor.textColor.lightColor, // caption ( primary text color)
 );
 
 // dark
 TextTheme textThemeDark = ThemeData.dark().textTheme.copyWith().apply(
-  bodyColor: textSecondaryDark,
-  displayColor: textPrimaryDark,
+  bodyColor: AppColor.textColor.darkColor,
+  displayColor:  AppColor.textColor.lightColor,
 );
 
 // appBar Text Style
 TextTheme appBarTextTheme = textTheme.copyWith(
 // center text style
-  titleLarge: appBarTextStyle.copyWith(color: appBarTextColor),
+  labelLarge: appBarTextStyle.copyWith(color:  AppColor.appBarTextColor.lightColor),
 // Side text style
-  bodyMedium: appBarTextStyle.copyWith(color: appBarTextColor),
+  bodyMedium: appBarTextStyle.copyWith(color:  AppColor.appBarTextColor.lightColor),
 );
 
 TextTheme appBarTextThemeDark = textTheme.copyWith(
-  titleLarge: appBarTextStyle.copyWith(color: appBarTextColorDark),
-  bodyMedium: appBarTextStyle.copyWith(color: appBarTextColorDark),
+  labelLarge: appBarTextStyle.copyWith(color: AppColor.appBarTextColor.darkColor),
+  bodyMedium: appBarTextStyle.copyWith(color: AppColor.appBarTextColor.darkColor),
 );

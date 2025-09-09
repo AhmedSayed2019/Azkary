@@ -5,6 +5,7 @@ import 'package:azkark/features/QuranPages/bloc/quran_page_player_bloc.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/features/home/widgets/categories_view.dart';
 import 'package:azkark/features/home/widgets/date_view.dart';
+import 'package:azkark/features/home/widgets/pray_time/pray_time_widget.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:azkark/initializeData.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -72,6 +73,7 @@ class _HomePageState extends State<HomePage> {
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: <Widget>[
+                         // MqSalaahTimeWidget(),
                         const HomeCategoriesView(),
                         _buildAllAzkarCard('عرض كل الأذكار', context),
                         for (int i = 0; i < sectionsProvider.length; i += 2)
@@ -94,7 +96,7 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(0.0),
       child: Card(
-        color: teal[300],
+        color: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: InkWell(
           highlightColor: teal[400],
@@ -114,11 +116,12 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     text,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: teal,
-                      fontWeight: FontWeight.w700,
-                      fontSize: size.width * 0.05,
-                    ),
+                    style:  const TextStyle().semiBoldStyle( fontSize: size.width * 0.05,).primaryTextColor(),
+                    // style: TextStyle(
+                    //   color: teal,
+                    //   fontWeight: FontWeight.w700,
+                    //   fontSize: size.width * 0.05,
+                    // ),
                   ),
                 ),
               ],
@@ -148,7 +151,7 @@ class _HomePageState extends State<HomePage> {
 
     return Expanded(
       child: Card(
-        color: teal[300],
+        color: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: SizedBox(
           height: size.height * 0.25,
@@ -168,7 +171,15 @@ class _HomePageState extends State<HomePage> {
                       child: Image.asset('assets/images/sections/${sectionModel.id}.png', fit: BoxFit.contain),
                     ),
                   ),
-                  Text(sectionModel.name, textAlign: TextAlign.center, style: const TextStyle(color: teal, fontWeight: FontWeight.w700, fontSize: 14)),
+                  Text(sectionModel.name,
+                      textAlign: TextAlign.center,
+                      style:  const TextStyle().semiBoldStyle().primaryTextColor(),
+
+                      // style: const TextStyle(
+                      //     color: teal,
+                      //     fontWeight: FontWeight.w700,
+                      //     fontSize: 14)
+                  ),
                 ],
               ),
             ),

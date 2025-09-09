@@ -56,7 +56,7 @@ class _ZekrState extends State<Zekr> {
     final size = MediaQuery.of(context).size;
 
     return Material(
-      color: isFinish ? teal[200] : teal[300],
+      color: isFinish ? teal[200] : Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         highlightColor: Colors.transparent,
@@ -192,7 +192,7 @@ class _ZekrState extends State<Zekr> {
     return Container(
       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 15.0, right: 15.0),
       decoration: BoxDecoration(
-        color: isFinish ? teal[300] : teal[500],
+        color: isFinish ? Theme.of(context).cardColor : teal[500],
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(

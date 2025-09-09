@@ -52,7 +52,7 @@ class _FavoritesViewState extends State<FavoritesView> {
   Widget _buildItemsCard(String pathIcon, String text, Size size) {
     return Card(
       margin: EdgeInsets.all(5),
-      color: teal[300],
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         highlightColor: teal[400],

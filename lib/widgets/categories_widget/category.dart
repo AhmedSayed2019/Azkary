@@ -35,7 +35,7 @@ class _CategoryState extends State<Category> {
     final azkarProvider = Provider.of<AzkarProvider>(context, listen: false);
 
     return Card(
-      color: teal[300],
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Container(
         width: size.width,

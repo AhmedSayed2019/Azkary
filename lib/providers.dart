@@ -1,8 +1,13 @@
 
 import 'package:azkark/core/res/theme_helper.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
+import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mq_prayer_time/mq_prayer_time.dart';
+import 'package:mq_storage/mq_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/asmaallah_provider.dart';
 import 'providers/azkar_provider.dart';
@@ -12,22 +17,24 @@ import 'providers/prayer_provider.dart';
 import 'providers/sebha_provider.dart';
 import 'providers/sections_provider.dart';
 import 'providers/settings_provider.dart';
+import 'package:get_it/get_it.dart';
 
+final getIt = GetIt.instance;
 
 class GenerateMultiProvider extends StatefulWidget {
   final Widget child;
 
-  const GenerateMultiProvider({Key? key, required this.child})
-      : super(key: key);
-
   @override
   State<GenerateMultiProvider> createState() => _GenerateMultiProviderState();
+
+  const GenerateMultiProvider({super.key,
+    required this.child,
+  });
 }
 
 class _GenerateMultiProviderState extends State<GenerateMultiProvider> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -35,18 +42,33 @@ class _GenerateMultiProviderState extends State<GenerateMultiProvider> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<SectionsProvider>(create: (context) => SectionsProvider()),
-        ChangeNotifierProvider<SettingsProvider>(create: (context) => SettingsProvider()),
-        ChangeNotifierProvider<CategoriesProvider>(create: (context) => CategoriesProvider()),
-        ChangeNotifierProvider<SebhaProvider>(create: (context) => SebhaProvider()),
-        ChangeNotifierProvider<AzkarProvider>(create: (context) => AzkarProvider()),
-        ChangeNotifierProvider<FavoritesProvider>(create: (context) => FavoritesProvider()),
-        ChangeNotifierProvider<PrayerProvider>(create: (context) => PrayerProvider()),
-        ChangeNotifierProvider<AsmaAllahProvider>(create: (context) => AsmaAllahProvider()),
-        ChangeNotifierProvider<GetDataProvider>(create: (context) => GetDataProvider()),
-        // ChangeNotifierProvider<DownloadHelper>(create: (context) => DownloadHelper()),
+        RepositoryProvider<PreferencesStorage>(create: (context) => getIt<PreferencesStorage>()),
 
-        ChangeNotifierProvider<ThemeHelper>(create: (context) => ThemeHelper()),
+
+
+        ChangeNotifierProvider<SectionsProvider>(create: (context) =>  getIt<SectionsProvider>()),
+        ChangeNotifierProvider<SettingsProvider>(create: (context) =>  getIt<SettingsProvider>()),
+        ChangeNotifierProvider<CategoriesProvider>(create: (context) =>  getIt<CategoriesProvider>()),
+        ChangeNotifierProvider<SebhaProvider>(create: (context) =>  getIt<SebhaProvider>()),
+        ChangeNotifierProvider<AzkarProvider>(create: (context) =>  getIt<AzkarProvider>()),
+        ChangeNotifierProvider<FavoritesProvider>(create: (context) =>  getIt<FavoritesProvider>()),
+        ChangeNotifierProvider<PrayerProvider>(create: (context) =>  getIt<PrayerProvider>()),
+        ChangeNotifierProvider<AsmaAllahProvider>(create: (context) =>  getIt<AsmaAllahProvider>()),
+        ChangeNotifierProvider<GetDataProvider>(create: (context) =>  getIt<GetDataProvider>()),
+
+        ChangeNotifierProvider<ThemeHelper>(create: (context) => getIt<ThemeHelper>()),
+
+
+
+        // RepositoryProvider<MqLocationClient>(
+        //   create: (context) => getIt<MqLocationClient(
+        //     locationService:  const MqLocationServiceImpl(),
+        //     locationStorage: MqLocationStorageImpl(context.read<PreferencesStorage>()),
+        //   ),
+        // ),
+        ChangeNotifierProvider<LocationProvider>(create: (context) => LocationProvider( getIt<MqLocationClient>() )),
+
+
       ],
       child: widget.child,
     );

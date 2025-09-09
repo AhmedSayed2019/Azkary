@@ -36,7 +36,7 @@ class _AsmaAllahState extends State<AsmaAllah> {
     final size = MediaQuery.of(context).size;
 
     return Card(
-      color: teal[300],
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Container(
         width: size.width,

@@ -18,7 +18,7 @@
     <!-- required from API level 33 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- To read images created by other apps -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> <!-- To read audios created by other apps -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- To read vidoes created by other apps -->
+<!--    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> &lt;!&ndash; To read vidoes created by other apps &ndash;&gt;-->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
 <!--    <uses-permission-->
@@ -33,7 +33,7 @@
         android:name="${applicationName}"
 
         android:icon="@mipmap/ic_launcher"
-        android:label="أذكار المسلم"
+        android:label="سكينة"
         android:requestLegacyExternalStorage="true"
         android:resource="@drawable/icon"
         android:usesCleartextTraffic="true"><service

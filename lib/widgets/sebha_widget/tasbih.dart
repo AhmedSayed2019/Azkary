@@ -32,7 +32,7 @@ class _TasbihState extends State<Tasbih> {
     final size = MediaQuery.of(context).size;
 
     return Card(
-      color: teal[300],
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         highlightColor: teal[100],

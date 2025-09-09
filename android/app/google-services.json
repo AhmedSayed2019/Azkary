@@ -1,0 +1,201 @@
+{
+  "project_info": {
+    "project_number": "216244291476",
+    "firebase_url": "https://we-chat-asia.firebaseio.com",
+    "project_id": "we-chat-asia",
+    "storage_bucket": "we-chat-asia.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216244291476:android:1662345e11993d8c33b181",
+        "android_client_info": {
+          "package_name": "com.asia.chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216244291476-gl5sraek4cj5dbpnqrnr4ljg3albj4u1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.asia.chat_app",
+            "certificate_hash": "1321ef5dae6963f57c8760805e7d9984d5159c83"
+          }
+        },
+        {
+          "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbFo0mJrNadlb6sRcfQDXgUAMJY4zA39I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216244291476:android:1dd3e0bfd43fe860",
+        "android_client_info": {
+          "package_name": "com.asia.we_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216244291476-6s8hq2780imo8mpsnraofhk8cugmtt7v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.asia.we_chat",
+            "certificate_hash": "6d3bef13b243f6fc3d41712fb8fabced6d9b0342"
+          }
+        },
+        {
+          "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbFo0mJrNadlb6sRcfQDXgUAMJY4zA39I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216244291476:android:04d10214bdc6e5f633b181",
+        "android_client_info": {
+          "package_name": "com.example.socialkom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbFo0mJrNadlb6sRcfQDXgUAMJY4zA39I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216244291476:android:30cc20a3b435a8d033b181",
+        "android_client_info": {
+          "package_name": "com.muslim.azkar.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbFo0mJrNadlb6sRcfQDXgUAMJY4zA39I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216244291476:android:8064cb2317db48a233b181",
+        "android_client_info": {
+          "package_name": "com.twilio.chat.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbFo0mJrNadlb6sRcfQDXgUAMJY4zA39I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216244291476:android:df9789a4eb8d9bed33b181",
+        "android_client_info": {
+          "package_name": "com.twilio.chat.demo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbFo0mJrNadlb6sRcfQDXgUAMJY4zA39I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216244291476-4gfkjg4grgugb3njf1j773dip02aaihd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -23,6 +23,7 @@ class RowButtons extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: _buildButton(
+                context,
                 text: _titleFirst,
                 isClose: false,
                 onTap: _onTapFirst,
@@ -32,6 +33,7 @@ class RowButtons extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: _buildButton(
+              context,
               text: _titleSecond,
               isClose: true,
               onTap: _onTapSecond,
@@ -42,13 +44,13 @@ class RowButtons extends StatelessWidget {
     );
   }
 
-  Widget _buildButton({required String text,required GestureTapCallback? onTap,required bool isClose}) {
+  Widget _buildButton(BuildContext context,{required String text,required GestureTapCallback? onTap,required bool isClose}) {
     return Material(
       color: isClose ? teal[200] : teal[600],
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         highlightColor: teal[500]!.withAlpha(100),
-        splashColor: isClose ? teal[300] : teal[700],
+        splashColor: isClose ? Theme.of(context).cardColor : teal[700],
         borderRadius: BorderRadius.circular(10),
         onTap: onTap,
         child: Padding(

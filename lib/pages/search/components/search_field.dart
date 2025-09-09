@@ -76,7 +76,7 @@ class _SearchFieldState extends State<SearchField> {
                       height: 0,
                     ),
               hintText: widget._title,
-              hintStyle: TextStyle(color: teal[300], fontSize: 12)),
+              hintStyle: TextStyle(color: Theme.of(context).cardColor, fontSize: 12)),
           onChanged: widget._onChanged,
         ),
       ],

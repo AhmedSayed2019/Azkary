@@ -4,41 +4,41 @@ import 'package:flutter/services.dart';
 import '../color.dart';
 
 
-AppBarTheme appBarTheme =  const AppBarTheme(
-  // color: appBarColor,
-
+AppBarTheme appBarTheme =  AppBarTheme(
+  color:AppColor.primaryColor.lightColor ,
   systemOverlayStyle: SystemUiOverlayStyle(
-    statusBarColor: primaryColor,
-
-
-    statusBarIconBrightness: Brightness.dark ,
-    statusBarBrightness: Brightness.light,
-    systemNavigationBarColor: primaryColor,
-    systemNavigationBarDividerColor: primaryColor,
-
+    statusBarColor:AppColor.appBarIconsColor.lightColor ,
+    statusBarIconBrightness: Brightness.light ,
+    statusBarBrightness: Brightness.dark ,
   ),
-  backgroundColor: appBarColor,
-
-
-  toolbarTextStyle: TextStyle(color: appBarIconsColorDark),
+  toolbarTextStyle: TextStyle(color:AppColor.appBarIconsColor.lightColor ),
   iconTheme: IconThemeData(
-    color: appBarIconsColorDark,
-
-
+    color:AppColor.appBarIconsColor.lightColor ,
   ),
 );
 
+// AppBarTheme appBarTheme =  AppBarTheme(
+//   color:AppColor.statusBarColor.themeColor ,
+//   systemOverlayStyle: SystemUiOverlayStyle(
+//     statusBarColor:AppColor.statusBarColor.themeColor appBarIconsColorDark,
+//     statusBarIconBrightness: Brightness.light ,
+//     statusBarBrightness: Brightness.dark ,
+//   ),
+//   toolbarTextStyle: TextStyle(color: AppColor.statusBarColor.themeColorappBarIconsColor),
+//   iconTheme: IconThemeData(color:AppColor.statusBarColor.themeColor appBarIconsColor),
+// );
+//
 
-AppBarTheme appBarThemeDark = const AppBarTheme(
-
+AppBarTheme appBarThemeDark =  AppBarTheme(
+  color:AppColor.primaryColor.darkColor ,
   systemOverlayStyle: SystemUiOverlayStyle(
-    statusBarColor: appBarIconsColor,
+    statusBarColor:AppColor.appBarIconsColor.darkColor ,
     statusBarIconBrightness: Brightness.light ,
     statusBarBrightness: Brightness.dark,
   ),
-  toolbarTextStyle: TextStyle(color: appBarIconsColorDark),
+  toolbarTextStyle: TextStyle(color:AppColor.appBarIconsColor.darkColor ),
   iconTheme: IconThemeData(
-    color: appBarIconsColorDark,
+    color:AppColor.appBarIconsColor.darkColor ,
   ),
 );
 

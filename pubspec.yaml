@@ -2,7 +2,7 @@ name: azkark
 description: An azkar app for muslim.
 publish_to: none
 
-version: 1.1.1+11
+version: 1.1.3+13
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -32,8 +32,17 @@ dependencies:
   #------------------------------------------------
 
   #  pray time
+  mq_remote_client:
+    path: libraries/mq_remote_client
+  mq_storage:
+    path: libraries/mq_storage
+
+  mq_app_ui:
+    path: libraries/mq_app_ui
+  mq_prayer_time:
+    path: libraries/mq_prayer_time
   animated_analog_clock: ^0.2.1
-  prayer_time: ^2.0.0
+#  prayer_time: ^2.0.0
   #------------------------------------------------
 
   # Localization
@@ -54,6 +63,8 @@ dependencies:
 
   # State management
   provider: ^6.1.5 # Manages app state efficiently
+  get_it: ^8.2.0 # Dependency injection and service locator
+
   flutter_bloc: ^9.1.1
 
   equatable: ^2.0.7 # Equality comparison
