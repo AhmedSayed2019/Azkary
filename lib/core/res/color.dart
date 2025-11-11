@@ -1,8 +1,11 @@
 import 'package:azkark/app.dart';
 import 'package:azkark/core/res/theme/theme.dart';
 import 'package:azkark/core/res/theme_helper.dart';
+import 'package:azkark/data/local/storage_keys.dart';
+import 'package:azkark/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Color converter: https://www.w3schools.com/colors/colors_converter.asp
 // Transparency list
@@ -105,8 +108,16 @@ class AppColor {
 
 
 extension ColorTheme on ColorModel {
+  Color get themeColor =>lightColor;
+  // Color get themeColor =>getIt<ThemeHelper>().getIsDarkMode?darkColor:lightColor;
+  // Color get themeColor => (((getIt<SharedPreferences>().get(StorageKeys.kIsDarkMode) ?? false) as bool)?darkColor:lightColor );
+}
+/*
+
+extension ColorTheme on ColorModel {
   Color get themeColor {
     if (appContext!=null&&Provider.of<ThemeHelper>(appContext!,listen: false).themeData == darkTheme) {
+    // if (appContext!=null&&Provider.of<ThemeHelper>(appContext!,listen: false).themeData == darkTheme) {
     // if (appContext!=null&&appContext!.watch<ThemeHelper>().themeData == darkTheme) {
       return darkColor;
     } else {
@@ -114,6 +125,7 @@ extension ColorTheme on ColorModel {
     }
   }
 }
+*/
 
 class ColorModel {
   final Color _lightColor;
@@ -125,9 +137,12 @@ class ColorModel {
         _darkColor = darkColor;
   Color get darkColor => _darkColor;
   Color get lightColor => _lightColor;
+
+  Color getColor(bool isDark) =>isDark?_darkColor: _lightColor;
+
 }
 
 LinearGradient getMainColorGradient() =>   LinearGradient(begin: Alignment.topRight, end: Alignment.topLeft , colors: [AppColor.primaryColor.lightColor, AppColor.primaryColor.lightColor,]);
 LinearGradient getButtonGradient() =>   LinearGradient(begin: Alignment.topRight, end: Alignment.topLeft , colors: [AppColor.primaryColor.lightColor, AppColor.primaryColor.lightColor,]);
 LinearGradient getBackgroundGradient(bool isDarkMode) => LinearGradient(stops: const [0.0,0.3], colors: isDarkMode?[const Color(0xfff11b1b), AppColor.scaffoldBackgroundColor.darkColor]:[const Color(0xffeef9fc), AppColor.scaffoldBackgroundColor.lightColor], begin: Alignment.topCenter, end: Alignment.bottomCenter,);
-LinearGradient getImageGradient() =>LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color.fromRGBO(0, 0, 0, 0.0), Color.fromRGBO(0, 0, 0, 1.0),],);
+LinearGradient getImageGradient() =>const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color.fromRGBO(0, 0, 0, 0.0), Color.fromRGBO(0, 0, 0, 1.0),],);

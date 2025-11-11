@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// // Create a `PreferencesStorage` instance.
 /// final storage = await PreferencesStorage.getInstance();
 ///
+///
 /// // Write a key/value pair.
 /// await storage.setString(key: 'my_key', value: 'my_value');
 ///

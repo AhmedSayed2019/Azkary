@@ -36,10 +36,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           margin: const EdgeInsets.all(4.0),
           child: IconButton(
               color: teal[50],
+              // color: teal[50],
               highlightColor: teal[700],
               splashColor: teal[700],
-              padding: EdgeInsets.all(0.0),
-              icon: Icon(Icons.search),
+              padding: const EdgeInsets.all(0.0),
+              icon: const Icon(Icons.search),
               onPressed: () {
                 Navigator.push(context, FadeRoute(page: SearchForZekr()));
               }),
@@ -51,7 +52,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildMenuButton() {
     return Padding(
-      padding: EdgeInsets.only(left: 5.0),
+      padding: const EdgeInsets.only(left: 5.0),
       child: IconButton(
         highlightColor: teal[700],
         splashColor: teal[700],

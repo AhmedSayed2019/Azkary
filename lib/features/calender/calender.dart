@@ -16,9 +16,7 @@ class CalenderPage extends StatefulWidget {
 
 class _CalenderPageState extends State<CalenderPage> {
   int index = 1;
-  var _today = j.HijriCalendar.now().toFormat(
-                    "dd - MMMM - yyyy",
-                  );
+  var _today = j.HijriCalendar.now().toFormat("dd - MMMM - yyyy",);
   var date = DateTime.now();
   @override
   Widget build(BuildContext context) {

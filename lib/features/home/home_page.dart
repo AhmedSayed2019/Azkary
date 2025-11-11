@@ -1,13 +1,16 @@
 import 'package:azkark/core/res/resources.dart';
-import 'package:azkark/features/QuranPages/bloc/player_bar_bloc.dart';
-import 'package:azkark/features/QuranPages/bloc/player_bloc_bloc.dart';
-import 'package:azkark/features/QuranPages/bloc/quran_page_player_bloc.dart';
+import 'package:azkark/core/utils/messaging_helper.dart';
+import 'package:azkark/features/adhan/providers/location_provider.dart';
+// import 'package:azkark/features/QuranPages/bloc/player_bar_bloc.dart';
+// import 'package:azkark/features/QuranPages/bloc/player_bloc_bloc.dart';
+// import 'package:azkark/features/QuranPages/bloc/quran_page_player_bloc.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/features/home/widgets/categories_view.dart';
 import 'package:azkark/features/home/widgets/date_view.dart';
-import 'package:azkark/features/home/widgets/pray_time/pray_time_widget.dart';
+import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:azkark/initializeData.dart';
+import 'package:azkark/permission.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,9 +25,9 @@ import '../../../../../util/colors.dart';
 import '../../../../../util/navigate_between_pages/fade_route.dart';
 import '../../../../../widgets/search_widget/search_bar.dart';
 
-final qurapPagePlayerBloc = QuranPagePlayerBloc();
-final playerPageBloc = PlayerBlocBloc();
-final playerbarBloc = PlayerBarBloc();
+// final qurapPagePlayerBloc = QuranPagePlayerBloc();
+// final playerPageBloc = PlayerBlocBloc();
+// final playerbarBloc = PlayerBarBloc();
 
 printYellow(text) {
   print('\x1B[33m$text\x1B[0m');
@@ -45,8 +48,13 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     initHiveValues();
-    Provider.of<GetDataProvider>(context, listen: false).initialQuranPages(context);
+    // Provider.of<GetDataProvider>(context, listen: false).initialQuranPages(context);
+    //notifications
+    initMessaging();
+    checkNotificationPermission();
 
+    // PrayTimeLocationProvider
+    AdanLocationProvider.getInstance().init();
     super.initState();
   }
 
@@ -73,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: <Widget>[
-                         // MqSalaahTimeWidget(),
+                        // MqSalaahTimeWidget(),
                         const HomeCategoriesView(),
                         _buildAllAzkarCard('عرض كل الأذكار', context),
                         for (int i = 0; i < sectionsProvider.length; i += 2)
@@ -116,7 +124,7 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     text,
                     textAlign: TextAlign.center,
-                    style:  const TextStyle().semiBoldStyle( fontSize: size.width * 0.05,).primaryTextColor(),
+                    style:  const TextStyle().semiBoldStyle( fontSize: size.width * 0.05).primaryTextColor(),
                     // style: TextStyle(
                     //   color: teal,
                     //   fontWeight: FontWeight.w700,
@@ -172,13 +180,13 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Text(sectionModel.name,
-                      textAlign: TextAlign.center,
-                      style:  const TextStyle().semiBoldStyle().primaryTextColor(),
+                    textAlign: TextAlign.center,
+                    style:  const TextStyle().semiBoldStyle().primaryTextColor(),
 
-                      // style: const TextStyle(
-                      //     color: teal,
-                      //     fontWeight: FontWeight.w700,
-                      //     fontSize: 14)
+                    // style: const TextStyle(
+                    //     color: teal,
+                    //     fontWeight: FontWeight.w700,
+                    //     fontSize: 14)
                   ),
                 ],
               ),

@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:mq_prayer_time/mq_prayer_time.dart';
 
-class LocationProvider extends ChangeNotifier {
+class PrayTimeLocationProvider extends ChangeNotifier {
 
-  LocationProvider(this.client) {
+  PrayTimeLocationProvider(this.client) {
     _position = client.initialPosition;
     _locationName = client.initialLocationName;
     _timeZoneLocation = client.initialTimeZoneLocation;

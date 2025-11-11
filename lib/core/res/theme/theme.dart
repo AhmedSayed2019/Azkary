@@ -1,195 +1,108 @@
 
+import 'package:azkark/core/res/color.dart';
 import 'package:azkark/core/res/resources.dart';
-import 'package:azkark/core/res/theme/bottom_bar.dart';
 import 'package:azkark/core/res/theme/button.dart';
-import 'package:flutter/material.dart';
+import 'package:azkark/core/res/theme/color_scheme.dart';
 
-import 'app_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import 'text.dart';
 
-ThemeData  lightTheme =ThemeData(
-  scaffoldBackgroundColor: AppColor.scaffoldBackgroundColor.lightColor,
-  textTheme: textTheme,
-  iconTheme: const IconThemeData(color: Colors.white),
-  cardColor: AppColor.cardColor.lightColor,
-  brightness: Brightness.light,
-  splashColor: AppColor.hintColor.lightColor,
-  highlightColor: AppColor.highlightColor.lightColor,
-  splashFactory: InkSplash.splashFactory,
-  appBarTheme: appBarTheme,
-  fontFamily: FontConstants.fontFamily,
+ThemeData lightTheme =_buildTheme(false);
+ThemeData darkTheme =_buildTheme(true);
+
+_buildTheme(bool isDarkMode ){
+  ColorScheme schemeTheme =  buildSchemeTheme(isDarkMode);
+  return ThemeData(
+    useMaterial3: false,
+    fontFamily: FontConstants.fontFamily,
+
+    scaffoldBackgroundColor: AppColor.scaffoldBackgroundColor.getColor(isDarkMode),
+    // textTheme: buildTextTheme(schemeTheme),
+    cardColor: AppColor.cardColor.getColor(isDarkMode),
+    brightness: isDarkMode?Brightness.dark:Brightness.light,
+    splashColor: AppColor.primaryColor.getColor(isDarkMode),
+    highlightColor: AppColor.highlightColor.getColor(isDarkMode),
 
 
-  visualDensity: VisualDensity.adaptivePlatformDensity,
-  hoverColor: AppColor.hoverColor.lightColor,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+    hoverColor: AppColor.hoverColor.getColor(isDarkMode),
 
 
-  floatingActionButtonTheme: floatingActionButtonTheme,
-  dividerColor: AppColor.dividerColor.lightColor,
-  hintColor: AppColor.hintColor.lightColor,
-  shadowColor: AppColor.shadowColor.lightColor,
-  primaryColor: AppColor.primaryColor.lightColor,
-  primaryColorDark: AppColor.primaryColorDark.lightColor,
-  bottomNavigationBarTheme: bottomNavigationBarTheme,
-  // buttonTheme: buttonTheme,
-  unselectedWidgetColor: AppColor.unselectedWidgetColor.lightColor,
+    floatingActionButtonTheme: floatingActionButtonTheme,
+    dividerColor: AppColor.dividerColor.getColor(isDarkMode),
+    hintColor: AppColor.hintColor.getColor(isDarkMode),
+    primaryColor: AppColor.primaryColor.getColor(isDarkMode),
+    primaryColorDark: AppColor.primaryColorDark.getColor(isDarkMode),
 
-  pageTransitionsTheme: const PageTransitionsTheme(builders: {
-    TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.fuchsia: ZoomPageTransitionsBuilder(),
-  }),
-
-  dialogTheme: DialogThemeData(backgroundColor: AppColor.dialogColor.lightColor, surfaceTintColor: AppColor.dialogColor.lightColor),
-  datePickerTheme: DatePickerThemeData(backgroundColor: AppColor.dialogColor.lightColor, surfaceTintColor: AppColor.dialogColor.lightColor),
-  primaryColorLight: AppColor.primaryColorLight.lightColor,
-  disabledColor: AppColor.disabledColor.lightColor,
-  // toggleableActiveColor: AppColor.primaryColor.lightColor,
-
-  /// Text fields
-  inputDecorationTheme: kInputDecorationTheme,
-
-  cardTheme: CardThemeData(
-    color: AppColor.cardColor.lightColor,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(kFormRadiusSmall))),
-    shadowColor: AppColor.shadowColor.lightColor,
-    surfaceTintColor: AppColor.cardColor.lightColor,
-    elevation: 4,
-  ),
-  checkboxTheme: CheckboxThemeData(
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
-    fillColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.scaffoldBackgroundColor.lightColor:null),
-    overlayColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColor.lightColor:null),
-    side: BorderSide(color: AppColor.borderColor.lightColor, width: 2.0),
-
-  ),
-
-  radioTheme:RadioThemeData(
-    fillColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.borderColor.lightColor:null),
-    overlayColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColor.lightColor:null),
-
-  ),
-  colorScheme: ColorScheme(
-    brightness: Brightness.light,
-    primary: AppColor.primaryColor.lightColor,
-    onPrimary: AppColor.scaffoldBackgroundColor.lightColor,
-    primaryContainer: AppColor.primaryColor.lightColor,
-    onPrimaryContainer: AppColor.scaffoldBackgroundColor.lightColor,
-    inversePrimary: AppColor.primaryColor.lightColor,
-    surface: AppColor.scaffoldBackgroundColor.lightColor,
-    onSurface: AppColor.primaryColor.lightColor,
-    inverseSurface: AppColor.scaffoldBackgroundColor.lightColor,
-    onInverseSurface: AppColor.primaryColor.lightColor,
-    surfaceContainerHighest: AppColor.scaffoldBackgroundColor.lightColor,
-    onSurfaceVariant: AppColor.primaryColorDark.lightColor,
-    secondary: AppColor.primaryColorDark.lightColor,
-    onSecondary: AppColor.scaffoldBackgroundColor.lightColor,
-    secondaryContainer: AppColor.primaryColorDark.lightColor,
-    onSecondaryContainer: AppColor.scaffoldBackgroundColor.lightColor,
-    // background: AppColor.backgroundColor.lightColor,
-    // onBackground: AppColor.primaryColor.lightColor,
-    error: AppColor.errorColor.lightColor,
-    onError: AppColor.scaffoldBackgroundColor.lightColor,
-    errorContainer: AppColor.errorColor.lightColor,
-    onErrorContainer: AppColor.scaffoldBackgroundColor.lightColor,
-    tertiary: AppColor.primaryColor.lightColor,
-    onTertiary: AppColor.scaffoldBackgroundColor.lightColor,
-    tertiaryContainer: AppColor.primaryColor.lightColor,
-    onTertiaryContainer: AppColor.scaffoldBackgroundColor.lightColor,
-    shadow: AppColor.grayScaleLiteColor.lightColor,
-    outline: AppColor.primaryColor.lightColor,
-  ),
-);
+    // buttonTheme: buttonTheme,
+    unselectedWidgetColor: AppColor.unselectedWidgetColor.getColor(isDarkMode),
 
 
+    primaryColorLight: AppColor.primaryColorLight.getColor(isDarkMode),
+    disabledColor: AppColor.disabledColor.getColor(isDarkMode),
+    // toggleableActiveColor: AppColor.primaryColor.getColor(isDarkMode),
 
+    /// Text fields
+    inputDecorationTheme:isDarkMode?kInputDecorationThemeDark: kInputDecorationTheme,
 
-ThemeData  darkTheme =ThemeData(
-  fontFamily: FontConstants.fontFamily,
+    appBarTheme: AppBarTheme(
+      color:AppColor.primaryColor.getColor(isDarkMode) ,
+      systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: AppColor.appBarIconsColor.getColor(isDarkMode), statusBarIconBrightness: Brightness.light, statusBarBrightness: Brightness.dark),
+      toolbarTextStyle: TextStyle(color:AppColor.appBarIconsColor.getColor(isDarkMode) ),
+      iconTheme: IconThemeData(color:AppColor.appBarIconsColor.getColor(isDarkMode)),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: AppColor.primaryColor.getColor(isDarkMode),
+      elevation: 0,
+      selectedItemColor: AppColor.primaryColor.getColor(isDarkMode),
+      unselectedItemColor: AppColor.hintColor.getColor(isDarkMode),
+    ),
+    pageTransitionsTheme: const PageTransitionsTheme(builders: {
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: ZoomPageTransitionsBuilder(),
+    }),
+    dialogTheme: DialogThemeData(backgroundColor: AppColor.dialogColor.getColor(isDarkMode), surfaceTintColor: AppColor.dialogColor.getColor(isDarkMode)),
+    datePickerTheme: DatePickerThemeData(backgroundColor: AppColor.dialogColor.getColor(isDarkMode), surfaceTintColor: AppColor.dialogColor.getColor(isDarkMode)),
 
-  scaffoldBackgroundColor: AppColor.scaffoldBackgroundColor.darkColor,
-  textTheme: textThemeDark,
-  cardColor: AppColor.cardColor.darkColor,
-  brightness: Brightness.dark,
-  splashColor: AppColor.hintColor.darkColor,
-  highlightColor: AppColor.highlightColor.darkColor,
-  appBarTheme: appBarThemeDark,
+    cardTheme: CardThemeData(
+      color: AppColor.cardColor.getColor(isDarkMode),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(kFormRadiusSmall))),
+      shadowColor: AppColor.shadowColor.getColor(isDarkMode),
+      surfaceTintColor: AppColor.cardColor.getColor(isDarkMode),
+      elevation: 4,
+    ),
+    checkboxTheme: CheckboxThemeData(
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+      side: BorderSide(color: AppColor.primaryColor.getColor(isDarkMode), width: 2),
+      checkColor: WidgetStateProperty.all<Color>(AppColor.cardColor.getColor(isDarkMode)),
 
-  visualDensity: VisualDensity.adaptivePlatformDensity,
-  hoverColor: AppColor.hoverColor.darkColor,
-  shadowColor: AppColor.shadowColor.darkColor,
-  floatingActionButtonTheme: floatingActionButtonThemeDark,
-  dividerColor: AppColor.dividerColor.darkColor,
-  hintColor: AppColor.hintColor.darkColor,
-  primaryColor: AppColor.primaryColor.darkColor,
-  primaryColorDark: AppColor.primaryColorDark.darkColor,
-  bottomNavigationBarTheme: bottomNavigationBarThemeDark,
-  // buttonTheme: buttonThemeDark,
-  unselectedWidgetColor: AppColor.unselectedWidgetColor.darkColor,
+      fillColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.cardColor.getColor(isDarkMode):null),
+      // overlayColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColorDark.getColor(isDarkMode):null),
+      overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.pressed)) return AppColor.primaryColor.getColor(isDarkMode).withOpacity(0.12);
+        if (states.contains(WidgetState.hovered)) return AppColor.primaryColor.getColor(isDarkMode).withOpacity(0.08);
+        if (states.contains(WidgetState.focused)) return AppColor.primaryColor.getColor(isDarkMode).withOpacity(0.10);
+        return null;
+      }),
+      // fillColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.cardColor.getColor(isDarkMode):AppColor.cardColor.getColor(isDarkMode)),
+      // overlayColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColorDark.getColor(isDarkMode):AppColor.primaryColorDark.getColor(isDarkMode)),
+    ),
+    radioTheme:RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColor.getColor(isDarkMode):null),
 
-  pageTransitionsTheme: const PageTransitionsTheme(builders: {
-    TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-    TargetPlatform.fuchsia: ZoomPageTransitionsBuilder(),
-  }),
-
-  dialogTheme: DialogThemeData(backgroundColor: AppColor.dialogColor.darkColor, surfaceTintColor: AppColor.dialogColor.darkColor),
-  datePickerTheme: DatePickerThemeData(backgroundColor: AppColor.dialogColor.darkColor, surfaceTintColor: AppColor.dialogColor.darkColor),
-  primaryColorLight: AppColor.primaryColorLight.darkColor,
-  disabledColor: AppColor.disabledColor.darkColor,
-  // toggleableActiveColor: AppColor.primaryColor.darkColor,
-
-  /// Text fields
-  inputDecorationTheme: kInputDecorationThemeDark,
-  cardTheme: CardThemeData(
-    color: AppColor.cardColor.darkColor,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(kFormRadiusSmall))),
-    shadowColor: AppColor.shadowColor.darkColor,
-    surfaceTintColor: AppColor.cardColor.darkColor,
-    elevation: 4,
-  ),
-
-  checkboxTheme: CheckboxThemeData(
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
-    fillColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColor.darkColor:null),
-    overlayColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColorDark.darkColor:null),
-  ),
-  radioTheme:RadioThemeData(
-    fillColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColor.darkColor:null),
-    overlayColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColorDark.darkColor:null),
-  ),
-  colorScheme: ColorScheme(
-    brightness: Brightness.dark,
-    primary: AppColor.primaryColor.darkColor,
-    onPrimary: AppColor.scaffoldBackgroundColor.darkColor,
-    primaryContainer: AppColor.primaryColor.darkColor,
-    onPrimaryContainer: AppColor.scaffoldBackgroundColor.darkColor,
-    inversePrimary: AppColor.primaryColor.darkColor,
-    surface: AppColor.scaffoldBackgroundColor.darkColor,
-    onSurface: AppColor.primaryColor.darkColor,
-    inverseSurface: AppColor.scaffoldBackgroundColor.darkColor,
-    onInverseSurface: AppColor.primaryColor.darkColor,
-    surfaceContainerHighest: AppColor.scaffoldBackgroundColor.darkColor,
-    onSurfaceVariant: AppColor.primaryColorDark.darkColor,
-    secondary: AppColor.primaryColorDark.darkColor,
-    onSecondary: AppColor.scaffoldBackgroundColor.darkColor,
-    secondaryContainer: AppColor.primaryColorDark.darkColor,
-    onSecondaryContainer: AppColor.scaffoldBackgroundColor.darkColor,
-    // background: AppColor.backgroundColor.darkColor,
-    // onBackground: AppColor.primaryColor.darkColor,
-    error: AppColor.errorColor.darkColor,
-    onError: AppColor.scaffoldBackgroundColor.darkColor,
-    errorContainer: AppColor.errorColor.darkColor,
-    onErrorContainer: AppColor.scaffoldBackgroundColor.darkColor,
-    tertiary: AppColor.primaryColor.darkColor,
-    onTertiary: AppColor.scaffoldBackgroundColor.darkColor,
-    tertiaryContainer: AppColor.primaryColor.darkColor,
-    onTertiaryContainer: AppColor.scaffoldBackgroundColor.darkColor,
-    shadow: AppColor.grayScaleLiteColor.darkColor,
-    outline: AppColor.primaryColor.darkColor,
-  ),
-);
-
+      // overlayColor: WidgetStateProperty.resolveWith((states) =>(!states.contains(WidgetState.selected))?AppColor.primaryColorDark.getColor(isDarkMode):null),
+      overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.pressed)) return AppColor.primaryColor.getColor(isDarkMode).withOpacity(0.12);
+        if (states.contains(WidgetState.hovered)) return AppColor.primaryColor.getColor(isDarkMode).withOpacity(0.08);
+        if (states.contains(WidgetState.focused)) return AppColor.primaryColor.getColor(isDarkMode).withOpacity(0.10);
+        return null;
+      }),
+    ),
+    colorScheme: schemeTheme,
+  );
+}
 

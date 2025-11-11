@@ -9,7 +9,7 @@ Future<void> _firebaseMessagingBackgroundHandler( message) async {
   // make sure you call `initializeApp` before using other Firebase services.
   print('Handling a background message ${message.messageId}');
 }
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 void initMessaging() async {
   AndroidNotificationChannel channel;
@@ -17,17 +17,17 @@ void initMessaging() async {
   // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   channel = const AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-   
-    importance: Importance.high, playSound: true, enableLights: true,
-    showBadge: true,enableVibration: true
+      'high_importance_channel', // id
+      'High Importance Notifications', // title
+
+      importance: Importance.high, playSound: true, enableLights: true,
+      showBadge: true,enableVibration: true
   );
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   // await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
@@ -35,11 +35,11 @@ void initMessaging() async {
   //   badge: true,
   //   sound: true,
   // );
-flutterLocalNotificationsPlugin.initialize(const InitializationSettings(
-  android: AndroidInitializationSettings(
-     'icon'
-  )
-));
+  flutterLocalNotificationsPlugin.initialize(const InitializationSettings(
+      android: AndroidInitializationSettings(
+          'icon'
+      )
+  ));
 
   // FirebaseMessaging.instance
   //     .getInitialMessage()
@@ -57,7 +57,7 @@ flutterLocalNotificationsPlugin.initialize(const InitializationSettings(
   //           android: AndroidNotificationDetails(
   //             channel.id,
   //             channel.name,
-         
+
   //             visibility: NotificationVisibility.public,
   //             importance: Importance.max,
   //             icon: 'freeloot',

@@ -12,7 +12,7 @@ class MqSalaahTimeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LocationProvider>(
+    return Consumer<PrayTimeLocationProvider>(
       builder: (context, provider, _) {
         if (provider.eventState is LocationEventNewLocation) {
           final name = provider.locationName;
@@ -45,7 +45,7 @@ class MqSalaahTimeWidget extends StatelessWidget {
       context: context,
       newLocation: newLocation,
       onConfirm: (ctx) {
-        context.read<LocationProvider>().updateLocation(); // ⬅️ see step 2
+        context.read<PrayTimeLocationProvider>().updateLocation(); // ⬅️ see step 2
         Navigator.pop(ctx);
       },
       onCancel: Navigator.pop,

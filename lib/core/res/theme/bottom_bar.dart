@@ -13,11 +13,11 @@ BottomNavigationBarThemeData bottomNavigationBarTheme = BottomNavigationBarTheme
 );
 
 BottomNavigationBarThemeData bottomNavigationBarThemeDark =
-     BottomNavigationBarThemeData(
-      backgroundColor: AppColor.primaryColor.darkColor,
-      elevation: 0,
-      selectedItemColor: AppColor.primaryColor.darkColor,
-      unselectedItemColor: AppColor.hintColor.darkColor,
-      // selectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
-      // unselectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
+BottomNavigationBarThemeData(
+  backgroundColor: AppColor.primaryColor.darkColor,
+  elevation: 0,
+  selectedItemColor: AppColor.primaryColor.darkColor,
+  unselectedItemColor: AppColor.hintColor.darkColor,
+  // selectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
+  // unselectedLabelStyle: const TextStyle(fontFamily: FontConstants.fontFamily),
 );

@@ -51,7 +51,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         overflow: TextOverflow.ellipsis,
-        style: new TextStyle(
+        style: TextStyle(
           color: teal[50],
           fontWeight: FontWeight.w700,
           fontSize: 16,
@@ -193,7 +193,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             alignment: Alignment.centerRight,
             child: Text(
               text,
-              style: new TextStyle(
+              style: TextStyle(
                 color: enable ? teal[900] : teal[900]!.withAlpha(125),
                 fontWeight: FontWeight.w300,
                 fontSize: 14,

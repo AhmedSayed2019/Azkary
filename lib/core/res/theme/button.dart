@@ -2,7 +2,7 @@
 //
 // import '../color.dart';
 //
-import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/core/res/color.dart';
 import 'package:flutter/material.dart';
 
 final floatingActionButtonTheme = ThemeData.light().floatingActionButtonTheme.copyWith(backgroundColor: AppColor.floatingActionButtonColor.lightColor,shape: const CircleBorder());

@@ -1,4 +1,9 @@
 import 'package:azkark/core/res/theme_helper.dart';
+import 'package:azkark/data/models/locationInfo.dart';
+import 'package:azkark/features/adhan/providers/adhan_dependency_provider.dart';
+import 'package:azkark/features/adhan/providers/adhan_provider.dart';
+import 'package:azkark/features/adhan/providers/ahdan_notification_provider.dart';
+import 'package:azkark/features/adhan/providers/location_provider.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/providers.dart';
 import 'package:azkark/providers/asmaallah_provider.dart';
@@ -22,6 +27,7 @@ Future<void> injection() async {
   );
   getIt.registerLazySingleton(() => sharedPreferences);
   getIt.registerLazySingleton(() => storage);
+
   getIt.registerLazySingleton(() => locationClient);
 
 
@@ -36,7 +42,18 @@ Future<void> injection() async {
   getIt.registerLazySingleton(() => FavoritesProvider());
   getIt.registerLazySingleton(() => PrayerProvider());
   getIt.registerLazySingleton(() => AsmaAllahProvider());
-  getIt.registerLazySingleton(() => GetDataProvider());
+
+  //adan
+  // getIt.registerLazySingleton(() => LocationInfo(latitude, longitude, address, mode));
+  // getIt.registerLazySingleton(() => GlobalDependencyProvider.getInstance());
+  getIt.registerLazySingleton(() => AdanLocationProvider.getInstance());
+  getIt.registerLazySingleton(() => AdhanDependencyProvider());
+
+
+  // getIt.registerLazySingleton(() => AdhanDependencyProvider());
+  // getIt.registerLazySingleton(() => AdhanProvider(getIt(), locationInfo));
+  // getIt.registerLazySingleton(() => AdhanNotificationProvider(getIt(), locationInfo));
+  // // getIt.registerLazySingleton(() => GetDataProvider());
 
 
 

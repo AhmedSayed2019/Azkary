@@ -1,0 +1,27 @@
+import 'package:azkark/core/utils/helpers/extensions.dart';
+import 'package:azkark/features/adhan/widgets/settings_tile.dart';
+import 'package:flutter/material.dart';
+
+class SettingsSection extends StatelessWidget {
+  final String title;
+  final List<SettingsTile> tiles;
+  const SettingsSection({required this.title, required this.tiles});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      decoration: BoxDecoration(
+        //color: getColoredContainerColor(context),
+        borderRadius: BorderRadius.circular(12)
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(title: Text(title, style: TextStyle(color: context.secondaryColor),),),
+          ...tiles,
+        ],
+      ),
+    );
+  }
+}

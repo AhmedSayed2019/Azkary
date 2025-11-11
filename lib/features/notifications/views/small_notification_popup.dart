@@ -1,10 +1,13 @@
+import 'dart:developer';
 import 'dart:math';
 
 import 'package:azkark/core/utils/constants.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:nabd/GlobalHelpers/constants.dart';
+// import 'package:nabd/GlobalHelpers/hive_helper.dart';
 
 class TrueCallerOverlay extends StatefulWidget {
   const TrueCallerOverlay({Key? key}) : super(key: key);
@@ -61,68 +64,50 @@ class _TrueCallerOverlayState extends State<TrueCallerOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Material(
-        color: Colors.transparent,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                    color: goldColor.withOpacity(.2),
-                    blurRadius: 2,
-                    spreadRadius: 2)
-              ],
-              color:  quranPagesColorLight,
-              image: const DecorationImage(
-                  image: AssetImage(Assets.quranZikrback),
-                  fit: BoxFit.cover,
-                  opacity: .2),
-              borderRadius: BorderRadius.circular(26.0),
-            ),
-            child: GestureDetector(
-              onTap: ()async {setState(() {
-                
-              });
-                                       await FlutterOverlayWindow.closeOverlay();
-
-              },
-              child: Stack(
-                children: [
-                  Center(
-                      child: Text(
-                    azkarList[Random().nextInt(azkarList.length)],
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: goldColor, fontSize: 26, fontFamily: "Taha"),
-                  )),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      height: 50.0,
-                      width: 50.0,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black54),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        onPressed: () async {setState(() {
-                          
-                        });
-                          await FlutterOverlayWindow.closeOverlay();
-                        },
-                        icon: const Icon(
-                          Icons.close,
-                          color: Colors.black,
+    return SizedBox(
+      height: 100,
+      width: (MediaQuery.of(context).size.width*0.9).toDouble(),
+      // width: (WindowSize.matchParent/1ZZZZZ),
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              // height: (MediaQuery.of(context).size.height*0.6).toDouble(),
+              // width: WindowSize.matchParent.toDouble(),
+              decoration: BoxDecoration(
+                boxShadow: [BoxShadow(color: goldColor.withOpacity(.2), blurRadius: 2, spreadRadius: 2)],
+                color:  quranPagesColorLight,
+                image: const DecorationImage(image: AssetImage(Assets.quranZikrback), fit: BoxFit.cover, opacity: .2),
+                borderRadius: BorderRadius.circular(26.0),
+              ),
+              child: GestureDetector(
+                onTap: ()async {setState(() {});await FlutterOverlayWindow.closeOverlay();},
+                child: Stack(
+                  children: [
+                    Center(child: Text(azkarList[Random().nextInt(azkarList.length)], textAlign: TextAlign.center,
+                      style: const TextStyle(color: goldColor, fontSize: 16, fontFamily: "Taha"),)),
+                    Positioned(
+                      top: 0,
+                      right: 10,
+                      child: Container(
+                        height: 32.0,
+                        width: 32.0,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black54),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          onPressed: () async {setState(() {});await FlutterOverlayWindow.closeOverlay();},
+                          icon: const Icon(Icons.close, color: Colors.black,size: 16,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

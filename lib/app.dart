@@ -9,6 +9,7 @@ import 'package:azkark/pages/home/home_page.dart';
 import 'package:azkark/pages/home/loading_page.dart';
 import 'package:azkark/providers/sections_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_overlay/easy_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,9 +40,14 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     bool isDarkMode = context.watch<ThemeHelper>().isDarkMode;
-
     appContext = context;
+
     return MaterialApp(
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      color:Theme.of(context).scaffoldBackgroundColor,
+
 
       //
       // debugShowCheckedModeBanner: false,
@@ -68,16 +74,12 @@ class _MyAppState extends State<MyApp> {
 
 
       // theme: AppTheme.appTheme(context),
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      color:Theme.of(context).scaffoldBackgroundColor,
 
 
 
       title: 'سكينة',
       debugShowCheckedModeBanner: false,
-
+      builder: EasyOverlay.init(),
       home: Directionality(
         textDirection:ui. TextDirection.rtl,
         child: Consumer<SectionsProvider>(

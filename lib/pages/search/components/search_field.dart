@@ -35,48 +35,38 @@ class _SearchFieldState extends State<SearchField> {
           margin: const EdgeInsets.only(bottom: 20.0, top: 20.0),
           padding: const EdgeInsets.only(bottom: 20.0, top: 20.0),
           width: size.width,
-          decoration: BoxDecoration(
-            color: teal[700],
-            borderRadius: BorderRadius.circular(10),
-          ),
+          decoration: BoxDecoration(color: teal[700], borderRadius: BorderRadius.circular(10)),
         ),
         TextField(
           autofocus: true,
+
           controller: _textController,
-          style: TextStyle(
-            color: teal[50],
+          style: TextStyle(color: Theme.of(context).scaffoldBackgroundColor,
+            // color: teal[50],
           ),
           textInputAction: TextInputAction.search,
-          cursorColor: teal[200],
-          decoration: InputDecoration(
-              border: InputBorder.none,
-              prefixIcon: Icon(
-                Icons.search,
-                color: teal[50],
-              ),
-              suffixIcon: _textController.text.isNotEmpty
-                  ? IconButton(
-                      splashColor: teal[600],
-                      highlightColor: teal[600],
-                      onPressed: () {
-                        print('You clicked on clear Text');
-                        _textController.clear();
-                        widget._onChanged(_textController.text);
-                      },
-                      padding: EdgeInsets.all(6),
-                      tooltip: tr( 'delete'),
-                      icon: Icon(
-                        Icons.clear,
-                        color: teal[50],
-                        size: 20,
-                      ),
-                    )
-                  : Container(
-                      width: 0,
-                      height: 0,
-                    ),
-              hintText: widget._title,
-              hintStyle: TextStyle(color: Theme.of(context).cardColor, fontSize: 12)),
+          cursorColor: Theme.of(context).primaryColor,
+          decoration: InputDecoration(border: InputBorder.none, prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor,),
+
+            suffixIcon: _textController.text.isNotEmpty
+                ? IconButton(
+              splashColor: teal[600],
+              highlightColor: teal[600],
+              onPressed: () {
+                print('You clicked on clear Text');
+                _textController.clear();
+                widget._onChanged(_textController.text);
+              },
+              padding: const EdgeInsets.all(6),
+              tooltip: tr( 'delete'),
+              icon: Icon(Icons.clear, color: Theme.of(context).primaryColor, size: 20,),
+            )
+                : const SizedBox(width: 0, height: 0),
+            hintText: widget._title,
+            hintStyle: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12),
+            labelStyle: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12),
+
+          ),
           onChanged: widget._onChanged,
         ),
       ],

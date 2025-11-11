@@ -3,6 +3,8 @@ import 'package:azkark/data/local/storage_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+
 class ThemeHelper extends ChangeNotifier {
   final SharedPreferences _sharedPreferences;
 
@@ -21,6 +23,10 @@ class ThemeHelper extends ChangeNotifier {
     _themeData = _isDarkMode ? darkTheme : lightTheme;
     // notifyListeners();
   }
+
+  bool get getIsDarkMode =>(_sharedPreferences.get(StorageKeys.kIsDarkMode) ?? false) as bool;
+
+
 
   void changeTheme(isDarkMode,{bool reload =false}) {
     print('changeTheme isDarkMode==$isDarkMode');

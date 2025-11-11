@@ -1,6 +1,7 @@
 import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/core/utils/constants.dart';
 import 'package:azkark/core/utils/hive_helper.dart';
+import 'package:azkark/features/notifications/views/small_notification_popup.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:easy_overlay/easy_overlay.dart';
 
 
 class NotificationsPage extends StatefulWidget {
@@ -34,7 +36,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor:
-            getValue("darkMode") ? darkModeSecondaryColor : blueColor,
+        getValue("darkMode") ? darkModeSecondaryColor : blueColor,
         centerTitle: true,
         title: Text(
           "notifications".tr(),
@@ -45,15 +47,59 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ),
       body: Container(
         color:
-            getValue("darkMode") ? quranPagesColorDark : quranPagesColorLight,
+        getValue("darkMode") ? quranPagesColorDark : quranPagesColorLight,
         child: ListView(
           children: [
+            // InkWell(
+            //   onTap: ()async{
+            //     if(await FlutterOverlayWindow.isPermissionGranted() == false){
+            //       print('isPermissionGranted false');
+            //       FlutterOverlayWindow.requestPermission();
+            //       return;
+            //     }
+            //     print('sssssssssssss');
+            //     EasyOverlayCtx.showToast(
+            //       context,
+            //       message: "Default Toast With Context",
+            //       alignment: Alignment.bottomCenter,
+            //       decoration: ToastDecoration.origin.copyWith(
+            //         backgroundColor: Colors.cyan,
+            //       ),
+            //     );
+            //     // EasyOverlayCtx.show(context);
+            //     EasyOverlay.show(
+            //       child: TrueCallerOverlay(),
+            //     );
+            //     // await FlutterOverlayWindow.showOverlay(
+            //     //   height:50,// (MediaQuery.of(context).size.height*0.6).toInt(),
+            //     //   width: 200,//WindowSize.matchParent,
+            //     //   alignment: OverlayAlignment.center,
+            //     //   flag: OverlayFlag.defaultFlag,
+            //     //   visibility:  NotificationVisibility.visibilityPublic,
+            //     //   enableDrag: true,
+            //     //   overlayTitle: 'test',
+            //     //   overlayContent: 'This is a test overlay',
+            //     //   startPosition:  OverlayPosition(0, -259),
+            //     //   // overlayContentPackageName: 'com.example.azkark',
+            //     // );
+            //   },
+            //   child: Container(
+            //     color: Colors.green,
+            //     alignment: Alignment.center,
+            //
+            //     margin: const EdgeInsets.all(8.0),
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Text('Test'),
+            //
+            //
+            //   ),
+            // ),
+
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
               child: Card(
                 elevation: .8,
-                color: getValue("darkMode")
-                    ? darkModeSecondaryColor
+                color: getValue("darkMode") ? darkModeSecondaryColor
                     : Colors.white,
                 margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
                 child: Padding(
@@ -72,7 +118,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             //   width: 10,
                             // ),
                             CupertinoSwitch(
-                                // overrides the default green color of the track
+                              // overrides the default green color of the track
                                 activeColor: blueColor,
                                 // color of the round icon, which moves from right to left
                                 thumbColor: Colors.white,
@@ -113,9 +159,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 CircleAvatar(
                                   radius: 5,
                                   backgroundColor:
-                                      getValue("shouldShowSallyNotification")
-                                          ? Colors.green
-                                          : Colors.grey,
+                                  getValue("shouldShowSallyNotification")
+                                      ? Colors.green
+                                      : Colors.grey,
                                 ),
                               ],
                             ),
@@ -168,7 +214,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             CupertinoSwitch(
-                                // overrides the default green color of the track
+                              // overrides the default green color of the track
                                 activeColor: blueColor,
                                 // color of the round icon, which moves from right to left
                                 thumbColor: Colors.white,
@@ -185,18 +231,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         "ayahNotfication", "ayahNot",
                                         frequency: Duration(
                                             minutes: periods[getValue(
-                                                    "timesForShowingAyahNotifications")]
-                                                ["index"])
+                                                "timesForShowingAyahNotifications")]
+                                            ["index"])
 
-                                        // frequency: const Duration(
-                                        //     minutes:1
-                                        //     //  24 *
-                                        //     //     60 ~/
-                                        //     //     getValue(
-                                        //     //         "timesFoShowingAyahNotifications")
+                                      // frequency: const Duration(
+                                      //     minutes:1
+                                      //     //  24 *
+                                      //     //     60 ~/
+                                      //     //     getValue(
+                                      //     //         "timesFoShowingAyahNotifications")
 
-                                        //             )
-                                        );
+                                      //             )
+                                    );
                                   } else {
                                     // Fluttertoast.showToast(
                                     //     msg:
@@ -212,7 +258,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             TextButton(
                                 onPressed: () async {
                                   if ((await Permission
-                                          .notification.isGranted) ==
+                                      .notification.isGranted) ==
                                       false) {
                                     await Permission.notification.request();
                                   }
@@ -251,9 +297,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 CircleAvatar(
                                   radius: 5,
                                   backgroundColor:
-                                      getValue("shouldShowAyahNotification")
-                                          ? Colors.green
-                                          : Colors.grey,
+                                  getValue("shouldShowAyahNotification")
+                                      ? Colors.green
+                                      : Colors.grey,
                                 ),
                               ],
                             ),
@@ -315,17 +361,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                             "timesForShowingAyahNotifications"),
                                         items: periods
                                             .map((e) => DropdownMenuItem(
-                                                value: e["index"],
-                                                child: Text(
-                                                  e["name"],
-                                                  style: TextStyle(
-                                                      color:
-                                                          getValue("darkMode")
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                      fontSize: 16.sp,
-                                                      fontFamily: 'cairo'),
-                                                )))
+                                            value: e["index"],
+                                            child: Text(
+                                              e["name"],
+                                              style: TextStyle(
+                                                  color:
+                                                  getValue("darkMode")
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                  fontSize: 16.sp,
+                                                  fontFamily: 'cairo'),
+                                            )))
                                             .toList(),
                                         onChanged: (f) {
                                           updateValue(
@@ -383,7 +429,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             CupertinoSwitch(
-                                // overrides the default green color of the track
+                              // overrides the default green color of the track
                                 activeColor: blueColor,
                                 // color of the round icon, which moves from right to left
                                 thumbColor: Colors.white,
@@ -400,18 +446,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         "hadithNotfication", "hadithNot",
                                         frequency: Duration(
                                             minutes: periods[getValue(
-                                                    "timesForShowinghadithNotifications")]
-                                                ["index"])
+                                                "timesForShowinghadithNotifications")]
+                                            ["index"])
 
-                                        // frequency: const Duration(
-                                        //     minutes:1
-                                        //     //  24 *
-                                        //     //     60 ~/
-                                        //     //     getValue(
-                                        //     //         "timesFoShowingAyahNotifications")
+                                      // frequency: const Duration(
+                                      //     minutes:1
+                                      //     //  24 *
+                                      //     //     60 ~/
+                                      //     //     getValue(
+                                      //     //         "timesFoShowingAyahNotifications")
 
-                                        //             )
-                                        );
+                                      //             )
+                                    );
                                   } else {
                                     // Fluttertoast.showToast(
                                     //     msg:
@@ -427,7 +473,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             TextButton(
                                 onPressed: () async {
                                   if ((await Permission
-                                          .notification.isGranted) ==
+                                      .notification.isGranted) ==
                                       false) {
                                     await Permission.notification.request();
                                   }
@@ -465,9 +511,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 CircleAvatar(
                                   radius: 5,
                                   backgroundColor:
-                                      getValue("shouldShowhadithNotification")
-                                          ? Colors.green
-                                          : Colors.grey,
+                                  getValue("shouldShowhadithNotification")
+                                      ? Colors.green
+                                      : Colors.grey,
                                 ),
                               ],
                             ),
@@ -501,7 +547,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child:
-                            Image.asset(Assets.quranHadithNotification),
+                        Image.asset(Assets.quranHadithNotification),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(3.0),
@@ -530,17 +576,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                             "timesForShowinghadithNotifications"),
                                         items: periods
                                             .map((e) => DropdownMenuItem(
-                                                value: e["index"],
-                                                child: Text(
-                                                  e["name"],
-                                                  style: TextStyle(
-                                                      color:
-                                                          getValue("darkMode")
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                      fontSize: 16.sp,
-                                                      fontFamily: 'cairo'),
-                                                )))
+                                            value: e["index"],
+                                            child: Text(
+                                              e["name"],
+                                              style: TextStyle(
+                                                  color:
+                                                  getValue("darkMode")
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                  fontSize: 16.sp,
+                                                  fontFamily: 'cairo'),
+                                            )))
                                             .toList(),
                                         onChanged: (f) {
                                           updateValue(
@@ -600,7 +646,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             //   width: 10,
                             // ),
                             CupertinoSwitch(
-                                // overrides the default green color of the track
+                              // overrides the default green color of the track
                                 activeColor: blueColor,
                                 // color of the round icon, which moves from right to left
                                 thumbColor: Colors.white,
@@ -613,16 +659,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   updateValue(
                                       "shouldShowZikrNotification2", value);
                                   if (value == true) {
-                                    Workmanager().registerPeriodicTask(
-                                        "zikrNotification2",
-                                        "zikrNotification2",
-                                        frequency: Duration(
-                                            minutes: periods[getValue(
-                                                    "timesForShowingZikrNotifications2")]
-                                                ["index"]));
+                                    Workmanager().registerPeriodicTask("zikrNotification2", "zikrNotification2",
+                                        frequency: Duration(minutes: periods[getValue("timesForShowingZikrNotifications2")]["index"]));
                                   } else {
-                                    Workmanager().cancelByUniqueName(
-                                        "zikrNotification2");
+                                    Workmanager().cancelByUniqueName("zikrNotification2");
                                   }
 
                                   setState(() {});
@@ -671,9 +711,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 CircleAvatar(
                                   radius: 5,
                                   backgroundColor:
-                                      getValue("shouldShowZikrNotification2")
-                                          ? Colors.green
-                                          : Colors.grey,
+                                  getValue("shouldShowZikrNotification2")
+                                      ? Colors.green
+                                      : Colors.grey,
                                 ),
                               ],
                             ),
@@ -686,13 +726,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         child: Text(
                           "zikrNotificationDetails2".tr(),
                           softWrap: true,
-                          style: TextStyle(
-                            color: getValue("darkMode")
-                                ? Colors.white
-                                : Colors.black,
-                          ),
+                          style: TextStyle(color: getValue("darkMode") ? Colors.white : Colors.black),
                         ),
-                      )
+                      )  ,
                       // Text(
                       //   'Letter: ${reciter.letter}',
                       //   style: const TextStyle(fontSize: 16),
@@ -703,11 +739,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       // ),
 
                       // padding: EdgeInsets.all(8.0),
-                      ,
+
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child:
-                            Image.asset(Assets.quranZikrnotification2),
+                        Image.asset(Assets.quranZikrnotification2),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(3.0),
@@ -736,17 +772,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                             "timesForShowingZikrNotifications2"),
                                         items: periods
                                             .map((e) => DropdownMenuItem(
-                                                value: e["index"],
-                                                child: Text(
-                                                  e["name"],
-                                                  style: TextStyle(
-                                                      color:
-                                                          getValue("darkMode")
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                      fontSize: 16.sp,
-                                                      fontFamily: 'cairo'),
-                                                )))
+                                            value: e["index"],
+                                            child: Text(
+                                              e["name"],
+                                              style: TextStyle(
+                                                  color:
+                                                  getValue("darkMode")
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                  fontSize: 16.sp,
+                                                  fontFamily: 'cairo'),
+                                            )))
                                             .toList(),
                                         onChanged: (f) {
                                           updateValue(
@@ -806,7 +842,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             //   width: 10,
                             // ),
                             CupertinoSwitch(
-                                // overrides the default green color of the track
+                              // overrides the default green color of the track
                                 activeColor: blueColor,
                                 // color of the round icon, which moves from right to left
                                 thumbColor: Colors.white,
@@ -816,28 +852,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 value: getValue("shouldShowZikrNotification"),
                                 // changes the state of the switch
                                 onChanged: (value) async {
-                                  if ((await FlutterOverlayWindow
-                                          .isPermissionGranted()) ==
-                                      false) {
-                                    await FlutterOverlayWindow
-                                        .requestPermission();
+                                  if ((await FlutterOverlayWindow.isPermissionGranted()) == false) {
+                                    await FlutterOverlayWindow.requestPermission();
                                   }
 
-                                  if (await FlutterOverlayWindow
-                                      .isPermissionGranted()) {
-                                    updateValue(
-                                        "shouldShowZikrNotification", value);
+                                  if (await FlutterOverlayWindow.isPermissionGranted()) {updateValue("shouldShowZikrNotification", value);
                                     if (value == true) {
-                                      Workmanager().registerPeriodicTask(
-                                          "zikrNotification",
-                                          "zikrNotification",
-                                          frequency: Duration(
-                                              minutes: periods[getValue(
-                                                      "timesForShowingZikrNotifications")]
-                                                  ["index"]));
+                                      Workmanager().registerPeriodicTask("zikrNotification", "zikrNotification", frequency: Duration(minutes: periods[getValue("timesForShowingZikrNotifications")]["index"]));
                                     } else {
-                                      Workmanager().cancelByUniqueName(
-                                          "zikrNotification");
+                                      Workmanager().cancelByUniqueName("zikrNotification");
                                     }
                                   }
                                   setState(() {});
@@ -853,41 +876,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             // )),
                             TextButton(
                                 onPressed: () async {
-                                  if ((await FlutterOverlayWindow
-                                          .isPermissionGranted()) ==
-                                      false) {
-                                    await FlutterOverlayWindow
-                                        .requestPermission();
-                                  }
-
-                                  if (await FlutterOverlayWindow
-                                      .isPermissionGranted()) {
-                                    Workmanager().registerOneOffTask(
-                                        "zikrNotificationTest",
-                                        "zikrNotificationTest");
-                                  }
+                                  if ((await FlutterOverlayWindow.isPermissionGranted()) == false) {await FlutterOverlayWindow.requestPermission();}
+                                  if (await FlutterOverlayWindow.isPermissionGranted()) {Workmanager().registerOneOffTask("zikrNotificationTest", "zikrNotificationTest");}
                                   setState(() {});
                                 },
                                 child: Text(
                                   "test".tr(),
-                                  style: TextStyle(
-                                      color: getValue("darkMode")
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontSize: 14.sp,
-                                      fontFamily: 'cairo'),
-                                )),
+                                  style: TextStyle(color: getValue("darkMode") ? Colors.white : Colors.black, fontSize: 14.sp, fontFamily: 'cairo'),
+                                )
+                            ),
                             Row(
                               children: [
                                 Text(
-                                  "${"zikrNotification".tr()} (Beta)",
-                                  style: TextStyle(
-                                      fontSize: 17.sp,
-                                      color: getValue("darkMode")
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'cairo'),
+                                  "${"zikrNotification".tr()}",
+                                  style: TextStyle(fontSize: 17.sp, color: getValue("darkMode") ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontFamily: 'cairo'),
                                 ),
                                 SizedBox(
                                   width: 5.w,
@@ -895,9 +897,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 CircleAvatar(
                                   radius: 5,
                                   backgroundColor:
-                                      getValue("shouldShowZikrNotification")
-                                          ? Colors.green
-                                          : Colors.grey,
+                                  getValue("shouldShowZikrNotification") ? Colors.green : Colors.grey,
                                 ),
                               ],
                             ),
@@ -959,17 +959,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                             "timesForShowingZikrNotifications"),
                                         items: periods
                                             .map((e) => DropdownMenuItem(
-                                                value: e["index"],
-                                                child: Text(
-                                                  e["name"],
-                                                  style: TextStyle(
-                                                      color:
-                                                          getValue("darkMode")
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                      fontSize: 16.sp,
-                                                      fontFamily: 'cairo'),
-                                                )))
+                                            value: e["index"],
+                                            child: Text(
+                                              e["name"],
+                                              style: TextStyle(
+                                                  color:
+                                                  getValue("darkMode")
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                  fontSize: 16.sp,
+                                                  fontFamily: 'cairo'),
+                                            )))
                                             .toList(),
                                         onChanged: (f) {
                                           updateValue(

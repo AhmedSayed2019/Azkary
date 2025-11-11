@@ -1,5 +1,7 @@
 
 import 'package:azkark/core/res/theme_helper.dart';
+import 'package:azkark/features/adhan/providers/adhan_dependency_provider.dart';
+import 'package:azkark/features/adhan/providers/location_provider.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
 import 'package:flutter/material.dart';
@@ -54,11 +56,17 @@ class _GenerateMultiProviderState extends State<GenerateMultiProvider> {
         ChangeNotifierProvider<FavoritesProvider>(create: (context) =>  getIt<FavoritesProvider>()),
         ChangeNotifierProvider<PrayerProvider>(create: (context) =>  getIt<PrayerProvider>()),
         ChangeNotifierProvider<AsmaAllahProvider>(create: (context) =>  getIt<AsmaAllahProvider>()),
-        ChangeNotifierProvider<GetDataProvider>(create: (context) =>  getIt<GetDataProvider>()),
+        // ChangeNotifierProvider<GetDataProvider>(create: (context) =>  getIt<GetDataProvider>()),
 
         ChangeNotifierProvider<ThemeHelper>(create: (context) => getIt<ThemeHelper>()),
+        ChangeNotifierProvider<ThemeHelper>(create: (context) => getIt<ThemeHelper>()),
 
+        //adan
+        ChangeNotifierProvider<AdhanDependencyProvider>(create: (context) => getIt<AdhanDependencyProvider>()),
+        ChangeNotifierProvider<AdanLocationProvider>(create: (context) => getIt<AdanLocationProvider>()),
 
+    // getIt.registerLazySingleton(() => AdanLocationProvider.getInstance());
+    // getIt.registerLazySingleton(() => AdhanDependencyProvider());
 
         // RepositoryProvider<MqLocationClient>(
         //   create: (context) => getIt<MqLocationClient(
@@ -66,7 +74,7 @@ class _GenerateMultiProviderState extends State<GenerateMultiProvider> {
         //     locationStorage: MqLocationStorageImpl(context.read<PreferencesStorage>()),
         //   ),
         // ),
-        ChangeNotifierProvider<LocationProvider>(create: (context) => LocationProvider( getIt<MqLocationClient>() )),
+        ChangeNotifierProvider<PrayTimeLocationProvider>(create: (context) => PrayTimeLocationProvider( getIt<MqLocationClient>() )),
 
 
       ],
