@@ -31,7 +31,7 @@ dependencies:
 #  drift_flutter: ^0.2.4
 #  quran_library: ^2.2.3+1
   quran_library:
-    path: libraries/quran_library-2.2.3+1
+    path: libraries/quran_library-4.2.1
 
 
 

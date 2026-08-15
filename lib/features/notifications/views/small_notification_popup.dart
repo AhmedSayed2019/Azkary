@@ -5,7 +5,6 @@ import 'package:azkark/core/utils/constants.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 // import 'package:nabd/GlobalHelpers/constants.dart';
 // import 'package:nabd/GlobalHelpers/hive_helper.dart';
 

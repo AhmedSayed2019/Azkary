@@ -14,7 +14,7 @@ final class PrayerTimesService {
     final timezone = tz.getLocation(location);
     final date = tz.TZDateTime.from(DateTime.now(), timezone);
     final coordinates = Coordinates(latitude, longitude);
-    final params = CalculationMethod.muslimWorldLeague() as CalculationParameters;
+    final params = CalculationMethodParameters.muslimWorldLeague();
 
     // ignore: cascade_invocations
     params.madhab = Madhab.hanafi;
