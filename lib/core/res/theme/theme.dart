@@ -6,6 +6,7 @@ import 'package:azkark/core/res/theme/color_scheme.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 
 import 'text.dart';
 
@@ -60,10 +61,10 @@ _buildTheme(bool isDarkMode ){
       unselectedItemColor: AppColor.hintColor.getColor(isDarkMode),
     ),
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
-      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
       TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-      TargetPlatform.fuchsia: ZoomPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
     }),
     dialogTheme: DialogThemeData(backgroundColor: AppColor.dialogColor.getColor(isDarkMode), surfaceTintColor: AppColor.dialogColor.getColor(isDarkMode)),
     datePickerTheme: DatePickerThemeData(backgroundColor: AppColor.dialogColor.getColor(isDarkMode), surfaceTintColor: AppColor.dialogColor.getColor(isDarkMode)),

@@ -5,7 +5,7 @@ publish_to: none
 version: 1.2.5+25
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ^3.8.1
 
 
 dependencies:
@@ -176,7 +176,7 @@ dependencies:
 
 #  provider: ^6.0.5
   path_provider: ^2.1.0
-  font_awesome_flutter: ^10.4.0
+  font_awesome_flutter: ^11.0.0
   flutter_qiblah: ^3.1.0+1
 #  geolocator: ^9.0.2
 #  flutter_svg: ^1.1.6
@@ -303,7 +303,6 @@ flutter:
     - assets/images/app/
 #    - assets/images/1024/
 #    - assets/images/font/quran/
-    - assets/json/
     - assets/translations/
 
 

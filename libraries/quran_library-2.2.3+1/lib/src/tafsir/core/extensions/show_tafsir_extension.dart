@@ -5,37 +5,37 @@ part of '../../tafsir.dart';
 final GlobalKey<NavigatorState> tafsirNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'tafsirNavigatorKey');
 
-extension ShowTafsirExtension on void {
-  /// دالة مساعدة للحصول على سياق صالح
-  /// Helper function to get valid context
-  BuildContext? _getValidContext(BuildContext originalContext) {
-    // التحقق من السياق الأصلي أولاً
-    // Check original context first
-    if (originalContext.mounted) {
-      log('استخدام السياق الأصلي', name: 'TafsirUi');
-      return originalContext;
-    }
-
-    // محاولة استخدام Get.context
-    // Try using Get.context
-    if (Get.context != null && Get.context!.mounted) {
-      log('استخدام Get.context كبديل', name: 'TafsirUi');
-      return Get.context!;
-    }
-
-    // محاولة استخدام GlobalKey كحل أخير
-    // Try using GlobalKey as last resort
-    if (tafsirNavigatorKey.currentContext != null &&
-        tafsirNavigatorKey.currentContext!.mounted) {
-      log('استخدام tafsirNavigatorKey.currentContext كحل أخير',
-          name: 'TafsirUi');
-      return tafsirNavigatorKey.currentContext!;
-    }
-
-    log('لا يوجد سياق صالح متاح', name: 'TafsirUi');
-    return null;
+/// دالة مساعدة للحصول على سياق صالح
+/// Helper function to get valid context
+BuildContext? _getValidContext(BuildContext originalContext) {
+  // التحقق من السياق الأصلي أولاً
+  // Check original context first
+  if (originalContext.mounted) {
+    log('استخدام السياق الأصلي', name: 'TafsirUi');
+    return originalContext;
   }
 
+  // محاولة استخدام Get.context
+  // Try using Get.context
+  if (Get.context != null && Get.context!.mounted) {
+    log('استخدام Get.context كبديل', name: 'TafsirUi');
+    return Get.context!;
+  }
+
+  // محاولة استخدام GlobalKey كحل أخير
+  // Try using GlobalKey as last resort
+  if (tafsirNavigatorKey.currentContext != null &&
+      tafsirNavigatorKey.currentContext!.mounted) {
+    log('استخدام tafsirNavigatorKey.currentContext كحل أخير',
+        name: 'TafsirUi');
+    return tafsirNavigatorKey.currentContext!;
+  }
+
+  log('لا يوجد سياق صالح متاح', name: 'TafsirUi');
+  return null;
+}
+
+extension ShowTafsirExtension on void {
   /// دالة مساعدة لتهيئة بيانات التفسير
   /// Helper function to initialize tafsir data
   Future<void> _initializeTafsirData({

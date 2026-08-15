@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/PC/Downloads/go gomla/Gomla-new-app-main/Gomla-new-app-main/lib/features/refactor/common/layout/home/presentation/widgets/sections/**)",
+      "Read(//c/Users/PC/Downloads/go gomla/Gomla-new-app-main/Gomla-new-app-main/lib/features/refactor/common/layout/home/presentation/widgets/shimmer/**)",
+      "Read(//c/Users/PC/Downloads/go gomla/Gomla-new-app-main/Gomla-new-app-main/lib/features/refactor/common/layout/home/presentation/widgets/status/**)",
+      "Bash(gh pr *)",
+      "PowerShell(gh pr view 358 --json title,body,author,baseRefName,headRefName,state,additions,deletions,changedFiles,labels)",
+      "PowerShell(gh pr diff 358)",
+      "PowerShell(New-Item -ItemType Directory -Force \"D:\\\\work\\\\flutter\\\\Projects\\\\Gomla\\\\refactor\\\\Gomla-new-app\\\\lib\\\\features\\\\refactor\\\\cart\\\\domain\\\\entity\")",
+      "Bash(git commit -m ' *)",
+      "Read(//c/Users/PC/Downloads/go gomla/New folder/old/old/orders/cart/presentation/widgets/checkout_widgets/**)",
+      "Bash(xargs grep -l \"address\")",
+      "Read(//d/work/flutter/Projects/Gomla/orders/orders/cart/data/**)",
+      "Bash(cat cart_service.dart)",
+      "Read(//d/work/flutter/Projects/Gomla/orders/orders/checkout/logic/**)",
+      "Read(//d/work/flutter/Projects/Gomla/orders/orders/checkout/data/services/**)",
+      "Read(//d/work/flutter/Projects/Gomla/orders/orders/cart/data/models/**)",
+      "Read(//d/work/flutter/Projects/Gomla/orders/orders/cart/presentation/widgets/coupon/**)",
+      "Read(//d/work/flutter/Projects/Gomla/orders/orders/cart/presentation/widgets/**)"
+    ]
+  }
+}

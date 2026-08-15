@@ -113,7 +113,7 @@ class QiblaAvailableScreen extends StatelessWidget {
                                 Transform.rotate(
                                   angle: qiblaDirection,
                                   child: SvgPicture.asset(
-                                    Assets.qiblaQibla,
+                                    'assets/images/campass/3.svg',
                                     fit: BoxFit.fitWidth,
                                     width: context.minPanelSize * 0.9,
                                   ),
