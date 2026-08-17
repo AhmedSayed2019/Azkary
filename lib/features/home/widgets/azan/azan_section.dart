@@ -23,7 +23,9 @@ class _AzanSectionState extends State<AzanSection> {
 
   Timer? _ticker;
   DateTime _now = DateTime.now();
+  PrayerDay? _day;
   bool _ready = false;
+  bool _refreshingLocation = false;
 
   static const _icons = <PrayerId, IconData>{
     PrayerId.fajr: Icons.nights_stay_rounded,
@@ -37,19 +39,44 @@ class _AzanSectionState extends State<AzanSection> {
   void initState() {
     super.initState();
     _init();
-    // ثانية بثانية لتحديث العدّاد التنازلي والمؤشر الدائري
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() => _now = DateTime.now());
+      final now = DateTime.now();
+      final day = _day;
+      // أعد حساب مواقيت اليوم فقط عند دخول وقت صلاة جديد، لا كل ثانية —
+      // العدّاد نفسه (المتبقي/الدائرة) يُعاد رسمه من _now بلا إعادة حساب.
+      if (day == null || !now.isBefore(day.next.time)) {
+        setState(() {
+          _now = now;
+          _day = _service.compute(now: now);
+        });
+      } else {
+        setState(() => _now = now);
+      }
     });
   }
 
   Future<void> _init() async {
     await _service.loadCache();
-    if (mounted) setState(() => _ready = true);
+    if (mounted) {
+      setState(() {
+        _day = _service.compute(now: _now);
+        _ready = true;
+      });
+    }
     // تحديث الموقع في الخلفية دون حجب أول عرض
     final changed = await _service.refreshLocation();
-    if (changed && mounted) setState(() {});
+    if (changed && mounted) setState(() => _day = _service.compute(now: _now));
+  }
+
+  Future<void> _refreshLocation() async {
+    setState(() => _refreshingLocation = true);
+    await _service.refreshLocation();
+    if (!mounted) return;
+    setState(() {
+      _refreshingLocation = false;
+      _day = _service.compute(now: _now);
+    });
   }
 
   @override
@@ -60,14 +87,13 @@ class _AzanSectionState extends State<AzanSection> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_ready) {
+    final day = _day;
+    if (!_ready || day == null) {
       return const SizedBox(
         height: 260,
         child: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final day = _service.compute(now: _now);
 
     return Container(
       margin: kScreenPadding.copyWith(bottom: 0),
@@ -80,7 +106,12 @@ class _AzanSectionState extends State<AzanSection> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _CountdownHeader(day: day, now: _now),
+              _CountdownHeader(
+                day: day,
+                now: _now,
+                refreshingLocation: _refreshingLocation,
+                onRefreshLocation: _refreshLocation,
+              ),
               _PrayerRow(day: day, icons: _icons),
             ],
           ),
@@ -91,10 +122,17 @@ class _AzanSectionState extends State<AzanSection> {
 }
 
 class _CountdownHeader extends StatelessWidget {
-  const _CountdownHeader({required this.day, required this.now});
+  const _CountdownHeader({
+    required this.day,
+    required this.now,
+    required this.refreshingLocation,
+    required this.onRefreshLocation,
+  });
 
   final PrayerDay day;
   final DateTime now;
+  final bool refreshingLocation;
+  final VoidCallback onRefreshLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +201,23 @@ class _CountdownHeader extends StatelessWidget {
               const Icon(Icons.location_on, size: 14, color: Colors.white70),
               SizedBox(width: 4.w),
               Text(day.locationName, style: const TextStyle().mediumStyle(fontSize: 12).customColor(Colors.white70)),
+              SizedBox(width: 6.w),
+              // زر تحديث الموقع من GPS — يُوقف فقاعة الضغط حتى لا يفتح شاشة المواقيت
+              InkResponse(
+                onTap: refreshingLocation ? null : onRefreshLocation,
+                radius: 18,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
+                  child: refreshingLocation
+                      ? const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+                        )
+                      : const Icon(Icons.my_location, size: 12, color: Colors.white70),
+                ),
+              ),
             ],
           ),
         ],
