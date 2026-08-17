@@ -115,4 +115,15 @@ class SurahState {
   RxDouble ayahDownloadProgress = 0.0.obs;
   RxBool isAudioPreparing = false.obs;
   // final QuranRepository _quranRepository = QuranRepository();
+
+  /// ===== Ayah range repeat (التكرار) =====
+
+  /// هل يوجد تشغيل تكرار نطاق آيات نشط حاليًا
+  RxBool isAyahRangeRepeatActive = false.obs;
+
+  /// مكتمل يُستخدم لإلغاء الانتظار الحالي (تشغيل آية أو مهلة انتظار) فورًا
+  Completer<void>? ayahRangeRepeatCancelCompleter;
+
+  /// مؤقّت مهلة الانتظار بين تكرارات الآية
+  Timer? ayahRangeWaitTimer;
 }

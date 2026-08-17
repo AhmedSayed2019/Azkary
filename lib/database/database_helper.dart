@@ -92,6 +92,22 @@ class DatabaseHelper {
     return result;
   }
 
+  /// Same update as [updateItemFromSebha] but takes primitive values instead
+  /// of the legacy [SebhaModel], so callers that don't depend on that model
+  /// (e.g. the `features/refactor/sebha` slice) don't need to import it.
+  Future<int> updateTasbih({
+    required int id,
+    required String name,
+    required int counter,
+  }) async {
+    var dbClient = await database;
+    int result = await dbClient.rawUpdate(
+        'UPDATE tasbih SET name = ? , counter = ? WHERE id = ?',
+        [name, counter, id]);
+    print('updateTasbih : $result');
+    return result;
+  }
+
   Future<int> updateFavoriteInTables(
       String tableName, int favorite, int id) async {
     var dbClient = await database;

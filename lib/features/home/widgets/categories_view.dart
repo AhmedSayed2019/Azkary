@@ -4,18 +4,17 @@ import 'package:azkark/core/utils/helpers/extensions.dart';
 import 'package:azkark/core/utils/helpers/gps_location_helper.dart';
 import 'package:azkark/features/adhan/adhan_screen.dart';
 import 'package:azkark/features/adhan/providers/location_provider.dart';
-import 'package:azkark/features/feedback/feedbackTaker.dart';
 import 'package:azkark/features/notifications/views/all_notification_page.dart';
 import 'package:azkark/features/qibla/qiblaScreen.dart';
 import 'package:azkark/features/quran/quran_screen.dart';
-import 'package:azkark/features/calender/calender.dart';
-import 'package:azkark/features/compass/qibla_compass.dart';
+import 'package:azkark/features/refactor/asmaallah/presentation/modules/asma_allah_list/asma_allah_list_screen.dart';
+import 'package:azkark/features/refactor/compass/presentation/modules/compass/compass_screen.dart';
+import 'package:azkark/features/refactor/calender/presentation/modules/calendar/calendar_screen.dart';
 import 'package:azkark/generated/assets.dart';
-import 'package:azkark/pages/asmaallah/view_asmaallah.dart';
 import 'package:azkark/pages/favorites/view_favorites.dart';
-import 'package:azkark/pages/prayer/view_prayer.dart';
-import 'package:azkark/pages/sebha/items_sebha.dart';
-import 'package:azkark/pages/settings/settings_page.dart';
+import 'package:azkark/features/refactor/prayer/presentation/modules/prayer_list/prayer_list_screen.dart';
+import 'package:azkark/features/refactor/sebha/presentation/modules/sebha_list/sebha_list_screen.dart';
+import 'package:azkark/features/refactor/settings/presentation/modules/settings/settings_screen.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:azkark/util/navigate_between_pages/scale_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -125,13 +124,12 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
             _buildItemsCard(context: context, text: tr( 'favorite_bar'), pathIcon: Assets.favoritesFavorite256px, onTap: () => Navigator.push(context, ScaleRoute(page: FavoritesView()))),
 
 
-            _buildItemsCard(context: context, text: tr( 'sebha_bar'), pathIcon:  Assets.sebhaSebha256px, onTap: () => Navigator.push(context, ScaleRoute(page: ItemsSebha()))),
-            // _buildItemsCard(context: context, text: tr( 'compass'), pathIcon: Assets.sectionsCampass, onTap: () => Navigator.push(context, ScaleRoute(page: const QiblaCompassScreen()))),
-            _buildItemsCard(context: context, text: tr( 'qibla'), pathIcon: Assets.sectionsQibla, onTap: () => Navigator.push(context, ScaleRoute(page: const QiblaCompassScreen()))),
+            _buildItemsCard(context: context, text: tr( 'sebha_bar'), pathIcon:  Assets.sebhaSebha256px, onTap: () => Navigator.push(context, ScaleRoute(page: const SebhaListScreen()))),
+            _buildItemsCard(context: context, text: tr( 'qibla'), pathIcon: Assets.sectionsQibla, onTap: () => Navigator.push(context, ScaleRoute(page: const CompassScreen()))),
             // _buildItemsCard(context: context, text: tr( 'qibla'), pathIcon: Assets.sectionsQibla, onTap: () => Navigator.push(context, ScaleRoute(page: const QiblaScreen()))),
-            _buildItemsCard(context: context, text: tr( 'prayer_bar'), pathIcon: Assets.prayerPrayer256px, onTap: () => Navigator.push(context, ScaleRoute(page: ViewPrayer()))),
-            _buildItemsCard(context: context, text: tr( 'asmaallah_bar'), pathIcon:  Assets.asmaallahAllah256px, onTap: () => Navigator.push(context, ScaleRoute(page: ViewAsmaAllah()))),
-            _buildItemsCard(context: context, text: tr( 'calender'), pathIcon:  Assets.sectionsCalender, onTap: () => Navigator.push(context, ScaleRoute(page: const CalenderPage()))),
+            _buildItemsCard(context: context, text: tr( 'prayer_bar'), pathIcon: Assets.prayerPrayer256px, onTap: () => Navigator.push(context, ScaleRoute(page: const PrayerListScreen()))),
+            _buildItemsCard(context: context, text: tr( 'asmaallah_bar'), pathIcon:  Assets.asmaallahAllah256px, onTap: () => Navigator.push(context, ScaleRoute(page: const AsmaAllahListScreen()))),
+            _buildItemsCard(context: context, text: tr( 'calender'), pathIcon:  Assets.sectionsCalender, onTap: () => Navigator.push(context, ScaleRoute(page: const CalendarScreen()))),
             // _buildItemsCard(context: context, text: tr( 'adan'), pathIcon:  Assets.sectionsAdan, onTap: () => Navigator.push(context, ScaleRoute(page: const AdhanScreen()))),
             _buildItemsCard(context: context, text: tr( 'nearby'), pathIcon:  Assets.sectionsMosqueLocation, onTap: () =>
             locationProvider.locationState is LocationAvailable
@@ -147,7 +145,7 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
             //     ),
             //     ),)
             //     : context.showSnackBar(tr('no_location_available')),),
-            _buildItemsCard(context: context, text: tr( 'settings_bar'), pathIcon: '0', onTap: () => Navigator.push(context, ScaleRoute(page: Settings()))),
+            _buildItemsCard(context: context, text: tr( 'settings_bar'), pathIcon: '0', onTap: () => Navigator.push(context, ScaleRoute(page: const SettingsScreen()))),
             // _buildItemsCard(context: context, text: tr( 'notifications'), pathIcon: Assets.sectionsNotification, onTap: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage()))),
 
           ],

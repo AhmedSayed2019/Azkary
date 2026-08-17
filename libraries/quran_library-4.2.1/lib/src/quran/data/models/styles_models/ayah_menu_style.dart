@@ -87,6 +87,15 @@ class AyahMenuStyle {
   /// إظهار/إخفاء زر تشغيل جميع الآيات.
   final bool? showPlayAllButton;
 
+  /// إظهار/إخفاء زر فتح شاشة "التكرار" (تكرار نطاق آيات).
+  final bool? showRepeatButton;
+
+  /// لون أيقونة زر "التكرار".
+  final Color? repeatIconColor;
+
+  /// الأيقونة المستخدمة لزر "التكرار".
+  final IconData? repeatIconData;
+
   /// الأيقونة المستخدمة لعنصر العلامة المرجعية.
   final IconData? bookmarkIconData;
 
@@ -154,6 +163,9 @@ class AyahMenuStyle {
     this.playAllIconData,
     this.playIconColor,
     this.playAllIconColor,
+    this.showRepeatButton,
+    this.repeatIconColor,
+    this.repeatIconData,
   });
 
   AyahMenuStyle copyWith({
@@ -193,6 +205,9 @@ class AyahMenuStyle {
     IconData? playAllIconData,
     Color? playIconColor,
     Color? playAllIconColor,
+    bool? showRepeatButton,
+    Color? repeatIconColor,
+    IconData? repeatIconData,
   }) {
     return AyahMenuStyle(
       backgroundColor: backgroundColor ?? this.backgroundColor,
@@ -232,6 +247,9 @@ class AyahMenuStyle {
       playAllIconData: playAllIconData ?? this.playAllIconData,
       playIconColor: playIconColor ?? this.playIconColor,
       playAllIconColor: playAllIconColor ?? this.playAllIconColor,
+      showRepeatButton: showRepeatButton ?? this.showRepeatButton,
+      repeatIconColor: repeatIconColor ?? this.repeatIconColor,
+      repeatIconData: repeatIconData ?? this.repeatIconData,
     );
   }
 
@@ -290,6 +308,9 @@ class AyahMenuStyle {
       playAllIconData: Icons.playlist_play,
       playIconColor: primary,
       playAllIconColor: primary,
+      showRepeatButton: true,
+      repeatIconData: Icons.repeat,
+      repeatIconColor: primary,
     );
   }
 }

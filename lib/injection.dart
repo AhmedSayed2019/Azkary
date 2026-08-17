@@ -5,6 +5,14 @@ import 'package:azkark/features/adhan/providers/adhan_provider.dart';
 import 'package:azkark/features/adhan/providers/ahdan_notification_provider.dart';
 import 'package:azkark/features/adhan/providers/location_provider.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
+import 'package:azkark/features/refactor/asmaallah/presentation/injection.dart' as asmaallah_refactor_di;
+import 'package:azkark/features/refactor/calender/presentation/injection.dart' as calender_refactor_di;
+import 'package:azkark/features/refactor/categories/presentation/injection.dart' as categories_refactor_di;
+import 'package:azkark/features/refactor/compass/presentation/injection.dart' as compass_refactor_di;
+import 'package:azkark/features/refactor/feedback/presentation/injection.dart' as feedback_refactor_di;
+import 'package:azkark/features/refactor/prayer/presentation/injection.dart' as prayer_refactor_di;
+import 'package:azkark/features/refactor/sebha/presentation/injection.dart' as sebha_refactor_di;
+import 'package:azkark/features/refactor/settings/presentation/injection.dart' as settings_refactor_di;
 import 'package:azkark/providers.dart';
 import 'package:azkark/providers/asmaallah_provider.dart';
 import 'package:azkark/providers/azkar_provider.dart';
@@ -48,6 +56,16 @@ Future<void> injection() async {
   // getIt.registerLazySingleton(() => GlobalDependencyProvider.getInstance());
   getIt.registerLazySingleton(() => AdanLocationProvider.getInstance());
   getIt.registerLazySingleton(() => AdhanDependencyProvider());
+
+  // features/refactor slices
+  await sebha_refactor_di.initSebhaRefactorFeatures();
+  await prayer_refactor_di.initPrayerRefactorFeatures();
+  await settings_refactor_di.initSettingsRefactorFeatures();
+  await asmaallah_refactor_di.initAsmaAllahRefactorFeatures();
+  await categories_refactor_di.initCategoriesRefactorFeatures();
+  await calender_refactor_di.initCalenderRefactorFeatures();
+  await feedback_refactor_di.initFeedbackRefactorFeatures();
+  await compass_refactor_di.initCompassRefactorFeatures();
 
 
   // getIt.registerLazySingleton(() => AdhanDependencyProvider());

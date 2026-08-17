@@ -182,7 +182,26 @@ class _QuranTopBar extends StatelessWidget {
                     languageCode: languageCode,
                     isFontsLocal: isFontsLocal,
                     isDark: isDark,
-                  )
+                  ),
+                IconButton(
+                  icon: Icon(
+                    Icons.format_size,
+                    size: defaults.iconSize,
+                    color:
+                        defaults.iconColor ?? Theme.of(context).colorScheme.primary,
+                  ),
+                  onPressed: () => _showSizeSideMenu(context, defaults),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    size: defaults.iconSize,
+                    color:
+                        defaults.iconColor ?? Theme.of(context).colorScheme.primary,
+                  ),
+                  onPressed: () => _showAllFeaturesBottomSheet(
+                      context, defaults, tajweedStyle),
+                ),
               ],
             )
           ],
@@ -238,6 +257,326 @@ class _QuranTopBar extends StatelessWidget {
         searchTabStyle: searchTabStyle,
         bookmarksTabStyle: bookmarksTabStyle,
         isSingleSurah: isSingleSurah!,
+      ),
+    );
+  }
+
+  /// Opens the consolidated "all features" list (index, search, bookmarks,
+  /// font size, tajweed, audio, auto-scroll, repeat). Tapping an item closes
+  /// this list and opens that single feature in its own bottom sheet.
+  void _showAllFeaturesBottomSheet(
+    BuildContext context,
+    QuranTopBarStyle defaults,
+    TajweedMenuStyle tajweedStyle,
+  ) {
+    final indexTabStyle = IndexTabTheme.of(context)?.style ??
+        IndexTabStyle.defaults(isDark: isDark, context: context);
+    final searchTabStyle = SearchTabTheme.of(context)?.style ??
+        SearchTabStyle.defaults(isDark: isDark, context: context);
+    final bookmarksTabStyle = BookmarksTabTheme.of(context)?.style ??
+        BookmarksTabStyle.defaults(isDark: isDark, context: context);
+
+    final Color textColor = defaults.textColor ?? AppColors.getTextColor(isDark);
+    final Color accentColor =
+        defaults.accentColor ?? Theme.of(context).colorScheme.primary;
+    final Color bgColor = backgroundColor ??
+        defaults.backgroundColor ??
+        AppColors.getBackgroundColor(isDark);
+    final double radius = defaults.borderRadius ?? 20;
+    final bool showTajweed = QuranCtrl.instance.state.fontsSelected.value == 0;
+
+    void openFeatureSheet({
+      required String title,
+      required Widget content,
+      bool expand = false,
+    }) {
+      Navigator.of(context).pop(); // close the list sheet first
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: bgColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+        ),
+        isScrollControlled: true,
+        builder: (ctx) => _FeatureDetailSheet(
+          title: title,
+          textColor: textColor,
+          expand: expand,
+          child: content,
+        ),
+      );
+    }
+
+    final items = <_FeatureListItem>[
+      if (!isSingleSurah!)
+        _FeatureListItem(
+          icon: Icons.list_alt,
+          label: 'الفهرس',
+          onTap: () => openFeatureSheet(
+            title: 'الفهرس',
+            expand: true,
+            content: _IndexTab(
+                isDark: isDark, languageCode: languageCode, style: indexTabStyle),
+          ),
+        ),
+      _FeatureListItem(
+        icon: Icons.search,
+        label: 'البحث',
+        onTap: () => openFeatureSheet(
+          title: 'البحث',
+          expand: true,
+          content: _SearchTab(
+              isDark: isDark, languageCode: languageCode, style: searchTabStyle),
+        ),
+      ),
+      _FeatureListItem(
+        icon: Icons.bookmark_outline,
+        label: 'الفواصل',
+        onTap: () => openFeatureSheet(
+          title: 'الفواصل',
+          expand: true,
+          content: _BookmarksTab(
+              isDark: isDark,
+              languageCode: languageCode,
+              style: bookmarksTabStyle),
+        ),
+      ),
+      _FeatureListItem(
+        icon: Icons.format_size,
+        label: 'حجم الخط',
+        onTap: () => openFeatureSheet(
+          title: 'حجم الخط',
+          content: _FontSizeFeatureContent(accentColor: accentColor),
+        ),
+      ),
+      if (showTajweed)
+        _FeatureListItem(
+          icon: Icons.info_outline,
+          label: 'التجويد',
+          onTap: () => openFeatureSheet(
+            title: 'التجويد',
+            content: Center(
+                child: TajweedMenuWidget(
+                    languageCode: languageCode, isDark: isDark)),
+          ),
+        ),
+      _FeatureListItem(
+        icon: Icons.headphones,
+        label: 'الاستماع',
+        onTap: () => openFeatureSheet(
+          title: 'الاستماع',
+          content: _AudioFeatureContent(
+            textColor: textColor,
+            accentColor: accentColor,
+            onTap: () async {
+              await AudioCtrl.instance.state.audioPlayer.stop();
+              QuranCtrl.instance.state.isShowMenu.value = false;
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SurahAudioScreen(
+                      isDark: isDark,
+                      style: style ??
+                          SurahAudioStyle.defaults(isDark: isDark, context: context),
+                      languageCode: languageCode,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      ),
+      _FeatureListItem(
+        icon: Icons.speed,
+        label: 'التمرير التلقائي',
+        onTap: () => openFeatureSheet(
+          title: 'التمرير التلقائي',
+          content:
+              _AutoScrollFeatureContent(textColor: textColor, accentColor: accentColor),
+        ),
+      ),
+      _FeatureListItem(
+        icon: Icons.repeat,
+        label: 'التكرار',
+        onTap: () {
+          Navigator.of(context).pop();
+          showModalBottomSheet(
+            context: context,
+            useRootNavigator: true,
+            isScrollControlled: true,
+            backgroundColor: bgColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+            ),
+            builder: (ctx) => AyahRepeatSheet(isDark: isDark),
+          );
+        },
+      ),
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: bgColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+      ),
+      isScrollControlled: true,
+      builder: (ctx) => _AllFeaturesListSheet(
+        textColor: textColor,
+        accentColor: accentColor,
+        handleColor: defaults.handleColor,
+        items: items,
+      ),
+    );
+  }
+
+  void _showSizeSideMenu(BuildContext context, QuranTopBarStyle defaults) {
+    final bool isRtl = Directionality.of(context) == TextDirection.rtl;
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (dialogContext, _, __) => _SizeSideMenu(
+        isDark: isDark,
+        isRtl: isRtl,
+        backgroundColor: backgroundColor ??
+            defaults.backgroundColor ??
+            AppColors.getBackgroundColor(isDark),
+        textColor: defaults.textColor ?? AppColors.getTextColor(isDark),
+        accentColor: defaults.accentColor ?? Theme.of(context).colorScheme.primary,
+      ),
+      transitionBuilder: (dialogContext, animation, _, child) {
+        final tween = Tween<Offset>(
+          begin: Offset(isRtl ? 1 : -1, 0),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeOutCubic));
+        return SlideTransition(position: animation.drive(tween), child: child);
+      },
+    );
+  }
+}
+
+/// A side panel (opened from the app bar's size icon) to control the
+/// Quran page zoom/font size, mirroring the pinch-to-zoom `scaleFactor`.
+class _SizeSideMenu extends StatelessWidget {
+  const _SizeSideMenu({
+    required this.isDark,
+    required this.isRtl,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.accentColor,
+  });
+
+  final bool isDark;
+  final bool isRtl;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color accentColor;
+
+  static const double _minScale = 1.0;
+  static const double _maxScale = 4.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final quranCtrl = QuranCtrl.instance;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final panelWidth = screenWidth < 360 ? screenWidth * 0.85 : 320.0;
+
+    void setScale(double value) {
+      quranCtrl.state.scaleFactor.value = value.clamp(_minScale, _maxScale);
+      quranCtrl.state.baseScaleFactor.value = quranCtrl.state.scaleFactor.value;
+      quranCtrl.update(['_pageViewBuild']);
+    }
+
+    return Align(
+      alignment: isRtl ? Alignment.centerRight : Alignment.centerLeft,
+      child: Material(
+        color: backgroundColor,
+        elevation: 8,
+        borderRadius: BorderRadius.horizontal(
+          left: isRtl ? const Radius.circular(20) : Radius.zero,
+          right: isRtl ? Radius.zero : const Radius.circular(20),
+        ),
+        child: SafeArea(
+          child: SizedBox(
+            width: panelWidth,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'حجم الخط',
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: textColor),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Obx(
+                    () => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.remove_circle_outline,
+                                  color: accentColor),
+                              onPressed: () => setScale(
+                                  quranCtrl.state.scaleFactor.value - 0.2),
+                            ),
+                            Expanded(
+                              child: Slider(
+                                value: quranCtrl.state.scaleFactor.value
+                                    .clamp(_minScale, _maxScale),
+                                min: _minScale,
+                                max: _maxScale,
+                                activeColor: accentColor,
+                                onChanged: setScale,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add_circle_outline,
+                                  color: accentColor),
+                              onPressed: () => setScale(
+                                  quranCtrl.state.scaleFactor.value + 0.2),
+                            ),
+                          ],
+                        ),
+                        Center(
+                          child: TextButton(
+                            onPressed: () => setScale(1.0),
+                            child: Text(
+                              'إعادة الضبط',
+                              style: TextStyle(color: accentColor),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -356,3 +695,4 @@ class _MenuBottomSheet extends StatelessWidget {
     );
   }
 }
+

@@ -77,6 +77,7 @@ class AyahMenuDialog extends StatelessWidget {
     int itemsCount = customMenuItems.length;
     if (s.showPlayButton ?? true) itemsCount += 1;
     if ((s.showPlayAllButton ?? true) && !kIsWeb) itemsCount += 1;
+    if ((s.showRepeatButton ?? true) && !kIsWeb) itemsCount += 1;
     if (s.showTafsirButton ?? true) itemsCount += 1;
     if (s.showCopyButton ?? true) itemsCount += 1;
     if (s.showBookmarkButtons ?? true) {
@@ -228,6 +229,36 @@ class AyahMenuDialog extends StatelessWidget {
                             child: Icon(
                               s.playAllIconData,
                               color: s.playAllIconColor,
+                              size: s.iconSize,
+                            ),
+                          ),
+                        );
+                      }
+
+                      // زر فتح شاشة "التكرار" (تكرار نطاق آيات)
+                      if ((s.showRepeatButton ?? true) && !kIsWeb) {
+                        addDividerIfNeeded();
+                        widgets.add(
+                          GestureDetector(
+                            onTap: () {
+                              close();
+                              final surahNumber =
+                                  ayah!.surahNumber ?? QuranCtrl.instance
+                                      .getSurahDataByAyah(ayah!)
+                                      .surahNumber;
+                              showAyahRepeatSheet(
+                                rootContext,
+                                isDark: isDark,
+                                initialStartSurah: surahNumber,
+                                initialStartAya: ayah!.ayahNumber,
+                                initialEndSurah: surahNumber,
+                                initialEndAya: ayah!.ayahNumber,
+                                ayahAudioStyle: sAudio,
+                              );
+                            },
+                            child: Icon(
+                              s.repeatIconData ?? Icons.repeat,
+                              color: s.repeatIconColor,
                               size: s.iconSize,
                             ),
                           ),

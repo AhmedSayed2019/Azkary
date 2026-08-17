@@ -4,6 +4,7 @@ import 'package:azkark/features/adhan/providers/adhan_dependency_provider.dart';
 import 'package:azkark/features/adhan/providers/location_provider.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
+import 'package:azkark/features/refactor/settings/presentation/settings_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mq_prayer_time/mq_prayer_time.dart';
@@ -50,6 +51,7 @@ class _GenerateMultiProviderState extends State<GenerateMultiProvider> {
 
         ChangeNotifierProvider<SectionsProvider>(create: (context) =>  getIt<SectionsProvider>()),
         ChangeNotifierProvider<SettingsProvider>(create: (context) =>  getIt<SettingsProvider>()),
+        ChangeNotifierProvider<SettingsViewModel>(create: (context) => getIt<SettingsViewModel>()),
         ChangeNotifierProvider<CategoriesProvider>(create: (context) =>  getIt<CategoriesProvider>()),
         ChangeNotifierProvider<SebhaProvider>(create: (context) =>  getIt<SebhaProvider>()),
         ChangeNotifierProvider<AzkarProvider>(create: (context) =>  getIt<AzkarProvider>()),
