@@ -91,6 +91,7 @@ dependencies:
   # Maps
   geolocator: ^13.0.2 # Provides geolocation services
   geolocator_android: 4.6.1
+  geocoding: ^4.0.0 # Reverse-geocodes coordinates to a city name
 
 
   share_plus: ^11.1.0 # Share content across apps

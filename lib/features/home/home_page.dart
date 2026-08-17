@@ -5,8 +5,8 @@ import 'package:azkark/features/adhan/providers/location_provider.dart';
 // import 'package:azkark/features/QuranPages/bloc/player_bloc_bloc.dart';
 // import 'package:azkark/features/QuranPages/bloc/quran_page_player_bloc.dart';
 import 'package:azkark/features/home/get_data/get_data.dart';
+import 'package:azkark/features/home/widgets/azan/azan_section.dart';
 import 'package:azkark/features/home/widgets/categories_view.dart';
-import 'package:azkark/features/home/widgets/date_view.dart';
 import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
 import 'package:azkark/features/notifications/views/all_notification_page.dart';
 import 'package:azkark/features/refactor/feedback/domain/entity/feedback_form_type.dart';
@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
           body: Column(
             children: <Widget>[
               CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
-              const HomeDateView(),
+              const AzanSection(),
               Expanded(
                 child: Padding(
                   padding: kScreenPadding,
@@ -93,7 +93,6 @@ class _HomePageState extends State<HomePage> {
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: <Widget>[
-                        // MqSalaahTimeWidget(),
                         const HomeCategoriesView(),
                         _buildAllAzkarCard('عرض كل الأذكار', context),
                         for (int i = 0; i < sectionsProvider.length; i += 2)
