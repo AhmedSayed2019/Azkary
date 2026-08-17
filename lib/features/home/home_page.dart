@@ -74,18 +74,24 @@ class _HomePageState extends State<HomePage> {
         Scaffold(
           appBar: AppBar(
             elevation: 0.0,
+            // نفس أخضر قسم الأذان أسفله حتى يبدوان كتلة واحدة
+            backgroundColor: AppColor.primaryColor.themeColor,
+            leading: IconButton(
+              icon: Icon(Icons.menu, color: teal[50]),
+              onPressed: () => _showMenuBottomSheet(context),
+            ),
             title: Text(tr( 'home_bar'), style: TextStyle(color: teal[50], fontWeight: FontWeight.w700, fontSize: 18)),
             actions: <Widget>[
               IconButton(
-                icon: Icon(Icons.menu, color: teal[50]),
-                onPressed: () => _showMenuBottomSheet(context),
+                icon: Icon(Icons.notifications_none, color: teal[50]),
+                onPressed: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage())),
               ),
             ],
           ),
           body: Column(
             children: <Widget>[
-              CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
               const AzanSection(),
+              CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', showBackground: false, onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
               Expanded(
                 child: Padding(
                   padding: kScreenPadding,

@@ -90,33 +90,43 @@ class _AzanSectionState extends State<AzanSection> {
     final day = _day;
     if (!_ready || day == null) {
       return const SizedBox(
-        height: 260,
+        height: 240,
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return Container(
-      margin: kScreenPadding.copyWith(bottom: 0),
-      decoration: const BoxDecoration().radius(radius: kFormRadius),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen())),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _CountdownHeader(
-                day: day,
-                now: _now,
-                refreshingLocation: _refreshingLocation,
-                onRefreshLocation: _refreshLocation,
+    // الرأس الأخضر ممتد بعرض الشاشة (ملتحم بشريط التطبيق أعلاه)،
+    // وصف الصلوات بطاقة عائمة تتراكب على حافة الأخضر السفلية.
+    return Stack(
+      children: [
+        Column(
+          children: [
+            Material(
+              color: AppColor.primaryColor.themeColor,
+              child: InkWell(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen())),
+                child: _CountdownHeader(
+                  day: day,
+                  now: _now,
+                  refreshingLocation: _refreshingLocation,
+                  onRefreshLocation: _refreshLocation,
+                ),
               ),
-              _PrayerRow(day: day, icons: _icons),
-            ],
+            ),
+            // مساحة شفافة يطفو فوقها النصف السفلي من بطاقة الصلوات
+            SizedBox(height: 52.h),
+          ],
+        ),
+        Positioned(
+          left: kScreenPaddingNormal.w,
+          right: kScreenPaddingNormal.w,
+          bottom: 0,
+          child: GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen())),
+            child: _PrayerRow(day: day, icons: _icons),
           ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -150,72 +160,99 @@ class _CountdownHeader extends StatelessWidget {
     final hour12 = day.next.time.hour % 12 == 0 ? 12 : day.next.time.hour % 12;
     final clock = '$hour12:${day.next.time.minute.toString().padLeft(2, '0')}'.toArabicNumbers;
 
+    final Color gold = AppColor.rateColor.themeColor;
+
     return Container(
       width: double.infinity,
-      color: AppColor.primaryColor.themeColor,
-      padding: EdgeInsets.symmetric(vertical: kFormPaddingAllLarge.h, horizontal: kFormPaddingAllLarge.w),
+      // مساحة سفلية إضافية تجلس خلف النصف العلوي من بطاقة الصلوات العائمة
+      padding: EdgeInsets.fromLTRB(kScreenPaddingNormal.w, kFormPaddingAllSmall.h, kScreenPaddingNormal.w, 48.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '${hijri.toFormat("d MMMM yyyy")}  •  $gregorian',
-            style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white70),
+          // سطر التاريخ: الهجري بالذهبي ثم الميلادي باهتًا
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('${hijri.toFormat("d MMMM yyyy")} هـ', style: const TextStyle().semiBoldStyle(fontSize: 12).customColor(gold)),
+              Text('  •  ', style: const TextStyle().mediumStyle(fontSize: 12).customColor(Colors.white38)),
+              Text(gregorian, style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white54)),
+            ],
           ),
           SizedBox(height: kFormPaddingAllLarge.h),
-          SizedBox(
-            width: 150.r,
-            height: 150.r,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 150.r,
-                  height: 150.r,
-                  child: CircularProgressIndicator(
-                    value: day.progress(now),
-                    strokeWidth: 7,
-                    backgroundColor: Colors.white24,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColor.rateColor.themeColor),
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+          Row(
+            children: [
+              // في RTL: هذا العمود يظهر يمينًا — اسم الصلاة القادمة والموقع
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('الصلاة القادمة', style: const TextStyle().mediumStyle(fontSize: 10).customColor(Colors.white70)),
+                    Text('الصلاة القادمة', style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white60)),
                     SizedBox(height: 2.h),
-                    Text(clock, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 30.sp)),
-                    Text(isPm ? 'مساءً' : 'صباحاً', style: const TextStyle().mediumStyle(fontSize: 10).customColor(Colors.white70)),
-                    SizedBox(height: 4.h),
-                    Text(countdown, style: const TextStyle().semiBoldStyle(fontSize: 11).customColor(AppColor.rateColor.themeColor)),
+                    Text(day.next.name, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 32.sp, height: 1.2)),
+                    SizedBox(height: 6.h),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Colors.white70),
+                        SizedBox(width: 4.w),
+                        Flexible(
+                          child: Text(
+                            day.locationName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle().mediumStyle(fontSize: 12).customColor(Colors.white70),
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        // زر تحديث الموقع من GPS — يُوقف فقاعة الضغط حتى لا يفتح شاشة المواقيت
+                        InkResponse(
+                          onTap: refreshingLocation ? null : onRefreshLocation,
+                          radius: 18,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
+                            child: refreshingLocation
+                                ? const SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+                                  )
+                                : const Icon(Icons.my_location, size: 12, color: Colors.white70),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          SizedBox(height: kFormPaddingAllNormal.h),
-          Text(day.next.name, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 16.sp)),
-          SizedBox(height: 4.h),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.location_on, size: 14, color: Colors.white70),
-              SizedBox(width: 4.w),
-              Text(day.locationName, style: const TextStyle().mediumStyle(fontSize: 12).customColor(Colors.white70)),
-              SizedBox(width: 6.w),
-              // زر تحديث الموقع من GPS — يُوقف فقاعة الضغط حتى لا يفتح شاشة المواقيت
-              InkResponse(
-                onTap: refreshingLocation ? null : onRefreshLocation,
-                radius: 18,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
-                  child: refreshingLocation
-                      ? const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
-                        )
-                      : const Icon(Icons.my_location, size: 12, color: Colors.white70),
+              ),
+              SizedBox(width: kFormPaddingAllLarge.w),
+              // وفي الجهة الأخرى: حلقة العدّاد المصغّرة
+              SizedBox(
+                width: 110.r,
+                height: 110.r,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 110.r,
+                      height: 110.r,
+                      child: CircularProgressIndicator(
+                        value: day.progress(now),
+                        strokeWidth: 5,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: Colors.white12,
+                        valueColor: AlwaysStoppedAnimation<Color>(gold),
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(clock, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 20.sp, height: 1.1)),
+                        Text(isPm ? 'مساءً' : 'صباحاً', style: const TextStyle().mediumStyle(fontSize: 9).customColor(Colors.white70)),
+                        SizedBox(height: 3.h),
+                        Text(countdown, style: const TextStyle().semiBoldStyle(fontSize: 10).customColor(gold)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -236,12 +273,16 @@ class _PrayerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: AppColor.cardColor.themeColor,
-      padding: EdgeInsets.symmetric(vertical: kFormPaddingAllLarge.h, horizontal: kFormPaddingAllSmall.w),
+      padding: EdgeInsets.symmetric(vertical: kFormPaddingAllNormal.h, horizontal: kFormPaddingAllSmall.w),
+      decoration: BoxDecoration(
+        color: AppColor.cardColor.themeColor,
+        borderRadius: BorderRadius.circular(kFormRadius * 1.6),
+        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))],
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          for (final slot in day.five) _PrayerRowItem(slot: slot, active: slot.id == day.next.id, icon: icons[slot.id]!),
+          for (final slot in day.five)
+            Expanded(child: _PrayerRowItem(slot: slot, active: slot.id == day.next.id, icon: icons[slot.id]!)),
         ],
       ),
     );
@@ -260,20 +301,32 @@ class _PrayerRowItem extends StatelessWidget {
     final hour12 = slot.time.hour % 12 == 0 ? 12 : slot.time.hour % 12;
     final time = '$hour12:${slot.time.minute.toString().padLeft(2, '0')}'.toArabicNumbers;
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: kFormPaddingAllNormal.w, vertical: kFormPaddingAllSmall.h),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: EdgeInsets.symmetric(horizontal: 3.w),
+      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: kFormPaddingAllNormal.h),
       decoration: BoxDecoration(
         color: active ? AppColor.primaryColor.themeColor : Colors.transparent,
-        borderRadius: BorderRadius.circular(kFormRadius),
+        borderRadius: BorderRadius.circular(kFormRadius * 1.2),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 20, color: active ? AppColor.rateColor.themeColor : AppColor.primaryColor.themeColor),
           SizedBox(height: 4.h),
-          Text(slot.name, style: const TextStyle().mediumStyle(fontSize: 11).customColor(active ? Colors.white : AppColor.textColor.themeColor)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(slot.name, maxLines: 1, style: const TextStyle().semiBoldStyle(fontSize: 11).customColor(active ? Colors.white : AppColor.textColor.themeColor)),
+          ),
           SizedBox(height: 2.h),
-          Text(time, style: const TextStyle().semiBoldStyle(fontSize: 12).customColor(active ? Colors.white : AppColor.textColor.themeColor)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              time,
+              maxLines: 1,
+              style: const TextStyle().semiBoldStyle(fontSize: 11).customColor(active ? AppColor.rateColor.themeColor : AppColor.hintColor.themeColor),
+            ),
+          ),
         ],
       ),
     );
