@@ -1,4 +1,5 @@
 import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/core/res/theme_helper.dart';
 import 'package:azkark/core/utils/messaging_helper.dart';
 import 'package:azkark/features/adhan/providers/location_provider.dart';
 // import 'package:azkark/features/QuranPages/bloc/player_bar_bloc.dart';
@@ -143,6 +144,22 @@ class _HomePageState extends State<HomePage> {
                 icon: Icons.settings,
                 title: tr('settings_bar'),
                 onTap: () => Navigator.push(context, ScaleRoute(page: const SettingsScreen())),
+              ),
+              // تبديل الوضع الليلي/النهاري
+              StatefulBuilder(
+                builder: (tileContext, setTileState) {
+                  final themeHelper = Provider.of<ThemeHelper>(context, listen: false);
+                  final isDark = themeHelper.isDarkMode;
+                  return SwitchListTile(
+                    secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode, color: teal),
+                    title: Text(tr('dark_mode'), style: const TextStyle().semiBoldStyle(fontSize: 15).primaryTextColor()),
+                    value: isDark,
+                    onChanged: (value) {
+                      themeHelper.changeTheme(value, reload: true);
+                      setTileState(() {});
+                    },
+                  );
+                },
               ),
               _buildMenuTile(
                 context: sheetContext,

@@ -2,9 +2,7 @@
   "report_a_bug": "الإبلاغ عن مشكلة",
   "request_a_feature": "اقتراح ميزة جديدة",
   "report_an_error": "الإبلاغ عن خطأ",
-
   "no_location_available": "لا يوجد موقع متاح",
-
   "error_occured": "حدث خطأ",
   "nearby": "مسجد",
   "compass_heading_north": "شمال",
@@ -15,9 +13,7 @@
   "compass_heading_south_west": "جنوب غرب",
   "compass_heading_west": "الغرب",
   "compass_heading_north_west": "الشمال الغربي",
-
   "youAreFacing": "أنت في اتجاه",
-
   "arabic_month_safar": "صَفَر",
   "arabic_month_muharram": "ٱلْمُحَرَّم",
   "arabic_month_rabi_al_awwal": "ربــيـــع الأول",
@@ -40,13 +36,8 @@
   "eight": "٨",
   "nine": "٩",
   "zero": "٠",
-
   "numeric_direction": "ltr",
   "text_direction": "rtl",
-
-
-
-
   "adan": "الأذان",
   "locale": "ar",
   "direction": "rtl",
@@ -59,11 +50,9 @@
   "adhan_isha": "العشاء",
   "adhan_midnight": "منتصف الليل",
   "adhan_third_night": "الجزء الثالث الأخير من الليل",
-
   "notifyMeBefore": "إعلامي قبل موعد الأذان بـ {min} دقيقة",
   "notifyMeAfter": "إعلامي قبل موعد الأذان بـ {min} دقيقة",
   "clickToChange": "انقر للتغيير",
-
   "silentAdhan": "الصامت",
   "notificationOnly": "التنبيه بدون أذان",
   "alarm": "التنبيه بصوت المنبه",
@@ -72,9 +61,6 @@
   "adhanMedina": "أذان - المدينة",
   "timing": "التوقيت",
   "inexactNotify": "إخطار مبكر / متأخر",
-
-
-
   "type": "اكتب",
   "adhan": "أذان",
   "tryAgain": "حاول مرة أخرى",
@@ -221,5 +207,6 @@
   "newBookmark": "إضافة علامة مرجعية جديدة",
   "nameOfBookmark": "أعطه اسمًا فريدًا",
   "color": "لون العلامة المرجعية",
-  "saveBookmark": "حفظ العلامة المرجعية"
+  "saveBookmark": "حفظ العلامة المرجعية",
+  "dark_mode": "الوضع الليلي"
 }

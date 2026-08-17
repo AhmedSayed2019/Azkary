@@ -2,14 +2,12 @@
   "report_a_bug": "Report a Bug",
   "request_a_feature": "Request a Feature",
   "report_an_error": "Report an Error",
-
   "fajr": "Fajr",
   "zuhr": "Zuhr",
   "asr": "Asr",
   "maghrib": "Maghrib",
   "isya": "Isha",
   "azaanAlarm": "Azaan Alarm",
-
   "downloadedSuccessfully": "The file has been uploaded and saved to Files",
   "language": "English",
   "main": "Main Screen",
@@ -100,5 +98,6 @@
   "newBookmark": "Add New Bookmark",
   "nameOfBookmark": "Give it a unique name",
   "color": "Color of Bookmark",
-  "saveBookmark": "Save Bookmark"
+  "saveBookmark": "Save Bookmark",
+  "dark_mode": "Dark mode"
 }

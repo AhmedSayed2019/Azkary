@@ -6,13 +6,12 @@
   "isya": "Yatsı",
   "azaanAlarm": "Ezan alarmı",
   "language": "Türkçe - Turkish",
-  "azkar": "Sükunet - Azkar",
+  "azkar": "Zikirler ve Dualar",
   "main": "Ana Ekran",
   "quran": "Kutsal Kur'an",
   "audios": "Sesler",
   "qibla": "Kıble",
   "asmaa": "Allah'ın Güzel İsimleri",
-  "azkar": "Zikirler ve Dualar",
   "notifications": "Bildirimler",
   "surah": "Sura",
   "juz": "Cüz",
@@ -97,5 +96,6 @@
   "nameOfBookmark": "Ona benzersiz bir ad ver",
   "color": "Yer İşareti Rengi",
   "saveBookmark": "Yer İşaretini Kaydet",
-  "Enter Custom Zikr": "Özel Zikr Girin"
+  "Enter Custom Zikr": "Özel Zikr Girin",
+  "dark_mode": "Karanlık mod"
 }
