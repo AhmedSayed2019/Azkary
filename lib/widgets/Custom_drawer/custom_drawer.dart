@@ -1,3 +1,4 @@
+import 'package:azkark/core/res/resources.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -82,7 +83,8 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
               alignment: Alignment.topLeft,
               child: Container(
                 width: widthAnimation.value,
-                color: teal,
+                // نفس أخضر الهوية المستخدم في الهيدر وبقية التطبيق
+                color: AppColor.primaryColor.themeColor,
                 child: Column(
                   children: <Widget>[
                     DrawerListTitle(
