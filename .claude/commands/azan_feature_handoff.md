@@ -66,12 +66,18 @@ Branch: **`azan`** (off `fix/build-and-runtime-errors`, pushed to `origin/azan`)
   - schedules `zonedSchedule` **exactAllowWhileIdle** notifications for the next
     **2 days** of the 5 prayers, skipping past times and muted prayers
     (`prayer_sound_<id.name>` prefs — same keys the prayer screen toggles).
-  - Android: channel `azan_channel`, full adhan sound
-    `RawResourceAndroidNotificationSound('adhan_mecca')`
-    (file: `android/app/src/main/res/raw/adhan_mecca.mp3`), category alarm,
-    small icon `'icon'`, and `audioAttributesUsage: AudioAttributesUsage.alarm`
-    so the adhan plays on the **alarm** stream (alarm volume, not the
-    notification volume, and not truncated).
+  - Android: channel `azan_channel_v2`, adhan sound
+    `RawResourceAndroidNotificationSound('azan')`
+    (file: `android/app/src/main/res/raw/azan.mp3` — the user's own recording,
+    5:48, 128 kbps, 5.3 MB), category alarm, small icon `'icon'`, and
+    `audioAttributesUsage: AudioAttributesUsage.alarm` so the adhan plays on the
+    **alarm** stream (alarm volume, not the notification volume).
+  - The channel id is `_v2` because the first build shipped `azan_channel` with
+    `adhan_mecca`; Android freezes a channel's sound at creation, so the new
+    file would never be heard on an existing install. `_dropStaleChannel()`
+    deletes the old `azan_channel` on every reschedule (idempotent, verified
+    `mDeleted=true`). `adhan_mecca.mp3` / `adhan_medina.mp3` are still in
+    `res/raw` for the dead legacy code — removable in the cleanup pass.
   - iOS: `DarwinNotificationDetails` with **default system sound** +
     timeSensitive. Custom adhan needs a ≤30s `.caf` added via Xcode (see TODO).
   - falls back to `inexactAllowWhileIdle` when exact alarms aren't permitted;
@@ -146,12 +152,24 @@ the speaker.
   and the azan notification pins `icon: 'icon'` on the details as well (the
   plugin is a singleton, so whichever `initialize()` ran last would otherwise
   decide the default icon).
-- **`azan_channel` settings are frozen after first creation.** Android ignores
-  changes to a channel's sound/importance/audio-usage once it exists. Any
-  device that ran a build before the `USAGE_ALARM` change keeps the old
-  notification-stream channel until the app is reinstalled. Fine now
-  (unreleased); if the channel definition changes again after release, bump the
-  channel id (e.g. `azan_channel_v2`) instead of editing it in place.
+- **Notification channels are frozen after first creation.** Android ignores
+  any later change to a channel's sound/importance/audio-usage. This already
+  bit us once (the `adhan_mecca` → `azan.mp3` switch), which is why the id is
+  now `azan_channel_v2` with a delete of the old one. **Any future change to
+  the sound or the audio usage needs a new id (`_v3`) plus a delete of `_v2`
+  — editing the constants alone changes nothing on an existing install.**
+- **The adhan is 5:48 long, played as a notification-channel sound.** That is
+  much longer than a typical notification and worth watching on real hardware:
+  a) the user tapping or swiping the notification stops it; b) some OEM ROMs
+  cut long notification sounds short. On the emulator it decoded and played
+  (`c2.android.mp3.decoder`, 44.1 kHz stereo) until the *emulator's* fake audio
+  device failed at ~59s (`pcm_writei failed … I/O error` from
+  `android.hardware.audio@7.1-impl.ranchu`) — an emulator artifact, not an
+  Android limit, but it means full-length playback is **unverified**. If a real
+  device truncates it, the fix is to stop using the channel sound and play the
+  file from a foreground service when the notification fires.
+- **APK grew ~5.3 MB** from `res/raw/azan.mp3`. `res/raw/keep.xml` already has
+  `tools:keep="@raw/*"`, so the shrinker will not drop it in release builds.
 - iOS: no custom adhan sound yet (needs ≤30s `adhan_short.caf` in the Runner
   bundle via Xcode on a Mac; then set `sound: 'adhan_short.caf'` in
   `DarwinNotificationDetails`). iOS notification sounds are hard-capped at 30s;
@@ -175,9 +193,10 @@ as the user left them and committed with the scheduler work:
 ## Next steps (in priority order)
 
 1. **Real-device test**: install on a physical phone, mute one prayer and leave
-   another on, kill the app, confirm the adhan fires at the right minute with
-   sound. Watch for OEM battery killers (Xiaomi/Huawei/Samsung) — may need an
-   "ignore battery optimisations" prompt.
+   another on, kill the app, confirm the adhan fires at the right minute and
+   **plays all 5:48** (see the long-sound caveat above). Watch for OEM battery
+   killers (Xiaomi/Huawei/Samsung) — may need an "ignore battery optimisations"
+   prompt.
 2. **iOS** `.caf` sound via Xcode (≤30s `adhan_short.caf` in the Runner bundle,
    then `sound: 'adhan_short.caf'` in `DarwinNotificationDetails`); test on a
    real iPhone. Full-length adhan on iOS needs the app open or Critical Alerts.

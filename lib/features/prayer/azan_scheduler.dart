@@ -3,7 +3,7 @@
 // المواقيت — ومفاتيح كتم الصوت لكل صلاة من شاشة المواقيت.
 //
 // أندرويد: إشعار مجدول بدقة (exactAllowWhileIdle) بصوت الأذان الكامل
-// المضمّن في التطبيق (res/raw/adhan_mecca.mp3).
+// المضمّن في التطبيق (res/raw/azan.mp3).
 // iOS: نفس الجدولة بصوت النظام الافتراضي — أصوات إشعارات iOS محدودة
 // بثلاثين ثانية ويلزم ملف ‎.caf يُضاف عبر Xcode لصوت أذان مخصص.
 
@@ -34,6 +34,18 @@ class AzanScheduler {
 
   /// نُنظّف بقايا النظام القديم مرة واحدة فقط لكل جهاز.
   static const String _legacyClearedKey = 'azan_legacy_alarms_cleared';
+
+  /// قناة إشعار الأذان. إعدادات القناة (الصوت والأهمية ومجرى الصوت)
+  /// تُجمَّد لحظة إنشائها على الجهاز ولا يمكن تعديلها بعدها، فأي تغيير
+  /// في ملف الأذان يستلزم معرّف قناة جديدًا + حذف القديمة.
+  static const String _channelId = 'azan_channel_v2';
+
+  /// القناة السابقة (صوت adhan_mecca على مجرى الإشعارات) — تُحذف مرة
+  /// واحدة حتى لا تبقى معلّقة في إعدادات إشعارات التطبيق.
+  static const String _staleChannelId = 'azan_channel';
+
+  /// ملف الأذان المضمّن (res/raw/azan.mp3).
+  static const String _azanSound = 'azan';
 
   /// أيقونة الإشعار الصغيرة (res/drawable/icon.png).
   static const String _smallIcon = 'icon';
@@ -90,6 +102,9 @@ class AzanScheduler {
       // نظام الأذان القديم قد يكون ترك منبّهًا معلّقًا يعيد نفسه بعد
       // كل إقلاع — نُسكته مرة واحدة حتى لا يُسمع أذانان.
       await _clearLegacyAlarms(plugin, prefs);
+      // حذف القناة القديمة (لا يضر تكراره) — بدونه يبقى صوتها المجمّد
+      // هو ما يُشغَّل على الأجهزة التي ثبّتت نسخة سابقة.
+      await _dropStaleChannel();
 
       // نظّف نطاقنا بالكامل قبل إعادة الجدولة
       final pending = await plugin.pendingNotificationRequests();
@@ -100,14 +115,14 @@ class AzanScheduler {
       }
 
       const androidDetails = AndroidNotificationDetails(
-        'azan_channel',
+        _channelId,
         'الأذان',
         channelDescription: 'تنبيه صوتي عند دخول وقت الصلاة',
         importance: Importance.max,
         priority: Priority.high,
         category: AndroidNotificationCategory.alarm,
         icon: _smallIcon,
-        sound: RawResourceAndroidNotificationSound('adhan_mecca'),
+        sound: RawResourceAndroidNotificationSound(_azanSound),
         playSound: true,
         // الأذان ينتمي لمجرى المنبّه لا الإشعارات: يُسمع بمستوى صوت
         // المنبّه ولا يُقصّ. لا يُغيَّر بعد إنشاء القناة على الجهاز.
@@ -179,6 +194,15 @@ class AzanScheduler {
     return FlutterLocalNotificationsPlugin()
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
+  }
+
+  /// يحذف قناة الأذان القديمة إن وُجدت. عملية خفيفة وآمنة التكرار.
+  static Future<void> _dropStaleChannel() async {
+    try {
+      await _android()?.deleteNotificationChannel(_staleChannelId);
+    } catch (_) {
+      // لا شيء يعتمد عليها — القناة الجديدة تُنشأ عند أول إشعار
+    }
   }
 
   /// هل يسمح النظام بجدولة المنبهات الدقيقة؟ أندرويد ١٢+ يطلب إذن
