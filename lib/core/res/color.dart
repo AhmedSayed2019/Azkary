@@ -93,8 +93,8 @@ class AppColor {
   //App
   static Clr scaffoldBackgroundColor =  const ColorModel(lightColor: Color(0xFFF3F2ED),darkColor: Color(0xFF0B1710));
   static Clr statusBarColor =   ColorModel(lightColor: scaffoldBackgroundColor.lightColor,darkColor:  scaffoldBackgroundColor.darkColor);
-  // cardMuted: كروت الرئيسية وصف الصلوات
-  static Clr cardColor =  const ColorModel(lightColor: Color(0xFFF0EFE7),darkColor: Color(0xFF17301F));
+  // كروت الرئيسية وصف الصلوات — الكريمي القديم في الفاتح
+  static Clr cardColor =  const ColorModel(lightColor: Color(0xFFEAE9D9),darkColor: Color(0xFF17301F));
   static Clr dialogColor =  const ColorModel(lightColor: Color(0xFFFFFDF7),darkColor: Color(0xFF12241A));
   // card: السطح المرتفع الفاتح (صفوف شاشة المواقيت...)
   static Clr backgroundColor =  const ColorModel(lightColor: Color(0xFFFFFDF7),darkColor: Color(0xFF12241A));
