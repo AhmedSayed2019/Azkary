@@ -50,21 +50,27 @@ class CustomAppBar extends StatelessWidget {
       pinned: true,
       elevation: 0.0,
       expandedHeight: 140,
-      flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.pin,
-        // نفس نسيج النجوم المستخدم في هيدر الرئيسية
-        background: const IslamicHeaderBackground(child: SizedBox.expand()),
-        titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 12, end: 96),
-        title: Text(
-          title,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-          style: TextStyle(
-            color: teal[50],
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
+      // النسيج خارج FlexibleSpaceBar حتى يبقى ظاهرًا حتى بعد الانكماش
+      // (خلفية FlexibleSpaceBar تتلاشى عند التمرير، عكس شريط الرئيسية)
+      flexibleSpace: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          const IslamicHeaderBackground(child: SizedBox.expand()),
+          FlexibleSpaceBar(
+            collapseMode: CollapseMode.pin,
+            titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 12, end: 96),
+            title: Text(
+              title,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: TextStyle(
+                color: teal[50],
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
           ),
-        ),
+        ],
       ),
       actions: <Widget>[
         ButtonFontSize(
