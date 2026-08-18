@@ -8,6 +8,7 @@ import 'package:azkark/core/utils/messaging_helper.dart';
 import 'package:azkark/core/utils/notifications/data/40hadith.dart';
 import 'package:azkark/data/local/cache_consumer.dart';
 import 'package:azkark/data/models/preference.dart';
+import 'package:azkark/features/prayer/azan_scheduler.dart';
 import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/notifications/views/small_notification_popup.dart';
 import 'package:azkark/firebase_options.dart';
@@ -107,6 +108,9 @@ void main()async {
   await initializeHive();
   // نسيج هيدر الرئيسية — تحميله مسبقًا يمنع ومضة الخلفية عند أول بناء
   await precacheIslamicPattern();
+
+  // إعادة تسليح جدولة صوت الأذان عند كل تشغيل (دون حجب الإقلاع)
+  unawaited(AzanScheduler.reschedule());
   // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.light));

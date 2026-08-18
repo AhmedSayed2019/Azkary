@@ -75,7 +75,8 @@ class _HomePageState extends State<HomePage> {
         Background(),
         Scaffold(
           body: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
+            // Clamping يمنع فجوة السحب الزائد بين الشريط المثبت وقسم الأذان
+            // physics: const ClampingScrollPhysics(),
             slivers: <Widget>[
               // هيدر الأذان القابل للانكماش — شريط الأدوات يبقى مثبتًا عند التمرير
               // شريط مثبت واحد أعلى الصفحة: القائمة + البحث + الجرس — لا يختفي عند التمرير
@@ -105,7 +106,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const AzanSection(),
               SliverPadding(
-                padding: kScreenPadding,
+                padding: kScreenPadding.copyWith(top: 0, bottom: 0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     <Widget>[
@@ -214,9 +215,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildAllAzkarCard(String text, BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return Padding(
-      padding: const EdgeInsets.all(0.0),
-      child: Card(
+    return  Card(
         color: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: InkWell(
@@ -248,7 +247,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-        ),
+        
       ),
     );
   }

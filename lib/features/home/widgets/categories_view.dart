@@ -2,19 +2,16 @@ import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/core/utils/helpers/extensions.dart';
 import 'package:azkark/core/utils/helpers/gps_location_helper.dart';
-import 'package:azkark/features/adhan/adhan_screen.dart';
 import 'package:azkark/features/adhan/providers/location_provider.dart';
-import 'package:azkark/features/notifications/views/all_notification_page.dart';
-import 'package:azkark/features/qibla/qiblaScreen.dart';
 import 'package:azkark/features/quran/quran_screen.dart';
 import 'package:azkark/features/refactor/asmaallah/presentation/modules/asma_allah_list/asma_allah_list_screen.dart';
-import 'package:azkark/features/refactor/compass/presentation/modules/compass/compass_screen.dart';
 import 'package:azkark/features/refactor/calender/presentation/modules/calendar/calendar_screen.dart';
-import 'package:azkark/generated/assets.dart';
-import 'package:azkark/pages/favorites/view_favorites.dart';
+import 'package:azkark/features/refactor/compass/presentation/modules/compass/compass_screen.dart';
 import 'package:azkark/features/refactor/prayer/presentation/modules/prayer_list/prayer_list_screen.dart';
 import 'package:azkark/features/refactor/sebha/presentation/modules/sebha_list/sebha_list_screen.dart';
 import 'package:azkark/features/refactor/settings/presentation/modules/settings/settings_screen.dart';
+import 'package:azkark/generated/assets.dart';
+import 'package:azkark/pages/favorites/view_favorites.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:azkark/util/navigate_between_pages/scale_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -40,7 +37,7 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
         borderRadius: BorderRadius.circular(10),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 0.0),
           height: size.height * 0.1,
           width: size.width,
           child: Column(

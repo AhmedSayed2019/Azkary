@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/features/prayer/azan_scheduler.dart';
 import 'package:azkark/features/prayer/prayer_times_service.dart';
 import 'package:azkark/widgets/arabic_numbers.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hijri/hijri_calendar.dart';
@@ -18,7 +20,8 @@ class PrayerTimesScreen extends StatefulWidget {
   State<PrayerTimesScreen> createState() => _PrayerTimesScreenState();
 }
 
-class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
+class _PrayerTimesScreenState extends State<PrayerTimesScreen>
+    with WidgetsBindingObserver {
   final PrayerTimesService _service = PrayerTimesService();
 
   Timer? _ticker;
@@ -27,6 +30,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   bool _ready = false;
 
   SharedPreferences? _prefs;
+
+  /// أندرويد ١٢+: بدون إذن «المنبهات والتذكيرات» يتأخر الأذان دقائق.
+  bool _exactAlarmsOk = true;
+
   final Map<PrayerId, bool> _soundEnabled = {};
   final Set<String> _doneKeys = {};
 
@@ -42,6 +49,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _init();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
@@ -61,14 +69,33 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       }
     }
     if (mounted) setState(() => _ready = true);
+    await _checkExactAlarms();
     final changed = await _service.refreshLocation();
     if (changed && mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // العودة من شاشة إعدادات المنبهات — نعيد فحص الإذن ونحدّث التنبيه
+    if (state == AppLifecycleState.resumed) _checkExactAlarms();
+  }
+
+  Future<void> _checkExactAlarms() async {
+    final ok = await AzanScheduler.canScheduleExact();
+    if (mounted && ok != _exactAlarmsOk) setState(() => _exactAlarmsOk = ok);
+  }
+
+  Future<void> _requestExactAlarms() async {
+    final granted =
+        await AzanScheduler.requestExactAlarmPermission(service: _service);
+    if (mounted) setState(() => _exactAlarmsOk = granted);
   }
 
   String _dateKey(DateTime d) =>
@@ -91,6 +118,15 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   Future<void> _toggleSound(PrayerId id) async {
     setState(() => _soundEnabled[id] = !(_soundEnabled[id] ?? true));
     await _prefs?.setBool('prayer_sound_${id.name}', _soundEnabled[id]!);
+    // أعد بناء جدولة الأذان بحيث يُفعَّل/يُكتم صوت هذه الصلاة فعليًا
+    AzanScheduler.reschedule(service: _service);
+  }
+
+  Future<void> _selectMethod(String methodKey) async {
+    await _service.setMethod(methodKey);
+    if (!mounted) return;
+    setState(() {}); // المواقيت تُعاد من compute في build
+    AzanScheduler.reschedule(service: _service);
   }
 
   @override
@@ -112,7 +148,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              _Header(day: heroDay, now: _now),
+              _Header(
+                day: heroDay,
+                now: _now,
+                currentMethodKey: _service.methodKey,
+                onMethodSelected: _selectMethod,
+              ),
               Transform.translate(
                 offset: Offset(0, -18.h),
                 child: _DateNavigator(
@@ -121,6 +162,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                   onNext: () => setState(() => _dayOffset += 1),
                 ),
               ),
+              if (!_exactAlarmsOk)
+                _ExactAlarmNotice(onTap: _requestExactAlarms),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: kFormPaddingAllLarge.w),
                 child: Column(
@@ -150,10 +193,17 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.day, required this.now});
+  const _Header({
+    required this.day,
+    required this.now,
+    required this.currentMethodKey,
+    required this.onMethodSelected,
+  });
 
   final PrayerDay day;
   final DateTime now;
+  final String currentMethodKey;
+  final ValueChanged<String> onMethodSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +216,7 @@ class _Header extends StatelessWidget {
     final hour12 = day.next.time.hour % 12 == 0 ? 12 : day.next.time.hour % 12;
     final clock = '$hour12:${day.next.time.minute.toString().padLeft(2, '0')}'.toArabicNumbers;
 
-    return Container(
+    return IslamicHeaderBackground(child: Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(kFormPaddingAllLarge.w, kFormPaddingAllNormal.h, kFormPaddingAllLarge.w, 48.h),
       decoration: BoxDecoration(
@@ -236,6 +286,7 @@ class _Header extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -265,7 +316,13 @@ class _Header extends StatelessWidget {
             for (final entry in methods.entries)
               ListTile(
                 title: Text(entry.value, style: const TextStyle().mediumStyle(fontSize: 14).primaryTextColor()),
-                onTap: () => Navigator.pop(sheetContext),
+                trailing: entry.key == currentMethodKey
+                    ? Icon(Icons.check_circle, color: AppColor.primaryColor.themeColor)
+                    : null,
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  onMethodSelected(entry.key);
+                },
               ),
             SizedBox(height: 8.h),
           ],
@@ -420,6 +477,63 @@ class _PrayerRow extends StatelessWidget {
             child: Icon(icon, size: 18, color: isNext ? AppColor.rateColor.themeColor : AppColor.primaryColor.themeColor),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// تنبيه أندرويد ١٢+ عندما يكون إذن «المنبهات والتذكيرات» غير ممنوح:
+/// بدونه يُجدول الأذان تقريبيًا وقد يتأخر عن وقته دقائق.
+class _ExactAlarmNotice extends StatelessWidget {
+  const _ExactAlarmNotice({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final gold = AppColor.goldDeepColor.themeColor;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        kFormPaddingAllLarge.w,
+        0,
+        kFormPaddingAllLarge.w,
+        kFormPaddingAllNormal.h,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          padding: EdgeInsets.all(kFormPaddingAllNormal.w),
+          decoration: BoxDecoration(
+            color: gold.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: gold.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.alarm_on_rounded, size: 22.r, color: gold),
+              SizedBox(width: kFormPaddingAllNormal.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'فعّل المنبهات الدقيقة',
+                      style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor(),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      'حتى ينطلق الأذان في وقته تمامًا، اسمح للتطبيق بـ«المنبهات والتذكيرات».',
+                      style: const TextStyle().mediumStyle(fontSize: 11).customColor(AppColor.hintColor.themeColor),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_left_rounded, size: 22.r, color: gold),
+            ],
+          ),
+        ),
       ),
     );
   }

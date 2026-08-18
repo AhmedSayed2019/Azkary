@@ -39,7 +39,6 @@ class IslamicHeaderBackground extends StatelessWidget {
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
       child: Container(
-        height: height,
         color: color ?? AppColor.primaryColor.themeColor,
         child: Stack(
           children: [

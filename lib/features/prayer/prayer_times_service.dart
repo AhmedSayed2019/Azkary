@@ -89,6 +89,8 @@ class PrayerTimesService {
   double get longitude => _lng;
   String get city => _city;
   bool get hasStoredLocation => _hasStoredLocation;
+  String get methodKey => _methodKey;
+  String get madhabKey => _madhabKey;
 
   /// تُستدعى مرة واحدة عند تشغيل التطبيق قبل أول عرض.
   Future<void> loadCache() async {

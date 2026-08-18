@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/widgets/islamic_header_background.dart';
+import 'package:azkark/features/prayer/azan_scheduler.dart';
 import 'package:azkark/features/prayer/prayer_times_screen.dart';
 import 'package:azkark/features/prayer/prayer_times_service.dart';
 import 'package:azkark/widgets/arabic_numbers.dart';
@@ -69,6 +70,8 @@ class _AzanSectionState extends State<AzanSection> {
     // تحديث الموقع في الخلفية دون حجب أول عرض
     final changed = await _service.refreshLocation();
     if (changed && mounted) setState(() => _day = _service.compute(now: _now));
+    // جدولة صوت الأذان القادمة وفق أحدث موقع/مواقيت
+    AzanScheduler.reschedule(service: _service);
   }
 
   Future<void> _refreshLocation() async {
@@ -79,6 +82,7 @@ class _AzanSectionState extends State<AzanSection> {
       _refreshingLocation = false;
       _day = _service.compute(now: _now);
     });
+    AzanScheduler.reschedule(service: _service);
   }
 
   @override
@@ -246,7 +250,7 @@ class _CountdownHeader extends StatelessWidget {
                       height: 90.r,
                       child: CircularProgressIndicator(
                         value: day.progress(now),
-                        strokeWidth: 5,
+                        strokeWidth: 8,
                         strokeCap: StrokeCap.round,
                         backgroundColor: Colors.white12,
                         valueColor: AlwaysStoppedAnimation<Color>(gold),

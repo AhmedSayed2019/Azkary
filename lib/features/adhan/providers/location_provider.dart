@@ -1,5 +1,4 @@
 import 'package:azkark/core/utils/helpers/gps_location_helper.dart';
-import 'package:azkark/core/utils/helpers/notification/notifiers.dart';
 import 'package:azkark/core/utils/helpers/preferences.dart';
 import 'package:azkark/data/models/locationInfo.dart';
 import 'package:flutter/cupertino.dart';
@@ -82,10 +81,11 @@ class AdanLocationProvider with ChangeNotifier {
 
   @override
   void notifyListeners() async {
-    final locationState = _locationState;
-    if (locationState is LocationAvailable) {
-      scheduleNotification(showNowIfPersistent: true);
-    }
+    // جدولة الأذان انتقلت إلى AzanScheduler + PrayerTimesService، وهما
+    // مصدر المواقيت الوحيد في الرئيسية وشاشة المواقيت. استدعاء
+    // scheduleNotification هنا كان يُطلق أذانًا ثانيًا بمواقيت وإعدادات
+    // مختلفة، لذا عُطّل عمدًا. هذا المزوّد ما زال يُستخدم للموقع فقط
+    // (القبلة، المساجد القريبة).
     super.notifyListeners();
   }
 
