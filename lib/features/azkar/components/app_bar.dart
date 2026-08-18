@@ -17,7 +17,9 @@ enum PopUpMenu {
   About
 }
 
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+/// شريط علوي منزلق لشاشة قراءة الأذكار: موسّعًا يعرض العنوان كبيرًا فوق
+/// نسيج النجوم، وعند التمرير ينكمش إلى شريط عادي ويصغر العنوان معه.
+class CustomAppBar extends StatelessWidget {
   final String title;
   final bool favorite, counter, diacritics, sanad, sliderFont;
   final VoidCallback onTapFontButton,
@@ -43,21 +45,25 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
-
-  @override
   Widget build(BuildContext context) {
-    return AppBar(
+    return SliverAppBar(
+      pinned: true,
       elevation: 0.0,
-      // نفس نسيج النجوم المستخدم في هيدر الرئيسية
-      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
-      title: Text(
-        title,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: teal[50],
-          fontWeight: FontWeight.w700,
-          fontSize: 16,
+      expandedHeight: 140,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
+        // نفس نسيج النجوم المستخدم في هيدر الرئيسية
+        background: const IslamicHeaderBackground(child: SizedBox.expand()),
+        titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 12, end: 96),
+        title: Text(
+          title,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          style: TextStyle(
+            color: teal[50],
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
         ),
       ),
       actions: <Widget>[

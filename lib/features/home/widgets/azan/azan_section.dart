@@ -10,10 +10,19 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hijri/hijri_calendar.dart';
 
-/// قسم "مواقيت الصلاة" في الشاشة الرئيسية: عدّاد دائري للصلاة القادمة
-/// فوق صف بمواقيت الصلوات الخمس، بحساب محلي بالكامل عبر [PrayerTimesService].
+/// قسم "مواقيت الصلاة" في الشاشة الرئيسية كـ [SliverAppBar] قابل للانكماش:
+/// موسّعًا يعرض التاريخ + عدّاد الصلاة القادمة + صف الصلوات الخمس،
+/// وعند التمرير ينكمش إلى شريط علوي عادي (العنوان/القائمة/الجرس تبقى مثبتة).
 class AzanSection extends StatefulWidget {
-  const AzanSection({super.key});
+  const AzanSection({super.key, this.leading, this.title, this.actions, this.bottom});
+
+  /// عناصر شريط الأدوات المثبت (تُمرَّر من الشاشة الأم).
+  final Widget? leading;
+  final Widget? title;
+  final List<Widget>? actions;
+
+  /// عنصر مثبت أسفل الشريط لا يختفي عند التمرير (شريط البحث).
+  final PreferredSizeWidget? bottom;
 
   @override
   State<AzanSection> createState() => _AzanSectionState();
@@ -86,50 +95,61 @@ class _AzanSectionState extends State<AzanSection> {
     super.dispose();
   }
 
+  void _openPrayerTimes() =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen()));
+
   @override
   Widget build(BuildContext context) {
     final day = _day;
-    if (!_ready || day == null) {
-      return const SizedBox(
-        height: 240,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
 
-    // الرأس الأخضر ممتد بعرض الشاشة (ملتحم بشريط التطبيق أعلاه)،
-    // وصف الصلوات بطاقة عائمة تتراكب على حافة الأخضر السفلية.
-    return Stack(
-      children: [
-        Column(
-          children: [
-            IslamicHeaderBackground(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen())),
-                  child: _CountdownHeader(
-                    day: day,
-                    now: _now,
-                    refreshingLocation: _refreshingLocation,
-                    onRefreshLocation: _refreshLocation,
+    final double bottomHeight = widget.bottom?.preferredSize.height ?? 0;
+
+    return SliverAppBar(
+      pinned: true,
+      elevation: 0,
+      backgroundColor: AppColor.primaryColor.themeColor,
+      leading: widget.leading,
+      title: widget.title,
+      actions: widget.actions,
+      bottom: widget.bottom,
+      expandedHeight: 255.h + kToolbarHeight + bottomHeight,
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: IslamicHeaderBackground(
+          child: (!_ready || day == null)
+              ? const Center(child: CircularProgressIndicator(color: Colors.white70))
+              : GestureDetector(
+                  onTap: _openPrayerTimes,
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      // إزاحة تحت شريط الأدوات المثبت
+                      padding: const EdgeInsets.only(top: kToolbarHeight),
+                      // يمنع أخطاء الـ overflow أثناء الانكماش — المحتوى يُقص طبيعيًا
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _CountdownHeader(
+                              day: day,
+                              now: _now,
+                              refreshingLocation: _refreshingLocation,
+                              onRefreshLocation: _refreshLocation,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                  kScreenPaddingNormal.w, 0, kScreenPaddingNormal.w, kFormPaddingAllLarge.h),
+                              child: _PrayerRow(day: day, icons: _icons),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            // مساحة شفافة يطفو فوقها النصف السفلي من بطاقة الصلوات
-            SizedBox(height: 52.h),
-          ],
         ),
-        Positioned(
-          left: kScreenPaddingNormal.w,
-          right: kScreenPaddingNormal.w,
-          bottom: 0,
-          child: GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen())),
-            child: _PrayerRow(day: day, icons: _icons),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -167,8 +187,7 @@ class _CountdownHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      // مساحة سفلية إضافية تجلس خلف النصف العلوي من بطاقة الصلوات العائمة
-      padding: EdgeInsets.fromLTRB(kScreenPaddingNormal.w, kFormPaddingAllSmall.h, kScreenPaddingNormal.w, 48.h),
+      padding: EdgeInsets.fromLTRB(kScreenPaddingNormal.w, kFormPaddingAllSmall.h, kScreenPaddingNormal.w, kFormPaddingAllLarge.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -230,14 +249,14 @@ class _CountdownHeader extends StatelessWidget {
               SizedBox(width: kFormPaddingAllLarge.w),
               // وفي الجهة الأخرى: حلقة العدّاد المصغّرة
               SizedBox(
-                width: 110.r,
-                height: 110.r,
+                width: 90.r,
+                height: 90.r,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     SizedBox(
-                      width: 110.r,
-                      height: 110.r,
+                      width: 90.r,
+                      height: 90.r,
                       child: CircularProgressIndicator(
                         value: day.progress(now),
                         strokeWidth: 5,

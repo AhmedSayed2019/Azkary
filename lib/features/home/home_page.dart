@@ -73,39 +73,38 @@ class _HomePageState extends State<HomePage> {
       children: <Widget>[
         Background(),
         Scaffold(
-          appBar: AppBar(
-            elevation: 0.0,
-            // نفس أخضر قسم الأذان أسفله حتى يبدوان كتلة واحدة
-            backgroundColor: AppColor.primaryColor.themeColor,
-            leading: IconButton(
-              icon: Icon(Icons.menu, color: teal[50]),
-              onPressed: () => _showMenuBottomSheet(context),
-            ),
-            title: Text(tr( 'home_bar'), style: TextStyle(color: teal[50], fontWeight: FontWeight.w700, fontSize: 18)),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.notifications_none, color: teal[50]),
-                onPressed: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage())),
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: <Widget>[
+              // هيدر الأذان القابل للانكماش — شريط الأدوات يبقى مثبتًا عند التمرير
+              AzanSection(
+                leading: IconButton(
+                  icon: Icon(Icons.menu, color: teal[50]),
+                  onPressed: () => _showMenuBottomSheet(context),
+                ),
+                title: Text(tr( 'home_bar'), style: TextStyle(color: teal[50], fontWeight: FontWeight.w700, fontSize: 18)),
+                actions: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.notifications_none, color: teal[50]),
+                    onPressed: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage())),
+                  ),
+                ],
+                // شريط البحث مثبت أسفل الشريط — لا يختفي عند التمرير
+                bottom: PreferredSize(
+                  preferredSize: Size.fromHeight(MediaQuery.of(context).size.height * 0.055 + 20),
+                  child: CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', showBackground: false, onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
+                ),
               ),
-            ],
-          ),
-          body: Column(
-            children: <Widget>[
-              const AzanSection(),
-              CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', showBackground: false, onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
-              Expanded(
-                child: Padding(
-                  padding: kScreenPadding,
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      children: <Widget>[
-                        const HomeCategoriesView(),
-                        _buildAllAzkarCard('عرض كل الأذكار', context),
-                        for (int i = 0; i < sectionsProvider.length; i += 2)
-                          _buildRowCategories(sectionsProvider, i, context),
-                      ],
-                    ),
+              SliverPadding(
+                padding: kScreenPadding,
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    <Widget>[
+                      const HomeCategoriesView(),
+                      _buildAllAzkarCard('عرض كل الأذكار', context),
+                      for (int i = 0; i < sectionsProvider.length; i += 2)
+                        _buildRowCategories(sectionsProvider, i, context),
+                    ],
                   ),
                 ),
               ),

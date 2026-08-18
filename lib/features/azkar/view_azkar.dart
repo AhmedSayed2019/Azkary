@@ -87,67 +87,69 @@ class _ViewAzkarState extends State<ViewAzkar> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final azkarProvider = Provider.of<AzkarProvider>(context, listen: false);
 
     return Stack(children: <Widget>[
       Background(),
       Scaffold(
-          appBar: CustomAppBar(
-            title: title,
-            favorite: onFavorite == 1,
-            counter: isCounterOpen,
-            diacritics: isDiacriticsOpen,
-            sanad: isSanadOpen,
-            sliderFont: showSliderFont,
-            onTapFavorite: onTapFavorite,
-            onTapSanad: onTapSanad,
-            onTapCounter: onTapCounter,
-            onTapDiacritics: () => setState(() {
-              isDiacriticsOpen = !isDiacriticsOpen;
-            }),
-            onTapFontButton: () => setState(() {
-              showSliderFont = !showSliderFont;
-            }),
-            onTapRefresh: () => setState(() {
-              counter.fillRange(0, azkarProvider.length, 0);
-            }),
-          ),
           body: Stack(
             children: <Widget>[
-              SizedBox(
-                width: size.width,
-                height: size.height,
-                child: ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: azkarProvider.length,
-                  itemBuilder: (context, int index) {
-                    return Padding(
-                      padding: index == 0
-                          ? const EdgeInsets.only(
-                              top: 12.0, bottom: 6.0, left: 12.0, right: 12.0)
-                          : index == azkarProvider.length - 1
-                              ? const EdgeInsets.only(top: 6.0, bottom: 12.0, left: 12.0, right: 12.0)
-                              : const EdgeInsets.only(top: 6.0, bottom: 6.0, left: 12.0, right: 12.0),
-                      child: Zekr(
-                        zekr: azkarProvider.getZekr(index),
-                        numberZekr: index + 1,
-                        isCounterOpen: isCounterOpen,
-                        isDiacriticsOpen: isDiacriticsOpen,
-                        showSanad: showSanad[index],
-                        counter: counter[index],
-                        onTap: () {
-                          setState(() {
-                            if (counter[index] < azkarProvider.getZekr(index).counterNumber) {counter[index]++;}
-                          });
-                        },
-                        onRefresh: () => setState(() {counter[index] = 0;}),
-                        onSanad: () => setState(() {showSanad[index] = !showSanad[index];}),
-                        fontSize: fontSize,
-                      ),
-                    );
-                  },
-                ),
+              CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: <Widget>[
+                  // شريط علوي منزلق ينكمش عند التمرير
+                  CustomAppBar(
+                    title: title,
+                    favorite: onFavorite == 1,
+                    counter: isCounterOpen,
+                    diacritics: isDiacriticsOpen,
+                    sanad: isSanadOpen,
+                    sliderFont: showSliderFont,
+                    onTapFavorite: onTapFavorite,
+                    onTapSanad: onTapSanad,
+                    onTapCounter: onTapCounter,
+                    onTapDiacritics: () => setState(() {
+                      isDiacriticsOpen = !isDiacriticsOpen;
+                    }),
+                    onTapFontButton: () => setState(() {
+                      showSliderFont = !showSliderFont;
+                    }),
+                    onTapRefresh: () => setState(() {
+                      counter.fillRange(0, azkarProvider.length, 0);
+                    }),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, int index) {
+                        return Padding(
+                          padding: index == 0
+                              ? const EdgeInsets.only(
+                                  top: 12.0, bottom: 6.0, left: 12.0, right: 12.0)
+                              : index == azkarProvider.length - 1
+                                  ? const EdgeInsets.only(top: 6.0, bottom: 12.0, left: 12.0, right: 12.0)
+                                  : const EdgeInsets.only(top: 6.0, bottom: 6.0, left: 12.0, right: 12.0),
+                          child: Zekr(
+                            zekr: azkarProvider.getZekr(index),
+                            numberZekr: index + 1,
+                            isCounterOpen: isCounterOpen,
+                            isDiacriticsOpen: isDiacriticsOpen,
+                            showSanad: showSanad[index],
+                            counter: counter[index],
+                            onTap: () {
+                              setState(() {
+                                if (counter[index] < azkarProvider.getZekr(index).counterNumber) {counter[index]++;}
+                              });
+                            },
+                            onRefresh: () => setState(() {counter[index] = 0;}),
+                            onSanad: () => setState(() {showSanad[index] = !showSanad[index];}),
+                            fontSize: fontSize,
+                          ),
+                        );
+                      },
+                      childCount: azkarProvider.length,
+                    ),
+                  ),
+                ],
               ),
               if (showSliderFont)
                 Padding(

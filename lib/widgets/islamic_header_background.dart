@@ -12,6 +12,7 @@ class IslamicHeaderBackground extends StatelessWidget {
   const IslamicHeaderBackground({
     super.key,
     required this.child,
+    this.height,
     this.color,
     this.patternColor,
     this.patternOpacity = 0.10,
@@ -20,6 +21,9 @@ class IslamicHeaderBackground extends StatelessWidget {
   });
 
   final Widget child;
+
+  /// ارتفاع اختياري لأرضية النسيج — عند تركه فارغًا يتمدد مع الأب.
+  final double? height;
 
   /// لون أرضية الهيدر — الافتراضي أخضر الهوية.
   final Color? color;
@@ -35,6 +39,7 @@ class IslamicHeaderBackground extends StatelessWidget {
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
       child: Container(
+        height: height,
         color: color ?? AppColor.primaryColor.themeColor,
         child: Stack(
           children: [

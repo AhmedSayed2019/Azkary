@@ -1,3 +1,4 @@
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:flutter/material.dart';
 
 import '../../../pages/search/search_azkar.dart';
@@ -23,6 +24,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 0.0,
+      // نفس نسيج النجوم المستخدم في هيدر الرئيسية
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
       title: Text(
         _title,
         style: new TextStyle(
