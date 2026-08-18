@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/core/res/resources.dart';
-import 'package:azkark/features/home/widgets/azan/islamic_header_background.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/prayer/prayer_times_screen.dart';
 import 'package:azkark/features/prayer/prayer_times_service.dart';
 import 'package:azkark/widgets/arabic_numbers.dart';

@@ -8,7 +8,7 @@ import 'package:azkark/core/utils/messaging_helper.dart';
 import 'package:azkark/core/utils/notifications/data/40hadith.dart';
 import 'package:azkark/data/local/cache_consumer.dart';
 import 'package:azkark/data/models/preference.dart';
-import 'package:azkark/features/home/widgets/azan/islamic_header_background.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/notifications/views/small_notification_popup.dart';
 import 'package:azkark/firebase_options.dart';
 import 'package:azkark/injection.dart';
