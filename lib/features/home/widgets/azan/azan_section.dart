@@ -10,19 +10,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hijri/hijri_calendar.dart';
 
-/// قسم "مواقيت الصلاة" في الشاشة الرئيسية كـ [SliverAppBar] قابل للانكماش:
-/// موسّعًا يعرض التاريخ + عدّاد الصلاة القادمة + صف الصلوات الخمس،
-/// وعند التمرير ينكمش إلى شريط علوي عادي (العنوان/القائمة/الجرس تبقى مثبتة).
+/// قسم "مواقيت الصلاة" في الشاشة الرئيسية كشريحة محتوى (Sliver):
+/// التاريخ + عدّاد الصلاة القادمة + بطاقة الصلوات العائمة، يتمرر ويختفي
+/// خلف الشريط المثبت (الذي تبنيه الشاشة الأم) عند السحب.
 class AzanSection extends StatefulWidget {
-  const AzanSection({super.key, this.leading, this.title, this.actions, this.bottom});
-
-  /// عناصر شريط الأدوات المثبت (تُمرَّر من الشاشة الأم).
-  final Widget? leading;
-  final Widget? title;
-  final List<Widget>? actions;
-
-  /// عنصر مثبت أسفل الشريط لا يختفي عند التمرير (شريط البحث).
-  final PreferredSizeWidget? bottom;
+  const AzanSection({super.key});
 
   @override
   State<AzanSection> createState() => _AzanSectionState();
@@ -102,32 +94,22 @@ class _AzanSectionState extends State<AzanSection> {
   Widget build(BuildContext context) {
     final day = _day;
 
-    final double bottomHeight = widget.bottom?.preferredSize.height ?? 0;
-
-    return SliverAppBar(
-      pinned: true,
-      elevation: 0,
-      backgroundColor: AppColor.primaryColor.themeColor,
-      leading: widget.leading,
-      title: widget.title,
-      actions: widget.actions,
-      bottom: widget.bottom,
-      expandedHeight: 255.h + kToolbarHeight + bottomHeight,
-      flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.parallax,
-        background: IslamicHeaderBackground(
-          child: (!_ready || day == null)
-              ? const Center(child: CircularProgressIndicator(color: Colors.white70))
-              : GestureDetector(
-                  onTap: _openPrayerTimes,
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      // إزاحة تحت شريط الأدوات المثبت
-                      padding: const EdgeInsets.only(top: kToolbarHeight),
-                      // يمنع أخطاء الـ overflow أثناء الانكماش — المحتوى يُقص طبيعيًا
-                      child: SingleChildScrollView(
-                        physics: const NeverScrollableScrollPhysics(),
+    return SliverToBoxAdapter(
+      child: (!_ready || day == null)
+          ? const IslamicHeaderBackground(
+              child: SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator(color: Colors.white70)),
+              ),
+            )
+          : GestureDetector(
+              onTap: _openPrayerTimes,
+              // بطاقة الصلوات عائمة: نصفها فوق الأخضر ونصفها على خلفية الصفحة
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                      IslamicHeaderBackground(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -137,19 +119,24 @@ class _AzanSectionState extends State<AzanSection> {
                               refreshingLocation: _refreshingLocation,
                               onRefreshLocation: _refreshLocation,
                             ),
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(
-                                  kScreenPaddingNormal.w, 0, kScreenPaddingNormal.w, kFormPaddingAllLarge.h),
-                              child: _PrayerRow(day: day, icons: _icons),
-                            ),
+                            // مساحة خضراء تجلس خلف النصف العلوي من البطاقة
+                            SizedBox(height: 40.h),
                           ],
                         ),
                       ),
-                    ),
+                      // مساحة شفافة يطفو فوقها النصف السفلي من البطاقة
+                      SizedBox(height: 52.h),
+                    ],
                   ),
-                ),
-        ),
-      ),
+                  Positioned(
+                    left: kScreenPaddingNormal.w,
+                    right: kScreenPaddingNormal.w,
+                    bottom: 0,
+                    child: _PrayerRow(day: day, icons: _icons),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

@@ -10,6 +10,7 @@ import 'package:azkark/features/home/widgets/azan/azan_section.dart';
 import 'package:azkark/features/home/widgets/categories_view.dart';
 import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
 import 'package:azkark/features/notifications/views/all_notification_page.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/refactor/feedback/domain/entity/feedback_form_type.dart';
 import 'package:azkark/features/refactor/feedback/presentation/modules/feedback_webview/feedback_webview_screen.dart';
 import 'package:azkark/features/refactor/settings/presentation/modules/settings/settings_screen.dart';
@@ -77,24 +78,32 @@ class _HomePageState extends State<HomePage> {
             physics: const BouncingScrollPhysics(),
             slivers: <Widget>[
               // هيدر الأذان القابل للانكماش — شريط الأدوات يبقى مثبتًا عند التمرير
-              AzanSection(
-                leading: IconButton(
-                  icon: Icon(Icons.menu, color: teal[50]),
-                  onPressed: () => _showMenuBottomSheet(context),
-                ),
-                title: Text(tr( 'home_bar'), style: TextStyle(color: teal[50], fontWeight: FontWeight.w700, fontSize: 18)),
-                actions: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.notifications_none, color: teal[50]),
-                    onPressed: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage())),
-                  ),
-                ],
-                // شريط البحث مثبت أسفل الشريط — لا يختفي عند التمرير
-                bottom: PreferredSize(
-                  preferredSize: Size.fromHeight(MediaQuery.of(context).size.height * 0.055 + 20),
-                  child: CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', showBackground: false, onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
+              // شريط مثبت واحد أعلى الصفحة: القائمة + البحث + الجرس — لا يختفي عند التمرير
+              SliverAppBar(
+                pinned: true,
+                elevation: 0,
+                backgroundColor: AppColor.primaryColor.themeColor,
+                automaticallyImplyLeading: false,
+                titleSpacing: 0,
+                toolbarHeight: 72,
+                flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+                title: Row(
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.menu, color: teal[50]),
+                      onPressed: () => _showMenuBottomSheet(context),
+                    ),
+                    Expanded(
+                      child: CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', showBackground: false, onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.notifications_none, color: teal[50]),
+                      onPressed: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage())),
+                    ),
+                  ],
                 ),
               ),
+              const AzanSection(),
               SliverPadding(
                 padding: kScreenPadding,
                 sliver: SliverList(
