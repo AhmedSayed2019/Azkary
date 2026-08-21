@@ -63,6 +63,11 @@ dependencies:
   # Notifications and Permissions
   flutter_local_notifications: ^19.4.0 # Local push notifications
   permission_handler: ^12.0.1 # Manage device permissions
+  # تُستورد مباشرة في azan_scheduler / reminder_scheduler (zonedSchedule
+  # يحتاج TZDateTime). كانت تصل كاعتماد غير مباشر فقط، وأي ترقية للقفل
+  # كانت قد تسحبها من تحت الكود.
+  timezone: ^0.10.1
+  flutter_timezone: ^4.1.1
 
 
 
@@ -134,7 +139,10 @@ dependencies:
 #  fluttericon:
 #  modal_bottom_sheet:
 #  flutter_media_metadata: ^1.0.0+1
-  metadata_god: ^1.0.0
+#  metadata_god: ^1.0.0
+#  أُزيلت: غير مستعملة في الكود، وتجرّ سلسلة بناء Rust/cargokit تفشل
+#  على ويندوز حين لا تكون أدوات MSVC مثبّتة (link.exe يُلتقط من
+#  coreutils الخاصة بـ Git بدل رابط مايكروسوفت).
 
   #  permission_handler:
 #  iconsax:
@@ -163,9 +171,13 @@ dependencies:
 #  back_button_interceptor: ^8.0.4
 #  animations: ^2.0.11
 #  simple_annimated_staggered: ^0.0.3
-  workmanager: ^0.7.0
-#  flutter_local_notifications: ^14.1.1
-  flutter_overlay_window: ^0.4.3
+#  workmanager: ^0.7.0
+  # النافذة العائمة للأذكار — تظهر فوق التطبيقات الأخرى والتطبيق مغلق.
+  # مُضمَّنة كمصدر لا كإصدار من pub: النسخة الأصلية تُخزّن محرّك فلاتر في
+  # onAttachedToActivity فقط، فتنهار بـ NullPointerException حين يوقظها
+  # منبّه والتطبيق مغلق — وهو بالضبط ما نحتاجه. انظر patches/.
+  flutter_overlay_window:
+    path: libraries/flutter_overlay_window-0.4.5
   easy_overlay: ^1.0.1
 #  flutter_displaymode: ^0.6.0
 #  flutter_compass: ^0.8.1

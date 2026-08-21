@@ -9,19 +9,35 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage"/> -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!-- required from API level 33 -->
     <!--    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> &lt;!&ndash; To read images created by other apps &ndash;&gt;-->
     <!--    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> &lt;!&ndash; To read audios created by other apps &ndash;&gt;-->
     <!--    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> &lt;!&ndash; To read vidoes created by other apps &ndash;&gt;-->
     <!-- For apps with targetSDK=31 (Android 12) -->
+    <!-- الأذان والتذكيرات: منبّه دقيق في وقته. أندرويد 12+ يرفضه افتراضيًا
+         ويجب طلبه من المستخدم (AppPermissions.exactAlarm). -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- بديل مطروح: USE_EXACT_ALARM يُمنح تلقائيًا بلا حوار، لكن سياسة
+         متجر Play تقصره على تطبيقات المنبّه/التقويم — قرار يخص مالك
+         التطبيق قبل النشر، فلم يُفعَّل هنا. -->
     <uses-permission  android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- إعادة جدولة الأذان والتذكيرات بعد إقلاع الجهاز -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- الخدمات الأمامية: أندرويد 14+ يشترط إذنًا مستقلًا لكل
+         foregroundServiceType مُعلن أدناه، وإلا رفض تشغيل الخدمة. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- النافذة العائمة للأذكار فوق التطبيقات الأخرى. إذن خاص يُمنح من
+         شاشة إعدادات مستقلة (Settings.canDrawOverlays) لا بحوار عادي. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- خدمة النافذة العائمة أمامية من نوع specialUse: لا ينطبق عليها أي
+         نوع آخر، ومتجر Play يطالب بتبرير مكتوب له عند النشر. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <!--    <uses-permission-->
     <!--        android:name="android.permission.READ_EXTERNAL_STORAGE"-->
     <!--        android:maxSdkVersion="32" />-->
@@ -127,48 +143,16 @@ android:value="false" /> -->
             </intent-filter>
 
         </receiver>
-        <service
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <receiver
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmBroadcastReceiver"
-            android:exported="false" />
-        <receiver
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.RebootBroadcastReceiver"
-            android:enabled="false"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-        <!--        <service-->
-        <!--            android:name="flutter.overlay.window.flutter_overlay_window.OverlayService"-->
-        <!--            android:exported="false" />-->
-
+        <!-- خدمة النافذة العائمة (flutter_overlay_window المُضمَّنة) -->
         <service
             android:name="flutter.overlay.window.flutter_overlay_window.OverlayService"
-            android:exported="false"></service>
-
-
-        <service
-            android:name="com.ryanheise.audioservice.AudioService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
-            <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="عرض ذكر عائم فوق التطبيقات في مواعيد يحددها المستخدم" />
         </service>
-
-
-        <receiver
-            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
 
         <!-- Warning: Do not change service name. "Adan" -->
         <service

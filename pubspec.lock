@@ -145,14 +145,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
-  build_cli_annotations:
-    dependency: transitive
-    description:
-      name: build_cli_annotations
-      sha256: e563c2e01de8974566a1998410d3f6f03521788160a02503b0b1f1a46c7b3d95
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.1"
   cached_network_image:
     dependency: "direct main"
     description:
@@ -510,10 +502,9 @@ packages:
   flutter_overlay_window:
     dependency: "direct main"
     description:
-      name: flutter_overlay_window
-      sha256: "87a8ed7c47104a9ac1352d081e85304934b3f06ae28507097e49dd5f892e208d"
-      url: "https://pub.dev"
-    source: hosted
+      path: "libraries/flutter_overlay_window-0.4.5"
+      relative: true
+    source: path
     version: "0.4.5"
   flutter_qiblah:
     dependency: "direct main"
@@ -523,14 +514,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0+1"
-  flutter_rust_bridge:
-    dependency: transitive
-    description:
-      name: flutter_rust_bridge
-      sha256: e87d6b9ee934dcd24a128ccb2bd91905d2d5fe5c06245d6a8f5477d4907a437a
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.12.0"
   flutter_scale_kit:
     dependency: transitive
     description:
@@ -553,7 +536,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_timezone:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_timezone
       sha256: "13b2109ad75651faced4831bf262e32559e44aa549426eab8a597610d385d934"
@@ -941,14 +924,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.0"
-  metadata_god:
-    dependency: "direct main"
-    description:
-      name: metadata_god
-      sha256: "2b19b7e88cf5ab7016fe8d1f868bb35a193aaef06fd96cfc7de4ec3eacc16eb0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   mime:
     dependency: transitive
     description:
@@ -1566,7 +1541,7 @@ packages:
     source: hosted
     version: "0.6.18"
   timezone:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: timezone
       sha256: dd14a3b83cfd7cb19e7888f1cbc20f258b8d71b54c06f79ac585f14093a287d1
@@ -1813,14 +1788,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.15.0"
-  workmanager:
-    dependency: "direct main"
-    description:
-      name: workmanager
-      sha256: "746a50c535af15b6dc225abbd9b52ab272bcd292c535a104c54b5bc02609c38a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.0"
   xdg_directories:
     dependency: transitive
     description:

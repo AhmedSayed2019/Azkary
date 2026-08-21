@@ -45,5 +45,21 @@
 	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
+	<!-- مواقيت الصلاة/الأذان تُحسب من موقع الجهاز. غياب هذين المفتاحين
+	     يُسقط التطبيق فور استدعاء geolocator على iOS. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نحتاج موقعك لحساب مواقيت الصلاة واتجاه القبلة بدقة.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>نحتاج موقعك لحساب مواقيت الصلاة واتجاه القبلة بدقة.</string>
+
+	<!-- audio: تشغيل التلاوات والأذان في الخلفية.
+	     fetch/remote-notification: تسليم إشعارات الأذان والتذكيرات. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

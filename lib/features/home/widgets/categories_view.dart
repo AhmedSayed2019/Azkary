@@ -26,8 +26,12 @@ class HomeCategoriesView extends StatefulWidget {
 }
 
 class _HomeCategoriesViewState extends State<HomeCategoriesView> {
-
-  Widget _buildItemsCard({required BuildContext context,required String text, required String pathIcon,required GestureTapCallback? onTap}) {
+  Widget _buildItemsCard({
+    required BuildContext context,
+    required String text,
+    required String pathIcon,
+    required GestureTapCallback? onTap,
+  }) {
     final size = MediaQuery.of(context).size;
     return Card(
       color: Theme.of(context).cardColor,
@@ -43,15 +47,30 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
           child: Column(
             children: [
               Expanded(
-                child: Padding(padding: const EdgeInsets.all(8.0),
-                    child: pathIcon == '0'
-                        ? Icon(Icons.settings, color: const Color(0xff414441), size: size.width * 0.15)
-                        : Center(child: Image.asset(pathIcon, fit: BoxFit.contain,width:  size.width * 0.15,height:  size.width * 0.15,)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: pathIcon == '0'
+                      ? Icon(
+                          Icons.settings,
+                          color: const Color(0xff414441),
+                          size: size.width * 0.15,
+                        )
+                      : Center(
+                          child: Image.asset(
+                            pathIcon,
+                            fit: BoxFit.contain,
+                            width: size.width * 0.15,
+                            height: size.width * 0.15,
+                          ),
+                        ),
                 ),
               ),
-              Text(text, textAlign: TextAlign.center, style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor()/*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
-              // Text(text, textAlign: TextAlign.center, style: const TextStyle().semiBoldStyle(fontSize: 13).customColor(AppColor.textColor.lightColor)/*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
-
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: const TextStyle()
+                    .semiBoldStyle(fontSize: 13)
+                    .primaryTextColor() /*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/, // Text(text, textAlign: TextAlign.center, style: const TextStyle().semiBoldStyle(fontSize: 13).customColor(AppColor.textColor.lightColor)/*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
               ),
             ],
           ),
@@ -60,7 +79,12 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
     );
   }
 
-  Widget _buildLargeItemsCard({required BuildContext context,required String text, required String pathIcon,required GestureTapCallback? onTap}) {
+  Widget _buildLargeItemsCard({
+    required BuildContext context,
+    required String text,
+    required String pathIcon,
+    required GestureTapCallback? onTap,
+  }) {
     final size = MediaQuery.of(context).size;
     return Card(
       color: Theme.of(context).cardColor,
@@ -75,11 +99,25 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
           width: size.width,
           child: Row(
             children: [
-              Padding(padding: const EdgeInsets.all(8.0),
-                  child: Center(child: Image.asset(pathIcon, fit: BoxFit.contain,width:  size.width * 0.24,height:  size.width * 0.24,)),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Image.asset(
+                    pathIcon,
+                    fit: BoxFit.contain,
+                    width: size.width * 0.24,
+                    height: size.width * 0.24,
+                  ),
+                ),
               ),
-              Text(text, textAlign: TextAlign.center, style: const TextStyle().semiBoldStyle(fontSize: 12).customColor(teal)/*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
-
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: const TextStyle()
+                    .semiBoldStyle(fontSize: 12)
+                    .customColor(
+                      teal,
+                    ) /*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
               ),
             ],
           ),
@@ -95,43 +133,100 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
 
     // var quarterjsonData = context.watch<GetDataProvider>().quarterjsonData;
     // var widgejsonData = context.watch<GetDataProvider>().widgejsonData;
-
     return Column(
       children: [
         // _buildItemsCard(context: context, text: tr( 'quran'), pathIcon: Assets.sectionsQuran, onTap: () => Navigator.push(context, ScaleRoute(page:  const QuranPagesPro()))),
 
-
         GridView(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: deviceWidth/3,
+            maxCrossAxisExtent: deviceWidth / 3,
             mainAxisSpacing: 4,
             childAspectRatio: 0.1,
-            crossAxisSpacing:4,
-            mainAxisExtent:110.h,
+            crossAxisSpacing: 4,
+            mainAxisExtent: 110.h,
           ),
           children: <Widget>[
-
-
-
-            _buildItemsCard(context: context, text: tr( 'quran'), pathIcon: Assets.sectionsQuran, onTap: () => Navigator.push(context, ScaleRoute(page:  const QuranPagesPro()))),
+            _buildItemsCard(
+              context: context,
+              text: tr('quran'),
+              pathIcon: Assets.sectionsQuran,
+              onTap: () => Navigator.push(
+                context,
+                ScaleRoute(page: const QuranPagesPro()),
+              ),
+            ),
             // _buildItemsCard(context: context, text: tr( 'allReciters'), pathIcon: Assets.sectionsQuran, onTap: () => Navigator.push(context, ScaleRoute(page:  RecitersPage(/*jsonData: widgejsonData*/)))),
 
-            _buildItemsCard(context: context, text: tr( 'favorite_bar'), pathIcon: Assets.favoritesFavorite256px, onTap: () => Navigator.push(context, ScaleRoute(page: FavoritesView()))),
+            _buildItemsCard(
+              context: context,
+              text: tr('favorite_bar'),
+              pathIcon: Assets.favoritesFavorite256px,
+              onTap: () =>
+                  Navigator.push(context, ScaleRoute(page: FavoritesView())),
+            ),
 
-
-            _buildItemsCard(context: context, text: tr( 'sebha_bar'), pathIcon:  Assets.sebhaSebha256px, onTap: () => Navigator.push(context, ScaleRoute(page: const SebhaListScreen()))),
-            _buildItemsCard(context: context, text: tr( 'qibla'), pathIcon: Assets.sectionsQibla, onTap: () => Navigator.push(context, ScaleRoute(page: const CompassScreen()))),
+            _buildItemsCard(
+              context: context,
+              text: tr('sebha_bar'),
+              pathIcon: Assets.sebhaSebha256px,
+              onTap: () => Navigator.push(
+                context,
+                ScaleRoute(page: const SebhaListScreen()),
+              ),
+            ),
+            _buildItemsCard(
+              context: context,
+              text: tr('qibla'),
+              pathIcon: Assets.sectionsQibla,
+              onTap: () => Navigator.push(
+                context,
+                ScaleRoute(page: const CompassScreen()),
+              ),
+            ),
             // _buildItemsCard(context: context, text: tr( 'qibla'), pathIcon: Assets.sectionsQibla, onTap: () => Navigator.push(context, ScaleRoute(page: const QiblaScreen()))),
-            _buildItemsCard(context: context, text: tr( 'prayer_bar'), pathIcon: Assets.prayerPrayer256px, onTap: () => Navigator.push(context, ScaleRoute(page: const PrayerListScreen()))),
-            _buildItemsCard(context: context, text: tr( 'asmaallah_bar'), pathIcon:  Assets.asmaallahAllah256px, onTap: () => Navigator.push(context, ScaleRoute(page: const AsmaAllahListScreen()))),
-            _buildItemsCard(context: context, text: tr( 'calender'), pathIcon:  Assets.sectionsCalender, onTap: () => Navigator.push(context, ScaleRoute(page: const CalendarScreen()))),
+            _buildItemsCard(
+              context: context,
+              text: tr('prayer_bar'),
+              pathIcon: Assets.prayerPrayer256px,
+              onTap: () => Navigator.push(
+                context,
+                ScaleRoute(page: const PrayerListScreen()),
+              ),
+            ),
+            _buildItemsCard(
+              context: context,
+              text: tr('asmaallah_bar'),
+              pathIcon: Assets.asmaallahAllah256px,
+              onTap: () => Navigator.push(
+                context,
+                ScaleRoute(page: const AsmaAllahListScreen()),
+              ),
+            ),
+            _buildItemsCard(
+              context: context,
+              text: tr('calender'),
+              pathIcon: Assets.sectionsCalender,
+              onTap: () => Navigator.push(
+                context,
+                ScaleRoute(page: const CalendarScreen()),
+              ),
+            ),
             // _buildItemsCard(context: context, text: tr( 'adan'), pathIcon:  Assets.sectionsAdan, onTap: () => Navigator.push(context, ScaleRoute(page: const AdhanScreen()))),
-            _buildItemsCard(context: context, text: tr( 'nearby'), pathIcon:  Assets.sectionsMosqueLocation, onTap: () =>
-            locationProvider.locationState is LocationAvailable
-                ? Uri.parse('https://www.google.com/maps/search/mosque+near+me/@${(locationProvider.locationState as LocationAvailable).locationInfo.latitude},${(locationProvider.locationState as LocationAvailable).locationInfo.longitude}',)
-                : {context.showSnackBar(tr('no_location_available')), AdanLocationProvider.getInstance().init()},
+            _buildItemsCard(
+              context: context,
+              text: tr('nearby'),
+              pathIcon: Assets.sectionsMosqueLocation,
+              onTap: () => locationProvider.locationState is LocationAvailable
+                  ? Uri.parse(
+                      'https://www.google.com/maps/search/mosque+near+me/@${(locationProvider.locationState as LocationAvailable).locationInfo.latitude},${(locationProvider.locationState as LocationAvailable).locationInfo.longitude}',
+                    )
+                  : {
+                      context.showSnackBar(tr('no_location_available')),
+                      AdanLocationProvider.getInstance().init(),
+                    },
             ),
             // _buildItemsCard(context: context, text: tr( 'nearby'), pathIcon:  Assets.sectionsMosqueLocation, onTap: () =>
             // locationProvider.locationState is LocationAvailable
@@ -142,9 +237,17 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
             //     ),
             //     ),)
             //     : context.showSnackBar(tr('no_location_available')),),
-            _buildItemsCard(context: context, text: tr( 'settings_bar'), pathIcon: '0', onTap: () => Navigator.push(context, ScaleRoute(page: const SettingsScreen()))),
-            // _buildItemsCard(context: context, text: tr( 'notifications'), pathIcon: Assets.sectionsNotification, onTap: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage()))),
+            _buildItemsCard(
+              context: context,
+              text: tr('settings_bar'),
+              pathIcon: '0',
+              onTap: () => Navigator.push(
+                context,
+                ScaleRoute(page: const SettingsScreen()),
+              ),
+            ),
 
+            // _buildItemsCard(context: context, text: tr( 'notifications'), pathIcon: Assets.sectionsNotification, onTap: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage()))),
           ],
         ),
       ],

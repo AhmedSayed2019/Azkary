@@ -94,14 +94,23 @@ class _AzanSectionState extends State<AzanSection> {
   void _openPrayerTimes() =>
       Navigator.push(context, MaterialPageRoute(builder: (_) => const PrayerTimesScreen()));
 
+  /// هذا القسم يبدأ أسفل الشريط المثبت مباشرة، فشريحته من صورة الهيدر
+  /// تبدأ عند هذا البعد من رأس الشاشة.
+  ///
+  /// viewPadding لا paddingOf: الأخيرة تُصفَّر لأبناء Scaffold، فكانت
+  /// تُسقط ارتفاع شريط الحالة وتُزيح الصورة للخلف عند الوصلة.
+  double _headerTopOffset(BuildContext context) =>
+      MediaQuery.viewPaddingOf(context).top + kHomeToolbarHeight;
+
   @override
   Widget build(BuildContext context) {
     final day = _day;
 
     return SliverToBoxAdapter(
       child: (!_ready || day == null)
-          ? const IslamicHeaderBackground(
-              child: SizedBox(
+          ? HomeHeaderImage(
+              topOffset: _headerTopOffset(context),
+              child: const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator(color: Colors.white70)),
               ),
@@ -113,7 +122,9 @@ class _AzanSectionState extends State<AzanSection> {
                 children: [
                   Column(
                     children: [
-                      IslamicHeaderBackground(
+                      HomeHeaderImage(
+                        // تكملة الشريحة التي بدأها الشريط المثبت أعلاه
+                        topOffset: _headerTopOffset(context),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -238,34 +249,43 @@ class _CountdownHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(width: kFormPaddingAllLarge.w),
-              // وفي الجهة الأخرى: حلقة العدّاد المصغّرة
+              // وفي الجهة الأخرى: مستطيل العدّاد — المتبقي بارزًا وبجانبه الموعد
               SizedBox(
-                width: 90.r,
-                height: 90.r,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 90.r,
-                      height: 90.r,
-                      child: CircularProgressIndicator(
-                        value: day.progress(now),
-                        strokeWidth: 8,
-                        strokeCap: StrokeCap.round,
-                        backgroundColor: Colors.white12,
-                        valueColor: AlwaysStoppedAnimation<Color>(gold),
+                width: 150.r,
+                height: 72.r,
+                child: CustomPaint(
+                  painter: _FrameProgressPainter(
+                    progress: day.progress(now),
+                    color: gold,
+                    trackColor: Colors.white12,
+                    strokeWidth: 6,
+                    radius: kFormRadius * 1.6,
+                  ),
+                  child: Center(
+                    // scaleDown يحمي من الطفح حين يبلغ العدّاد خانتين للساعة
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(countdown, style: const TextStyle().boldStyle().customColor(gold).copyWith(fontSize: 17.sp, height: 1.1)),
+                            SizedBox(width: 8.w),
+                            Container(width: 1, height: 26.h, color: Colors.white24),
+                            SizedBox(width: 8.w),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(clock, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 15.sp, height: 1.1)),
+                                Text(isPm ? 'مساءً' : 'صباحاً', style: const TextStyle().mediumStyle(fontSize: 9).customColor(Colors.white70)),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(clock, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 20.sp, height: 1.1)),
-                        Text(isPm ? 'مساءً' : 'صباحاً', style: const TextStyle().mediumStyle(fontSize: 9).customColor(Colors.white70)),
-                        SizedBox(height: 3.h),
-                        Text(countdown, style: const TextStyle().semiBoldStyle(fontSize: 10).customColor(gold)),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -344,4 +364,76 @@ class _PrayerRowItem extends StatelessWidget {
       ),
     );
   }
+}
+
+/// إطار تقدّم مستطيل بزوايا مدوّرة — بديل [CircularProgressIndicator]:
+/// المسار يبدأ من منتصف الضلع العلوي ويسير مع عقارب الساعة، فيقرأ
+/// التقدّم بنفس منطق الحلقة القديمة.
+class _FrameProgressPainter extends CustomPainter {
+  const _FrameProgressPainter({
+    required this.progress,
+    required this.color,
+    required this.trackColor,
+    required this.strokeWidth,
+    required this.radius,
+  });
+
+  final double progress;
+  final Color color;
+  final Color trackColor;
+  final double strokeWidth;
+  final double radius;
+
+  /// مسار المربّع المدوّر بادئًا من منتصف الأعلى باتجاه عقارب الساعة.
+  Path _framePath(Size size) {
+    // الحشوة بنصف سُمك القلم وإلا قُصّ الطرف الخارجي للخط.
+    final rect = Offset(strokeWidth / 2, strokeWidth / 2) &
+        Size(size.width - strokeWidth, size.height - strokeWidth);
+    // نصف القطر لا يتجاوز نصف أقصر ضلع، وإلا انقلب الشكل.
+    final r = radius.clamp(0.0, rect.shortestSide / 2);
+    final corner = Radius.circular(r);
+
+    return Path()
+      ..moveTo(rect.center.dx, rect.top)
+      ..lineTo(rect.right - r, rect.top)
+      ..arcToPoint(Offset(rect.right, rect.top + r), radius: corner)
+      ..lineTo(rect.right, rect.bottom - r)
+      ..arcToPoint(Offset(rect.right - r, rect.bottom), radius: corner)
+      ..lineTo(rect.left + r, rect.bottom)
+      ..arcToPoint(Offset(rect.left, rect.bottom - r), radius: corner)
+      ..lineTo(rect.left, rect.top + r)
+      ..arcToPoint(Offset(rect.left + r, rect.top), radius: corner)
+      ..lineTo(rect.center.dx, rect.top);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = _framePath(size);
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    canvas.drawPath(path, paint..color = trackColor);
+
+    final value = progress.clamp(0.0, 1.0);
+    if (value <= 0) return;
+
+    for (final metric in path.computeMetrics()) {
+      canvas.drawPath(
+        metric.extractPath(0, metric.length * value),
+        paint..color = color,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_FrameProgressPainter old) =>
+      old.progress != progress ||
+      old.color != color ||
+      old.trackColor != trackColor ||
+      old.strokeWidth != strokeWidth ||
+      old.radius != radius;
 }

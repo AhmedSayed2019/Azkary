@@ -5,6 +5,7 @@ import 'package:azkark/core/res/theme/theme.dart';
 import 'package:azkark/core/res/theme_helper.dart';
 import 'package:azkark/features/home/home_page.dart';
 import 'package:azkark/features/home/loading_page.dart';
+import 'package:azkark/features/splash/splash_gate.dart';
 import 'package:azkark/pages/home/home_page.dart';
 import 'package:azkark/pages/home/loading_page.dart';
 import 'package:azkark/providers/sections_provider.dart';
@@ -82,6 +83,8 @@ class _MyAppState extends State<MyApp> {
       builder: EasyOverlay.init(),
       home: Directionality(
         textDirection:ui. TextDirection.rtl,
+        // شاشة البداية طبقة فوق المحتوى: هذا يُبنى خلفها من الإطار الأول
+        child: SplashGate(
         child: Consumer<SectionsProvider>(
             builder: (context, sectionProvider, widget) {
               return sectionProvider.isNewUser ? FutureBuilder(
@@ -99,6 +102,7 @@ class _MyAppState extends State<MyApp> {
               )
                   : const HomePage();
             }),
+      ),
       ),
     );
   }

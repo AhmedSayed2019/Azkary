@@ -67,6 +67,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // فك ترميز صورة الهيدر مبكرًا حتى لا تومض خضراء عند أول إطار
+    precacheHomeHeaderImage(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final sectionsProvider = Provider.of<SectionsProvider>(context, listen: false);
 
@@ -86,19 +93,20 @@ class _HomePageState extends State<HomePage> {
                 backgroundColor: AppColor.primaryColor.themeColor,
                 automaticallyImplyLeading: false,
                 titleSpacing: 0,
-                toolbarHeight: 72,
-                flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+                toolbarHeight: kHomeToolbarHeight,
+                // الشريحة العليا من صورة المسجد — بقيّتها يرسمها AzanSection
+                flexibleSpace: const HomeHeaderImage(child: SizedBox.expand()),
                 title: Row(
                   children: <Widget>[
                     IconButton(
-                      icon: Icon(Icons.menu, color: teal[50]),
+                      icon: Icon(Icons.menu, color: AppColor.rateColor.themeColor),
                       onPressed: () => _showMenuBottomSheet(context),
                     ),
                     Expanded(
                       child: CustomSearchBar(title: '${tr( 'search_for_zekr')} . . . ', showBackground: false, onTap: () => Navigator.push(context, FadeRoute(page: SearchForZekr()))),
                     ),
                     IconButton(
-                      icon: Icon(Icons.notifications_none, color: teal[50]),
+                      icon: Icon(Icons.notifications_none, color: AppColor.rateColor.themeColor),
                       onPressed: () => Navigator.push(context, ScaleRoute(page: const NotificationsPage())),
                     ),
                   ],

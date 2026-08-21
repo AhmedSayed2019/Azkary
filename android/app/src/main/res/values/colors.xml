@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- نفس أخضر أعلى صورة شاشة البداية (kSplashBackdrop في splash_gate.dart)
+         حتى لا تومض الشاشة بيضاء بين نافذة النظام وأول إطار من فلاتر. -->
+    <color name="splash_background">#1E3B29</color>
+</resources>

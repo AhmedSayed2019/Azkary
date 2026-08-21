@@ -37,7 +37,8 @@ void initMessaging() async {
   // );
   flutterLocalNotificationsPlugin.initialize(const InitializationSettings(
       android: AndroidInitializationSettings(
-          'icon'
+          // قناع أبيض شفاف — 'icon' الملوّن كان يظهر مربّعًا مصمتًا
+          'ic_stat_azkary'
       )
   ));
 

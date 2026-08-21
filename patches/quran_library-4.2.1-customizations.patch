@@ -1,0 +1,1837 @@
+diff --git a/libraries/quran_library-4.2.1/analysis_options.yaml b/libraries/quran_library-4.2.1/analysis_options.yaml
+index dc07de7..9ef8c77 100644
+--- a/libraries/quran_library-4.2.1/analysis_options.yaml
++++ b/libraries/quran_library-4.2.1/analysis_options.yaml
+@@ -30,6 +30,15 @@ linter:
+ 
+ formatter:
+   trailing_commas: preserve    
++analyzer:
++  exclude:
++    - build/**
++    - android/**
++    - ios/**
++    - web/**
++    - windows/**
++    - macos/**
++    - linux/**
+     # prefer_single_quotes: true
+ # Additional information about this file can be found at
+ # https://dart.dev/tools/analysis
+\ No newline at end of file
+diff --git a/libraries/quran_library-4.2.1/lib/quran.dart b/libraries/quran_library-4.2.1/lib/quran.dart
+index ca9b5f8..271818d 100644
+--- a/libraries/quran_library-4.2.1/lib/quran.dart
++++ b/libraries/quran_library-4.2.1/lib/quran.dart
+@@ -117,6 +117,7 @@ part 'src/quran/presentation/widgets/download_fonts_page/page_build.dart';
+ part 'src/quran/presentation/widgets/download_fonts_page/qpc_v4_flowing_text.dart';
+ part 'src/quran/presentation/widgets/download_fonts_page/quran_fonts_page.dart';
+ part 'src/quran/presentation/widgets/download_fonts_page/rich_text_build.dart';
++part 'src/quran/presentation/widgets/features_sheet/all_features_sheet.dart';
+ part 'src/quran/presentation/widgets/fonts_download_dialog.dart';
+ part 'src/quran/presentation/widgets/fonts_download_widget.dart';
+ part 'src/quran/presentation/widgets/jumping_between_pages_widget.dart';
+diff --git a/libraries/quran_library-4.2.1/lib/src/audio/audio.dart b/libraries/quran_library-4.2.1/lib/src/audio/audio.dart
+index 7389a9f..49b2ebd 100644
+--- a/libraries/quran_library-4.2.1/lib/src/audio/audio.dart
++++ b/libraries/quran_library-4.2.1/lib/src/audio/audio.dart
+@@ -35,6 +35,7 @@ part 'constants/storage_constants.dart';
+ part 'controller/audio_ctrl.dart';
+ part 'controller/audio_handler.dart';
+ part 'controller/extensions/ayah_ctrl_extension.dart';
++part 'controller/extensions/ayah_repeat_ctrl_extension.dart';
+ part 'controller/extensions/surah_audio_storage.dart';
+ part 'controller/extensions/surah_ctrl_extension.dart';
+ part 'controller/extensions/surah_getters.dart';
+@@ -61,6 +62,7 @@ part 'surah_audio/widgets/surah_skip_previouse.dart';
+ part 'widgets/ayah_audio_widget.dart';
+ part 'widgets/ayah_change_reader.dart';
+ part 'widgets/ayah_download_manager_sheet.dart';
++part 'repeat/widgets/ayah_repeat_sheet.dart';
+ part 'widgets/ayah_skip_next.dart';
+ part 'widgets/ayah_skip_previouse.dart';
+ part 'widgets/package_seek_bar.dart';
+diff --git a/libraries/quran_library-4.2.1/lib/src/audio/controller/extensions/ayah_repeat_ctrl_extension.dart b/libraries/quran_library-4.2.1/lib/src/audio/controller/extensions/ayah_repeat_ctrl_extension.dart
+new file mode 100644
+index 0000000..5664442
+--- /dev/null
++++ b/libraries/quran_library-4.2.1/lib/src/audio/controller/extensions/ayah_repeat_ctrl_extension.dart
+@@ -0,0 +1,172 @@
++// ignore_for_file: use_build_context_synchronously
++
++part of '../../audio.dart';
++
++/// محرك تشغيل تكرار نطاق آيات (من آية بداية إلى آية نهاية) مع دعم:
++/// - تكرار كل آية على حدة عددًا معينًا من المرات قبل الانتقال للتالية.
++/// - مهلة انتظار بين كل تكرار وآخر.
++/// - تكرار النطاق بأكمله (الفقرة) عددًا معينًا من المرات بعد اكتمال الدورة الأولى.
++///
++/// Engine for playing back an ayah range (start -> end) with:
++/// - Per-ayah repeat count before moving to the next ayah.
++/// - A wait duration between repeats.
++/// - Whole-section (range) repeat count once the range finishes.
++extension AyahRepeatCtrlExtension on AudioCtrl {
++  /// هل يوجد تكرار نطاق آيات نشط الآن.
++  bool get isAyahRangeRepeatActive => state.isAyahRangeRepeatActive.value;
++
++  /// يبني قائمة مرتّبة بأرقام الآيات الفريدة (ayahUQNumber) بدءًا من
++  /// (startSurah, startAya) وحتى (endSurah, endAya) شاملةً الطرفين،
++  /// مع اجتياز حدود السور بشكل صحيح حسب ترتيب المصحف.
++  List<int> buildAyahRangeUQNumbers({
++    required int startSurah,
++    required int startAya,
++    required int endSurah,
++    required int endAya,
++  }) {
++    // طبّع الحدود بحيث تكون البداية دائمًا قبل أو تساوي النهاية حسب ترتيب المصحف
++    int sSurah = startSurah, sAya = startAya, eSurah = endSurah, eAya = endAya;
++    final startsAfterEnd = sSurah > eSurah || (sSurah == eSurah && sAya > eAya);
++    if (startsAfterEnd) {
++      final tmpSurah = sSurah, tmpAya = sAya;
++      sSurah = eSurah;
++      sAya = eAya;
++      eSurah = tmpSurah;
++      eAya = tmpAya;
++    }
++
++    final List<int> result = [];
++    for (final surah in QuranCtrl.instance.surahs) {
++      if (surah.surahNumber < sSurah || surah.surahNumber > eSurah) continue;
++      for (final ayah in surah.ayahs) {
++        if (surah.surahNumber == sSurah && ayah.ayahNumber < sAya) continue;
++        if (surah.surahNumber == eSurah && ayah.ayahNumber > eAya) continue;
++        result.add(ayah.ayahUQNumber);
++      }
++    }
++    return result;
++  }
++
++  /// إلغاء تكرار نطاق الآيات الجاري (إن وجد) وتنظيف كل المؤقّتات/الاشتراكات
++  /// المرتبطة به دون تسريب أي منها.
++  Future<void> cancelAyahRangeRepeat() async {
++    state.isAyahRangeRepeatActive.value = false;
++
++    final cancelCompleter = state.ayahRangeRepeatCancelCompleter;
++    if (cancelCompleter != null && !cancelCompleter.isCompleted) {
++      cancelCompleter.complete();
++    }
++    state.ayahRangeRepeatCancelCompleter = null;
++
++    state.ayahRangeWaitTimer?.cancel();
++    state.ayahRangeWaitTimer = null;
++
++    await pausePlayer();
++  }
++
++  /// يبدأ تشغيل تكرار نطاق الآيات من (startSurah, startAya) إلى
++  /// (endSurah, endAya) وفق إعدادات التكرار المُمرَّرة.
++  ///
++  /// [repeatPerAyah]: إجمالي عدد مرات تشغيل الآية الواحدة (0 أو 1 = بدون
++  /// تكرار، أي تُشغَّل مرة واحدة فقط؛ 2 تعني مرتين إجمالًا... وهكذا).
++  ///
++  /// [waitSeconds]: مهلة الانتظار بالثواني بين كل تكرار وآخر لنفس الآية
++  /// (0 = بدون انتظار).
++  ///
++  /// [repeatSection]: إجمالي عدد مرات تشغيل النطاق (الفقرة) كاملًا (0 أو 1 =
++  /// بدون تكرار، أي يُشغَّل النطاق مرة واحدة فقط؛ 2 تعني مرتين إجمالًا...
++  /// وهكذا).
++  Future<void> startAyahRangeRepeat(
++    BuildContext context, {
++    required int startSurah,
++    required int startAya,
++    required int endSurah,
++    required int endAya,
++    int repeatPerAyah = 0,
++    int waitSeconds = 0,
++    int repeatSection = 0,
++    AyahAudioStyle? ayahAudioStyle,
++    bool? isDarkMode,
++  }) async {
++    if (!await canPlayAudio()) return;
++
++    // أوقف أي تكرار سابق نظيفًا قبل بدء تكرار جديد
++    await cancelAyahRangeRepeat();
++
++    final ayahsUQ = buildAyahRangeUQNumbers(
++      startSurah: startSurah,
++      startAya: startAya,
++      endSurah: endSurah,
++      endAya: endAya,
++    );
++    if (ayahsUQ.isEmpty) return;
++
++    state.isPlayingSurahsMode = false;
++    disableSurahAutoNextListener();
++    disableSurahPositionSaving();
++
++    state.isAyahRangeRepeatActive.value = true;
++    final cancelCompleter = Completer<void>();
++    state.ayahRangeRepeatCancelCompleter = cancelCompleter;
++
++    final bool isDark =
++        isDarkMode ?? MediaQuery.of(context).platformBrightness == Brightness.dark;
++    final style =
++        ayahAudioStyle ?? AyahAudioStyle.defaults(isDark: isDark, context: context);
++
++    bool cancelled() =>
++        !state.isAyahRangeRepeatActive.value || cancelCompleter.isCompleted;
++
++    try {
++      // repeatSection/repeatPerAyah are the desired TOTAL play counts, not
++      // extra repeats on top of a first play. 0 (or less) still means
++      // "no repeat", i.e. exactly one run.
++      final int totalSectionRuns = repeatSection <= 0 ? 1 : repeatSection;
++      for (int section = 0; section < totalSectionRuns; section++) {
++        if (cancelled()) return;
++        for (final ayahUQ in ayahsUQ) {
++          if (cancelled()) return;
++          final int totalAyahRuns = repeatPerAyah <= 0 ? 1 : repeatPerAyah;
++          for (int run = 0; run < totalAyahRuns; run++) {
++            if (cancelled()) return;
++
++            state.currentAyahUniqueNumber.value = ayahUQ;
++            QuranCtrl.instance
++                .toggleAyahSelection(ayahUQ, forceAddition: true);
++
++            await _playSingleAyahFile(context, ayahUQ, ayahAudioStyle: style);
++            if (cancelled()) return;
++
++            // انتظر حتى ينتهي تشغيل الآية الحالية أو يُطلب الإلغاء
++            final completedFuture = state.audioPlayer.playerStateStream
++                .firstWhere(
++                    (s) => s.processingState == ProcessingState.completed);
++            await Future.any([completedFuture, cancelCompleter.future]);
++            if (cancelled()) return;
++
++            // مهلة انتظار اختيارية بين كل تكرار وآخر
++            if (waitSeconds > 0) {
++              final waitCompleter = Completer<void>();
++              final timer = Timer(Duration(seconds: waitSeconds), () {
++                if (!waitCompleter.isCompleted) waitCompleter.complete();
++              });
++              state.ayahRangeWaitTimer = timer;
++              await Future.any([waitCompleter.future, cancelCompleter.future]);
++              timer.cancel();
++              state.ayahRangeWaitTimer = null;
++              if (cancelled()) return;
++            }
++          }
++        }
++      }
++    } finally {
++      // إن انتهى التشغيل بشكل طبيعي (وليس عبر الإلغاء) أعد ضبط الحالة
++      if (state.isAyahRangeRepeatActive.value) {
++        state.isAyahRangeRepeatActive.value = false;
++      }
++      if (identical(state.ayahRangeRepeatCancelCompleter, cancelCompleter)) {
++        state.ayahRangeRepeatCancelCompleter = null;
++      }
++    }
++  }
++}
+diff --git a/libraries/quran_library-4.2.1/lib/src/audio/controller/surah_state.dart b/libraries/quran_library-4.2.1/lib/src/audio/controller/surah_state.dart
+index 6b11b46..9ac56dc 100644
+--- a/libraries/quran_library-4.2.1/lib/src/audio/controller/surah_state.dart
++++ b/libraries/quran_library-4.2.1/lib/src/audio/controller/surah_state.dart
+@@ -115,4 +115,15 @@ class SurahState {
+   RxDouble ayahDownloadProgress = 0.0.obs;
+   RxBool isAudioPreparing = false.obs;
+   // final QuranRepository _quranRepository = QuranRepository();
++
++  /// ===== Ayah range repeat (التكرار) =====
++
++  /// هل يوجد تشغيل تكرار نطاق آيات نشط حاليًا
++  RxBool isAyahRangeRepeatActive = false.obs;
++
++  /// مكتمل يُستخدم لإلغاء الانتظار الحالي (تشغيل آية أو مهلة انتظار) فورًا
++  Completer<void>? ayahRangeRepeatCancelCompleter;
++
++  /// مؤقّت مهلة الانتظار بين تكرارات الآية
++  Timer? ayahRangeWaitTimer;
+ }
+diff --git a/libraries/quran_library-4.2.1/lib/src/audio/repeat/widgets/ayah_repeat_sheet.dart b/libraries/quran_library-4.2.1/lib/src/audio/repeat/widgets/ayah_repeat_sheet.dart
+new file mode 100644
+index 0000000..22234f6
+--- /dev/null
++++ b/libraries/quran_library-4.2.1/lib/src/audio/repeat/widgets/ayah_repeat_sheet.dart
+@@ -0,0 +1,805 @@
++part of '../../audio.dart';
++
++/// خيارات مهلة الانتظار المتاحة بين تكرارات الآية الواحدة (بالثواني).
++/// أول قيمة (0) تعني "بدون انتظار".
++const List<int> _kAyahRepeatWaitOptions = [
++  0,
++  1,
++  2,
++  3,
++  5,
++  10,
++  15,
++  20,
++  30,
++  45,
++  60,
++];
++
++/// خيارات عدد مرات التكرار (لكل آية أو للفقرة كاملة).
++/// أول قيمة (0) تعني "بدون تكرار".
++const List<int> _kAyahRepeatCountOptions = [
++  0,
++  1,
++  2,
++  3,
++  4,
++  5,
++  6,
++  7,
++  8,
++  9,
++  10,
++];
++
++/// يعرض BottomSheet "التكرار" الذي يتيح للمستخدم تحديد نطاق آيات (بداية/نهاية)
++/// وإعدادات تكرار (تكرار كل آية، مهلة الانتظار، تكرار الفقرة بأكملها) ثم بدء
++/// التشغيل التسلسلي وفق تلك الإعدادات، أو إلغاء تكرار جارٍ.
++Future<void> showAyahRepeatSheet(
++  BuildContext context, {
++  required bool isDark,
++  int? initialStartSurah,
++  int? initialStartAya,
++  int? initialEndSurah,
++  int? initialEndAya,
++  AyahAudioStyle? ayahAudioStyle,
++}) async {
++  await showModalBottomSheet(
++    context: context,
++    useRootNavigator: true,
++    isScrollControlled: true,
++    backgroundColor: AppColors.getBackgroundColor(isDark),
++    shape: const RoundedRectangleBorder(
++      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
++    ),
++    builder: (ctx) => AyahRepeatSheet(
++      isDark: isDark,
++      initialStartSurah: initialStartSurah ?? 1,
++      initialStartAya: initialStartAya ?? 1,
++      initialEndSurah: initialEndSurah,
++      initialEndAya: initialEndAya,
++      ayahAudioStyle: ayahAudioStyle,
++    ),
++  );
++}
++
++/// شاشة (BottomSheet) تحديد نطاق التكرار وإعداداته.
++class AyahRepeatSheet extends StatefulWidget {
++  const AyahRepeatSheet({
++    super.key,
++    required this.isDark,
++    this.initialStartSurah = 1,
++    this.initialStartAya = 1,
++    this.initialEndSurah,
++    this.initialEndAya,
++    this.ayahAudioStyle,
++  });
++
++  final bool isDark;
++  final int initialStartSurah;
++  final int initialStartAya;
++  final int? initialEndSurah;
++  final int? initialEndAya;
++  final AyahAudioStyle? ayahAudioStyle;
++
++  @override
++  State<AyahRepeatSheet> createState() => _AyahRepeatSheetState();
++}
++
++class _AyahRepeatSheetState extends State<AyahRepeatSheet> {
++  late int _startSurah;
++  late int _startAya;
++  late int _endSurah;
++  late int _endAya;
++
++  int _repeatPerAyahIndex = 0;
++  int _waitIndex = 0;
++  int _repeatSectionIndex = 0;
++
++  List<SurahModel> get _surahs => QuranCtrl.instance.surahs;
++
++  @override
++  void initState() {
++    super.initState();
++    _startSurah = widget.initialStartSurah;
++    _startAya = widget.initialStartAya;
++    _endSurah = widget.initialEndSurah ?? widget.initialStartSurah;
++    _endAya = widget.initialEndAya ?? widget.initialStartAya;
++  }
++
++  int _ayahsCountOf(int surahNumber) {
++    final surah = _surahs.firstWhereOrNull(
++      (s) => s.surahNumber == surahNumber,
++    );
++    return surah?.ayahs.length ?? 1;
++  }
++
++  String _surahLabel(int surahNumber) {
++    final surah = _surahs.firstWhereOrNull(
++      (s) => s.surahNumber == surahNumber,
++    );
++    return '$surahNumber. ${surah?.arabicName ?? ''}';
++  }
++
++  /// Opens a searchable surah picker instead of cycling one-by-one through
++  /// all 114 surahs.
++  Future<void> _pickSurah({
++    required int currentSurah,
++    required ValueChanged<int> onSelected,
++  }) async {
++    final selected = await showModalBottomSheet<int>(
++      context: this.context,
++      useRootNavigator: true,
++      isScrollControlled: true,
++      backgroundColor: AppColors.getBackgroundColor(widget.isDark),
++      shape: const RoundedRectangleBorder(
++        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
++      ),
++      builder: (ctx) => _SurahPickerSheet(
++        isDark: widget.isDark,
++        surahs: _surahs,
++        currentSurah: currentSurah,
++      ),
++    );
++    if (selected != null) onSelected(selected);
++  }
++
++  void _pickStartSurah() {
++    _pickSurah(
++      currentSurah: _startSurah,
++      onSelected: (surah) {
++        setState(() {
++          _startSurah = surah;
++          final maxAya = _ayahsCountOf(_startSurah);
++          if (_startAya > maxAya) _startAya = 1;
++        });
++      },
++    );
++  }
++
++  void _pickEndSurah() {
++    _pickSurah(
++      currentSurah: _endSurah,
++      onSelected: (surah) {
++        setState(() {
++          _endSurah = surah;
++          final maxAya = _ayahsCountOf(_endSurah);
++          if (_endAya > maxAya) _endAya = maxAya;
++        });
++      },
++    );
++  }
++
++  void _incrementStartAya() {
++    setState(() {
++      final maxAya = _ayahsCountOf(_startSurah);
++      _startAya = _startAya >= maxAya ? maxAya : _startAya + 1;
++    });
++  }
++
++  void _decrementStartAya() {
++    setState(() {
++      _startAya = _startAya <= 1 ? 1 : _startAya - 1;
++    });
++  }
++
++  void _incrementEndAya() {
++    setState(() {
++      final maxAya = _ayahsCountOf(_endSurah);
++      _endAya = _endAya >= maxAya ? maxAya : _endAya + 1;
++    });
++  }
++
++  void _decrementEndAya() {
++    setState(() {
++      _endAya = _endAya <= 1 ? 1 : _endAya - 1;
++    });
++  }
++
++  void _incrementRepeatPerAyah() {
++    setState(() {
++      _repeatPerAyahIndex = (_repeatPerAyahIndex + 1)
++          .clamp(0, _kAyahRepeatCountOptions.length - 1);
++    });
++  }
++
++  void _decrementRepeatPerAyah() {
++    setState(() {
++      _repeatPerAyahIndex = (_repeatPerAyahIndex - 1).clamp(0, _kAyahRepeatCountOptions.length - 1);
++    });
++  }
++
++  void _incrementWait() {
++    setState(() {
++      _waitIndex =
++          (_waitIndex + 1).clamp(0, _kAyahRepeatWaitOptions.length - 1);
++    });
++  }
++
++  void _decrementWait() {
++    setState(() {
++      _waitIndex =
++          (_waitIndex - 1).clamp(0, _kAyahRepeatWaitOptions.length - 1);
++    });
++  }
++
++  void _incrementRepeatSection() {
++    setState(() {
++      _repeatSectionIndex = (_repeatSectionIndex + 1)
++          .clamp(0, _kAyahRepeatCountOptions.length - 1);
++    });
++  }
++
++  void _decrementRepeatSection() {
++    setState(() {
++      _repeatSectionIndex = (_repeatSectionIndex - 1)
++          .clamp(0, _kAyahRepeatCountOptions.length - 1);
++    });
++  }
++
++  String _waitLabel(int seconds) =>
++      seconds == 0 ? 'بدون انتظار' : '$seconds ثانية';
++
++  String _repeatCountLabel(int count) =>
++      count == 0 ? 'بدون تكرار' : '$count مرات';
++
++  Future<void> _onCancelRepeatTap() async {
++    await AudioCtrl.instance.cancelAyahRangeRepeat();
++    if (mounted) Navigator.of(this.context).pop();
++  }
++
++  Future<void> _onStartTap() async {
++    final BuildContext buildContext = this.context;
++    final audioCtrl = AudioCtrl.instance;
++    final navigator = Navigator.of(buildContext);
++    await audioCtrl.startAyahRangeRepeat(
++      buildContext,
++      startSurah: _startSurah,
++      startAya: _startAya,
++      endSurah: _endSurah,
++      endAya: _endAya,
++      repeatPerAyah: _kAyahRepeatCountOptions[_repeatPerAyahIndex],
++      waitSeconds: _kAyahRepeatWaitOptions[_waitIndex],
++      repeatSection: _kAyahRepeatCountOptions[_repeatSectionIndex],
++      ayahAudioStyle: widget.ayahAudioStyle,
++      isDarkMode: widget.isDark,
++    );
++    if (navigator.mounted) navigator.pop();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final textColor = AppColors.getTextColor(widget.isDark);
++    final primary = Theme.of(context).colorScheme.primary;
++
++    return Directionality(
++      textDirection: TextDirection.rtl,
++      child: SafeArea(
++        top: false,
++        child: Padding(
++          padding: EdgeInsets.only(
++            left: 16,
++            right: 16,
++            top: 8,
++            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
++          ),
++          child: SingleChildScrollView(
++            child: Column(
++              mainAxisSize: MainAxisSize.min,
++              children: [
++                _Header(textColor: textColor),
++                const SizedBox(height: 4),
++                _CancelRepeatLink(
++                  color: primary,
++                  onTap: _onCancelRepeatTap,
++                ),
++                const SizedBox(height: 16),
++                _SectionTitle(text: 'تحديد البدء', color: textColor),
++                const SizedBox(height: 8),
++                _StepperRow(
++                  label: 'السورة',
++                  value: _surahLabel(_startSurah),
++                  textColor: textColor,
++                  accentColor: primary,
++                  onTap: _pickStartSurah,
++                  icon: Icons.expand_more,
++                ),
++                const SizedBox(height: 8),
++                _PlusMinusRow(
++                  label: 'الآية',
++                  value: '$_startAya',
++                  textColor: textColor,
++                  accentColor: primary,
++                  onIncrement: _incrementStartAya,
++                  onDecrement: _decrementStartAya,
++                ),
++                const SizedBox(height: 20),
++                _SectionTitle(text: 'تحديد الانتهاء', color: textColor),
++                const SizedBox(height: 8),
++                _StepperRow(
++                  label: 'السورة',
++                  value: _surahLabel(_endSurah),
++                  textColor: textColor,
++                  accentColor: primary,
++                  onTap: _pickEndSurah,
++                  icon: Icons.expand_more,
++                ),
++                const SizedBox(height: 8),
++                _PlusMinusRow(
++                  label: 'الآية',
++                  value: '$_endAya',
++                  textColor: textColor,
++                  accentColor: primary,
++                  onIncrement: _incrementEndAya,
++                  onDecrement: _decrementEndAya,
++                ),
++                const SizedBox(height: 20),
++                _SectionTitle(text: 'التكرار', color: textColor),
++                const SizedBox(height: 8),
++                _PlusMinusRow(
++                  label: 'التكرار للآية',
++                  value: _repeatCountLabel(
++                      _kAyahRepeatCountOptions[_repeatPerAyahIndex]),
++                  textColor: textColor,
++                  accentColor: primary,
++                  onIncrement: _incrementRepeatPerAyah,
++                  onDecrement: _decrementRepeatPerAyah,
++                ),
++                const SizedBox(height: 8),
++                _PlusMinusRow(
++                  label: 'الانتظار',
++                  value: _waitLabel(_kAyahRepeatWaitOptions[_waitIndex]),
++                  textColor: textColor,
++                  accentColor: primary,
++                  onIncrement: _incrementWait,
++                  onDecrement: _decrementWait,
++                ),
++                const SizedBox(height: 8),
++                _PlusMinusRow(
++                  label: 'التكرار للفقرة',
++                  value: _repeatCountLabel(
++                      _kAyahRepeatCountOptions[_repeatSectionIndex]),
++                  textColor: textColor,
++                  accentColor: primary,
++                  onIncrement: _incrementRepeatSection,
++                  onDecrement: _decrementRepeatSection,
++                ),
++                const SizedBox(height: 24),
++                SizedBox(
++                  width: double.infinity,
++                  height: 48,
++                  child: ElevatedButton(
++                    style: ElevatedButton.styleFrom(
++                      backgroundColor: primary,
++                      foregroundColor: Colors.white,
++                      shape: RoundedRectangleBorder(
++                        borderRadius: BorderRadius.circular(12),
++                      ),
++                    ),
++                    onPressed: _onStartTap,
++                    child: Text(
++                      'بدء',
++                      style: QuranLibrary().cairoStyle.copyWith(
++                            fontSize: 16,
++                            fontWeight: FontWeight.bold,
++                            color: Colors.white,
++                          ),
++                    ),
++                  ),
++                ),
++              ],
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _Header extends StatelessWidget {
++  const _Header({required this.textColor});
++
++  final Color textColor;
++
++  @override
++  Widget build(BuildContext context) {
++    return Row(
++      children: [
++        IconButton(
++          onPressed: () => Navigator.of(context).pop(),
++          icon: Icon(Icons.arrow_back_ios_new, color: textColor, size: 18),
++        ),
++        Expanded(
++          child: Text(
++            'التكرار',
++            textAlign: TextAlign.center,
++            style: QuranLibrary().cairoStyle.copyWith(
++                  fontSize: 18,
++                  fontWeight: FontWeight.bold,
++                  color: textColor,
++                ),
++          ),
++        ),
++        const SizedBox(width: 48),
++      ],
++    );
++  }
++}
++
++class _CancelRepeatLink extends StatelessWidget {
++  const _CancelRepeatLink({required this.color, required this.onTap});
++
++  final Color color;
++  final VoidCallback onTap;
++
++  @override
++  Widget build(BuildContext context) {
++    return SizedBox(
++      width: double.infinity,
++      child: TextButton(
++        onPressed: onTap,
++        child: Text(
++          'إلغاء التكرار',
++          style: QuranLibrary().cairoStyle.copyWith(
++                fontSize: 15,
++                fontWeight: FontWeight.w600,
++                color: color,
++              ),
++        ),
++      ),
++    );
++  }
++}
++
++class _SectionTitle extends StatelessWidget {
++  const _SectionTitle({required this.text, required this.color});
++
++  final String text;
++  final Color color;
++
++  @override
++  Widget build(BuildContext context) {
++    return Align(
++      alignment: AlignmentDirectional.centerStart,
++      child: Text(
++        text,
++        style: QuranLibrary().cairoStyle.copyWith(
++              fontSize: 15,
++              fontWeight: FontWeight.bold,
++              color: color,
++            ),
++      ),
++    );
++  }
++}
++
++/// صف "منتقٍ" (stepper) يعرض تسمية القيمة، والقيمة الحالية، وزر [+] دائري
++/// عند النقر عليه يدور (cycle) عبر القيم المتاحة. يتّبع نمط الأيقونة
++/// الدائرية البسيطة المستخدم في بقية عناصر تحكم الصوت بالمكتبة.
++class _StepperRow extends StatelessWidget {
++  const _StepperRow({
++    required this.label,
++    required this.value,
++    required this.textColor,
++    required this.accentColor,
++    required this.onTap,
++    this.icon = Icons.add,
++  });
++
++  final String label;
++  final String value;
++  final Color textColor;
++  final Color accentColor;
++  final VoidCallback onTap;
++
++  /// Icon shown in the small circular button. Defaults to [Icons.add]
++  /// (cycle-by-one); pass [Icons.expand_more] for rows that open a picker.
++  final IconData icon;
++
++  @override
++  Widget build(BuildContext context) {
++    return Material(
++      color: accentColor.withValues(alpha: 0.06),
++      borderRadius: BorderRadius.circular(12),
++      child: InkWell(
++        onTap: onTap,
++        borderRadius: BorderRadius.circular(12),
++        child: Padding(
++          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++          child: Row(
++            // ترتيب العناصر ثابت بصريًا (الزر والتسمية في أقصى اليسار، القيمة
++            // في أقصى اليمين) بغض النظر عن اتجاه اللغة، مطابقةً لتصميم الشاشة.
++            textDirection: TextDirection.ltr,
++            children: [
++              Container(
++                width: 28,
++                height: 28,
++                alignment: Alignment.center,
++                decoration: BoxDecoration(
++                  color: accentColor,
++                  shape: BoxShape.circle,
++                ),
++                child: Icon(icon, color: Colors.white, size: 18),
++              ),
++              const SizedBox(width: 10),
++              Text(
++                label,
++                style: QuranLibrary().cairoStyle.copyWith(
++                      fontSize: 14,
++                      color: textColor,
++                    ),
++              ),
++              const Spacer(),
++              Text(
++                value,
++                style: QuranLibrary().cairoStyle.copyWith(
++                      fontSize: 14,
++                      fontWeight: FontWeight.w600,
++                      color: textColor,
++                    ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++/// Row with distinct [+]/[-] circular buttons flanking the value, used for
++/// every numeric stepper (ayah number, repeat counts, wait duration) so the
++/// user can move in either direction instead of only cycling forward.
++class _PlusMinusRow extends StatelessWidget {
++  const _PlusMinusRow({
++    required this.label,
++    required this.value,
++    required this.textColor,
++    required this.accentColor,
++    required this.onIncrement,
++    required this.onDecrement,
++  });
++
++  final String label;
++  final String value;
++  final Color textColor;
++  final Color accentColor;
++  final VoidCallback onIncrement;
++  final VoidCallback onDecrement;
++
++  Widget _circleButton(IconData icon, VoidCallback onTap) {
++    return InkWell(
++      onTap: onTap,
++      borderRadius: BorderRadius.circular(20),
++      child: Container(
++        width: 28,
++        height: 28,
++        alignment: Alignment.center,
++        decoration: BoxDecoration(
++          color: accentColor,
++          shape: BoxShape.circle,
++        ),
++        child: Icon(icon, color: Colors.white, size: 18),
++      ),
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
++      decoration: BoxDecoration(
++        color: accentColor.withValues(alpha: 0.06),
++        borderRadius: BorderRadius.circular(12),
++      ),
++      child: Row(
++        // ترتيب العناصر ثابت بصريًا (زرا +/- في أقصى اليسار، التسمية بعدهما،
++        // القيمة في أقصى اليمين) بغض النظر عن اتجاه اللغة، مطابقةً لتصميم
++        // الشاشة.
++        textDirection: TextDirection.ltr,
++        children: [
++          _circleButton(Icons.remove, onDecrement),
++          const SizedBox(width: 8),
++          _circleButton(Icons.add, onIncrement),
++          const SizedBox(width: 10),
++          Text(
++            label,
++            style: QuranLibrary().cairoStyle.copyWith(
++                  fontSize: 14,
++                  color: textColor,
++                ),
++          ),
++          const Spacer(),
++          Text(
++            value,
++            style: QuranLibrary().cairoStyle.copyWith(
++                  fontSize: 14,
++                  fontWeight: FontWeight.w600,
++                  color: textColor,
++                ),
++          ),
++        ],
++      ),
++    );
++  }
++}
++
++/// Bottom sheet with a search field to filter the 114 surahs by name or
++/// number, and a scrollable list to tap-select one. Pops with the selected
++/// surah number, or `null` if dismissed without a selection.
++class _SurahPickerSheet extends StatefulWidget {
++  const _SurahPickerSheet({
++    required this.isDark,
++    required this.surahs,
++    required this.currentSurah,
++  });
++
++  final bool isDark;
++  final List<SurahModel> surahs;
++  final int currentSurah;
++
++  @override
++  State<_SurahPickerSheet> createState() => _SurahPickerSheetState();
++}
++
++class _SurahPickerSheetState extends State<_SurahPickerSheet> {
++  final TextEditingController _searchCtrl = TextEditingController();
++  late List<SurahModel> _filtered = widget.surahs;
++
++  @override
++  void initState() {
++    super.initState();
++    _searchCtrl.addListener(_onSearchChanged);
++  }
++
++  @override
++  void dispose() {
++    _searchCtrl.removeListener(_onSearchChanged);
++    _searchCtrl.dispose();
++    super.dispose();
++  }
++
++  void _onSearchChanged() {
++    final query = _searchCtrl.text.trim();
++    setState(() {
++      _filtered = query.isEmpty
++          ? widget.surahs
++          : widget.surahs
++              .where((s) =>
++                  s.arabicName.contains(query) ||
++                  s.surahNumber.toString() == query)
++              .toList();
++    });
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final textColor = AppColors.getTextColor(widget.isDark);
++    final primary = Theme.of(context).colorScheme.primary;
++
++    return Directionality(
++      textDirection: TextDirection.rtl,
++      child: SafeArea(
++        top: false,
++        child: SizedBox(
++          height: MediaQuery.of(context).size.height * 0.75,
++          child: Padding(
++            padding: EdgeInsets.only(
++              left: 16,
++              right: 16,
++              top: 8,
++              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
++            ),
++            child: Column(
++              children: [
++                Container(
++                  width: 44,
++                  height: 4,
++                  margin: const EdgeInsets.only(bottom: 8),
++                  decoration: BoxDecoration(
++                    color: textColor.withValues(alpha: 0.25),
++                    borderRadius: BorderRadius.circular(2),
++                  ),
++                ),
++                Text(
++                  'اختر السورة',
++                  style: QuranLibrary().cairoStyle.copyWith(
++                        fontSize: 16,
++                        fontWeight: FontWeight.bold,
++                        color: textColor,
++                      ),
++                ),
++                const SizedBox(height: 12),
++                TextField(
++                  controller: _searchCtrl,
++                  autofocus: false,
++                  style: TextStyle(color: textColor),
++                  decoration: InputDecoration(
++                    hintText: 'ابحث بالاسم أو رقم السورة...',
++                    hintStyle:
++                        TextStyle(color: textColor.withValues(alpha: 0.5)),
++                    prefixIcon:
++                        Icon(Icons.search, color: textColor.withValues(alpha: 0.6)),
++                    filled: true,
++                    fillColor: primary.withValues(alpha: 0.06),
++                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
++                    border: OutlineInputBorder(
++                      borderRadius: BorderRadius.circular(12),
++                      borderSide: BorderSide.none,
++                    ),
++                  ),
++                ),
++                const SizedBox(height: 8),
++                Expanded(
++                  child: _filtered.isEmpty
++                      ? Center(
++                          child: Text('لا توجد نتائج',
++                              style: TextStyle(color: textColor)),
++                        )
++                      : ListView.builder(
++                          itemCount: _filtered.length,
++                          itemBuilder: (context, index) {
++                            final surah = _filtered[index];
++                            final isCurrent =
++                                surah.surahNumber == widget.currentSurah;
++                            return Material(
++                              color: Colors.transparent,
++                              child: InkWell(
++                                borderRadius: BorderRadius.circular(12),
++                                onTap: () =>
++                                    Navigator.of(context).pop(surah.surahNumber),
++                                child: Container(
++                                  padding: const EdgeInsets.symmetric(
++                                      horizontal: 12, vertical: 10),
++                                  margin: const EdgeInsets.symmetric(vertical: 2),
++                                  decoration: BoxDecoration(
++                                    color: isCurrent
++                                        ? primary.withValues(alpha: 0.15)
++                                        : Colors.transparent,
++                                    borderRadius: BorderRadius.circular(12),
++                                  ),
++                                  child: Row(
++                                    children: [
++                                      CircleAvatar(
++                                        radius: 16,
++                                        backgroundColor:
++                                            primary.withValues(alpha: 0.12),
++                                        child: Text(
++                                          '${surah.surahNumber}',
++                                          style: TextStyle(
++                                              color: primary,
++                                              fontSize: 13,
++                                              fontWeight: FontWeight.w700),
++                                        ),
++                                      ),
++                                      const SizedBox(width: 12),
++                                      Expanded(
++                                        child: Text(
++                                          surah.arabicName,
++                                          style: QuranLibrary().cairoStyle.copyWith(
++                                                fontSize: 15,
++                                                color: textColor,
++                                                fontWeight: isCurrent
++                                                    ? FontWeight.bold
++                                                    : FontWeight.normal,
++                                              ),
++                                        ),
++                                      ),
++                                      if (isCurrent)
++                                        Icon(Icons.check,
++                                            color: primary, size: 18),
++                                    ],
++                                  ),
++                                ),
++                              ),
++                            );
++                          },
++                        ),
++                ),
++              ],
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_style.dart b/libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_style.dart
+index c15fe78..6961f9b 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_style.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_style.dart
+@@ -87,6 +87,15 @@ class AyahMenuStyle {
+   /// إظهار/إخفاء زر تشغيل جميع الآيات.
+   final bool? showPlayAllButton;
+ 
++  /// إظهار/إخفاء زر فتح شاشة "التكرار" (تكرار نطاق آيات).
++  final bool? showRepeatButton;
++
++  /// لون أيقونة زر "التكرار".
++  final Color? repeatIconColor;
++
++  /// الأيقونة المستخدمة لزر "التكرار".
++  final IconData? repeatIconData;
++
+   /// الأيقونة المستخدمة لعنصر العلامة المرجعية.
+   final IconData? bookmarkIconData;
+ 
+@@ -154,6 +163,9 @@ class AyahMenuStyle {
+     this.playAllIconData,
+     this.playIconColor,
+     this.playAllIconColor,
++    this.showRepeatButton,
++    this.repeatIconColor,
++    this.repeatIconData,
+   });
+ 
+   AyahMenuStyle copyWith({
+@@ -193,6 +205,9 @@ class AyahMenuStyle {
+     IconData? playAllIconData,
+     Color? playIconColor,
+     Color? playAllIconColor,
++    bool? showRepeatButton,
++    Color? repeatIconColor,
++    IconData? repeatIconData,
+   }) {
+     return AyahMenuStyle(
+       backgroundColor: backgroundColor ?? this.backgroundColor,
+@@ -232,6 +247,9 @@ class AyahMenuStyle {
+       playAllIconData: playAllIconData ?? this.playAllIconData,
+       playIconColor: playIconColor ?? this.playIconColor,
+       playAllIconColor: playAllIconColor ?? this.playAllIconColor,
++      showRepeatButton: showRepeatButton ?? this.showRepeatButton,
++      repeatIconColor: repeatIconColor ?? this.repeatIconColor,
++      repeatIconData: repeatIconData ?? this.repeatIconData,
+     );
+   }
+ 
+@@ -290,6 +308,9 @@ class AyahMenuStyle {
+       playAllIconData: Icons.playlist_play,
+       playIconColor: primary,
+       playAllIconColor: primary,
++      showRepeatButton: true,
++      repeatIconData: Icons.repeat,
++      repeatIconColor: primary,
+     );
+   }
+ }
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart
+index 70d6bf3..735bbf0 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart
+@@ -77,6 +77,7 @@ class AyahMenuDialog extends StatelessWidget {
+     int itemsCount = customMenuItems.length;
+     if (s.showPlayButton ?? true) itemsCount += 1;
+     if ((s.showPlayAllButton ?? true) && !kIsWeb) itemsCount += 1;
++    if ((s.showRepeatButton ?? true) && !kIsWeb) itemsCount += 1;
+     if (s.showTafsirButton ?? true) itemsCount += 1;
+     if (s.showCopyButton ?? true) itemsCount += 1;
+     if (s.showBookmarkButtons ?? true) {
+@@ -234,6 +235,36 @@ class AyahMenuDialog extends StatelessWidget {
+                         );
+                       }
+ 
++                      // زر فتح شاشة "التكرار" (تكرار نطاق آيات)
++                      if ((s.showRepeatButton ?? true) && !kIsWeb) {
++                        addDividerIfNeeded();
++                        widgets.add(
++                          GestureDetector(
++                            onTap: () {
++                              close();
++                              final surahNumber =
++                                  ayah!.surahNumber ?? QuranCtrl.instance
++                                      .getSurahDataByAyah(ayah!)
++                                      .surahNumber;
++                              showAyahRepeatSheet(
++                                rootContext,
++                                isDark: isDark,
++                                initialStartSurah: surahNumber,
++                                initialStartAya: ayah!.ayahNumber,
++                                initialEndSurah: surahNumber,
++                                initialEndAya: ayah!.ayahNumber,
++                                ayahAudioStyle: sAudio,
++                              );
++                            },
++                            child: Icon(
++                              s.repeatIconData ?? Icons.repeat,
++                              color: s.repeatIconColor,
++                              size: s.iconSize,
++                            ),
++                          ),
++                        );
++                      }
++
+                       // زر التفسير
+                       if (s.showTafsirButton ?? true) {
+                         addDividerIfNeeded();
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/features_sheet/all_features_sheet.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/features_sheet/all_features_sheet.dart
+new file mode 100644
+index 0000000..060ba7d
+--- /dev/null
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/features_sheet/all_features_sheet.dart
+@@ -0,0 +1,296 @@
++part of '/quran.dart';
++
++/// One entry in the "all features" list sheet — see [_AllFeaturesListSheet].
++class _FeatureListItem {
++  const _FeatureListItem({
++    required this.icon,
++    required this.label,
++    required this.onTap,
++  });
++
++  final IconData icon;
++  final String label;
++  final VoidCallback onTap;
++}
++
++/// A list of every Quran-reading feature (index, search, bookmarks, font
++/// size, tajweed info, audio, auto-scroll, repeat), opened from the top
++/// bar's menu icon. Tapping an item closes this sheet and opens that
++/// feature in its own bottom sheet — see
++/// `_QuranTopBar._showAllFeaturesBottomSheet`, which builds the [items].
++class _AllFeaturesListSheet extends StatelessWidget {
++  const _AllFeaturesListSheet({
++    required this.textColor,
++    required this.accentColor,
++    required this.handleColor,
++    required this.items,
++  });
++
++  final Color textColor;
++  final Color accentColor;
++  final Color? handleColor;
++  final List<_FeatureListItem> items;
++
++  @override
++  Widget build(BuildContext context) {
++    return SafeArea(
++      top: false,
++      child: Padding(
++        padding: const EdgeInsets.symmetric(vertical: 12),
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Container(
++              width: 44,
++              height: 4,
++              margin: const EdgeInsets.only(bottom: 8),
++              decoration: BoxDecoration(
++                color: handleColor ?? textColor.withValues(alpha: 0.25),
++                borderRadius: BorderRadius.circular(2),
++              ),
++            ),
++            ...items.map(
++              (item) => ListTile(
++                leading: Icon(item.icon, color: accentColor),
++                title: Text(
++                  item.label,
++                  style: QuranLibrary().cairoStyle.copyWith(
++                      fontSize: 15,
++                      fontWeight: FontWeight.w600,
++                      color: textColor),
++                ),
++                trailing:
++                    Icon(Icons.chevron_left, color: textColor.withValues(alpha: 0.4)),
++                onTap: item.onTap,
++              ),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++/// Generic single-feature bottom-sheet wrapper: a title header with a close
++/// button above the feature's own content. When [expand] is true the sheet
++/// is given a fixed, near-full height (for list-like content such as the
++/// index/search/bookmarks tabs); otherwise it sizes to its content.
++class _FeatureDetailSheet extends StatelessWidget {
++  const _FeatureDetailSheet({
++    required this.title,
++    required this.textColor,
++    required this.child,
++    this.expand = false,
++  });
++
++  final String title;
++  final Color textColor;
++  final Widget child;
++  final bool expand;
++
++  @override
++  Widget build(BuildContext context) {
++    final header = Row(
++      children: [
++        const SizedBox(width: 48),
++        Expanded(
++          child: Text(
++            title,
++            textAlign: TextAlign.center,
++            style: QuranLibrary().cairoStyle.copyWith(
++                fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
++          ),
++        ),
++        IconButton(
++          onPressed: () => Navigator.of(context).pop(),
++          icon: Icon(Icons.close, color: textColor, size: 20),
++        ),
++      ],
++    );
++
++    return SafeArea(
++      top: false,
++      child: Padding(
++        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
++        child: expand
++            ? SizedBox(
++                height: UiHelper.currentOrientation(
++                    MediaQuery.of(context).size.height * 0.8,
++                    MediaQuery.of(context).size.height * .9,
++                    context),
++                child: Column(
++                  children: [
++                    header,
++                    const SizedBox(height: 4),
++                    Expanded(child: child),
++                  ],
++                ),
++              )
++            : Column(
++                mainAxisSize: MainAxisSize.min,
++                children: [
++                  header,
++                  const SizedBox(height: 4),
++                  child,
++                ],
++              ),
++      ),
++    );
++  }
++}
++
++/// Font-size (page zoom) slider — mirrors the pinch-to-zoom `scaleFactor`.
++class _FontSizeFeatureContent extends StatelessWidget {
++  const _FontSizeFeatureContent({
++    required this.accentColor,
++  });
++
++  final Color accentColor;
++
++  static const double _minScale = 1.0;
++  static const double _maxScale = 4.0;
++
++  @override
++  Widget build(BuildContext context) {
++    final quranCtrl = QuranCtrl.instance;
++
++    void setScale(double value) {
++      quranCtrl.state.scaleFactor.value = value.clamp(_minScale, _maxScale);
++      quranCtrl.state.baseScaleFactor.value = quranCtrl.state.scaleFactor.value;
++      quranCtrl.update(['_pageViewBuild']);
++    }
++
++    return Padding(
++      padding: const EdgeInsets.symmetric(horizontal: 8.0),
++      child: Obx(
++        () => Column(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Row(
++              children: [
++                IconButton(
++                  icon: Icon(Icons.remove_circle_outline, color: accentColor),
++                  onPressed: () =>
++                      setScale(quranCtrl.state.scaleFactor.value - 0.2),
++                ),
++                Expanded(
++                  child: Slider(
++                    value: quranCtrl.state.scaleFactor.value
++                        .clamp(_minScale, _maxScale),
++                    min: _minScale,
++                    max: _maxScale,
++                    activeColor: accentColor,
++                    onChanged: setScale,
++                  ),
++                ),
++                IconButton(
++                  icon: Icon(Icons.add_circle_outline, color: accentColor),
++                  onPressed: () =>
++                      setScale(quranCtrl.state.scaleFactor.value + 0.2),
++                ),
++              ],
++            ),
++            TextButton(
++              onPressed: () => setScale(1.0),
++              child: Text('إعادة الضبط', style: TextStyle(color: accentColor)),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++/// Action tile — tapping stops any playing audio and opens [SurahAudioScreen].
++class _AudioFeatureContent extends StatelessWidget {
++  const _AudioFeatureContent({
++    required this.textColor,
++    required this.accentColor,
++    required this.onTap,
++  });
++
++  final Color textColor;
++  final Color accentColor;
++  final VoidCallback onTap;
++
++  @override
++  Widget build(BuildContext context) {
++    return Center(
++      child: InkWell(
++        borderRadius: BorderRadius.circular(16),
++        onTap: onTap,
++        child: Padding(
++          padding: const EdgeInsets.all(24.0),
++          child: Column(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Icon(Icons.headphones, size: 48, color: accentColor),
++              const SizedBox(height: 12),
++              Text('فتح الاستماع للسور',
++                  style: TextStyle(
++                      color: textColor,
++                      fontSize: 15,
++                      fontWeight: FontWeight.w700)),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++/// Toggle tile — tapping starts/stops [AutoScrollCtrl] from the current page.
++class _AutoScrollFeatureContent extends StatelessWidget {
++  const _AutoScrollFeatureContent({
++    required this.textColor,
++    required this.accentColor,
++  });
++
++  final Color textColor;
++  final Color accentColor;
++
++  @override
++  Widget build(BuildContext context) {
++    return Center(
++      child: Obx(() {
++        final ctrl = AutoScrollCtrl.instance;
++        final isActive = ctrl.state.isActive.value;
++        return InkWell(
++          borderRadius: BorderRadius.circular(16),
++          onTap: () {
++            if (isActive) {
++              ctrl.stopAutoScroll();
++            } else {
++              final currentPage =
++                  QuranCtrl.instance.state.currentPageNumber.value;
++              ctrl.startAutoScroll(currentPage);
++            }
++          },
++          child: Padding(
++            padding: const EdgeInsets.all(24.0),
++            child: Column(
++              mainAxisSize: MainAxisSize.min,
++              children: [
++                Icon(
++                    isActive
++                        ? Icons.pause_circle_outline
++                        : Icons.play_circle_outline,
++                    size: 48,
++                    color: accentColor),
++                const SizedBox(height: 12),
++                Text(
++                    isActive
++                        ? 'إيقاف التمرير التلقائي'
++                        : 'تشغيل التمرير التلقائي',
++                    style: TextStyle(
++                        color: textColor,
++                        fontSize: 15,
++                        fontWeight: FontWeight.w700)),
++              ],
++            ),
++          ),
++        );
++      }),
++    );
++  }
++}
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart
+index f6a968d..5edc11d 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart
+@@ -182,7 +182,26 @@ class _QuranTopBar extends StatelessWidget {
+                     languageCode: languageCode,
+                     isFontsLocal: isFontsLocal,
+                     isDark: isDark,
+-                  )
++                  ),
++                IconButton(
++                  icon: Icon(
++                    Icons.format_size,
++                    size: defaults.iconSize,
++                    color:
++                        defaults.iconColor ?? Theme.of(context).colorScheme.primary,
++                  ),
++                  onPressed: () => _showSizeSideMenu(context, defaults),
++                ),
++                IconButton(
++                  icon: Icon(
++                    Icons.menu,
++                    size: defaults.iconSize,
++                    color:
++                        defaults.iconColor ?? Theme.of(context).colorScheme.primary,
++                  ),
++                  onPressed: () => _showAllFeaturesBottomSheet(
++                      context, defaults, tajweedStyle),
++                ),
+               ],
+             )
+           ],
+@@ -241,6 +260,326 @@ class _QuranTopBar extends StatelessWidget {
+       ),
+     );
+   }
++
++  /// Opens the consolidated "all features" list (index, search, bookmarks,
++  /// font size, tajweed, audio, auto-scroll, repeat). Tapping an item closes
++  /// this list and opens that single feature in its own bottom sheet.
++  void _showAllFeaturesBottomSheet(
++    BuildContext context,
++    QuranTopBarStyle defaults,
++    TajweedMenuStyle tajweedStyle,
++  ) {
++    final indexTabStyle = IndexTabTheme.of(context)?.style ??
++        IndexTabStyle.defaults(isDark: isDark, context: context);
++    final searchTabStyle = SearchTabTheme.of(context)?.style ??
++        SearchTabStyle.defaults(isDark: isDark, context: context);
++    final bookmarksTabStyle = BookmarksTabTheme.of(context)?.style ??
++        BookmarksTabStyle.defaults(isDark: isDark, context: context);
++
++    final Color textColor = defaults.textColor ?? AppColors.getTextColor(isDark);
++    final Color accentColor =
++        defaults.accentColor ?? Theme.of(context).colorScheme.primary;
++    final Color bgColor = backgroundColor ??
++        defaults.backgroundColor ??
++        AppColors.getBackgroundColor(isDark);
++    final double radius = defaults.borderRadius ?? 20;
++    final bool showTajweed = QuranCtrl.instance.state.fontsSelected.value == 0;
++
++    void openFeatureSheet({
++      required String title,
++      required Widget content,
++      bool expand = false,
++    }) {
++      Navigator.of(context).pop(); // close the list sheet first
++      showModalBottomSheet(
++        context: context,
++        backgroundColor: bgColor,
++        shape: RoundedRectangleBorder(
++          borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
++        ),
++        isScrollControlled: true,
++        builder: (ctx) => _FeatureDetailSheet(
++          title: title,
++          textColor: textColor,
++          expand: expand,
++          child: content,
++        ),
++      );
++    }
++
++    final items = <_FeatureListItem>[
++      if (!isSingleSurah!)
++        _FeatureListItem(
++          icon: Icons.list_alt,
++          label: 'الفهرس',
++          onTap: () => openFeatureSheet(
++            title: 'الفهرس',
++            expand: true,
++            content: _IndexTab(
++                isDark: isDark, languageCode: languageCode, style: indexTabStyle),
++          ),
++        ),
++      _FeatureListItem(
++        icon: Icons.search,
++        label: 'البحث',
++        onTap: () => openFeatureSheet(
++          title: 'البحث',
++          expand: true,
++          content: _SearchTab(
++              isDark: isDark, languageCode: languageCode, style: searchTabStyle),
++        ),
++      ),
++      _FeatureListItem(
++        icon: Icons.bookmark_outline,
++        label: 'الفواصل',
++        onTap: () => openFeatureSheet(
++          title: 'الفواصل',
++          expand: true,
++          content: _BookmarksTab(
++              isDark: isDark,
++              languageCode: languageCode,
++              style: bookmarksTabStyle),
++        ),
++      ),
++      _FeatureListItem(
++        icon: Icons.format_size,
++        label: 'حجم الخط',
++        onTap: () => openFeatureSheet(
++          title: 'حجم الخط',
++          content: _FontSizeFeatureContent(accentColor: accentColor),
++        ),
++      ),
++      if (showTajweed)
++        _FeatureListItem(
++          icon: Icons.info_outline,
++          label: 'التجويد',
++          onTap: () => openFeatureSheet(
++            title: 'التجويد',
++            content: Center(
++                child: TajweedMenuWidget(
++                    languageCode: languageCode, isDark: isDark)),
++          ),
++        ),
++      _FeatureListItem(
++        icon: Icons.headphones,
++        label: 'الاستماع',
++        onTap: () => openFeatureSheet(
++          title: 'الاستماع',
++          content: _AudioFeatureContent(
++            textColor: textColor,
++            accentColor: accentColor,
++            onTap: () async {
++              await AudioCtrl.instance.state.audioPlayer.stop();
++              QuranCtrl.instance.state.isShowMenu.value = false;
++              if (context.mounted) {
++                Navigator.of(context).pop();
++                Navigator.push(
++                  context,
++                  MaterialPageRoute(
++                    builder: (_) => SurahAudioScreen(
++                      isDark: isDark,
++                      style: style ??
++                          SurahAudioStyle.defaults(isDark: isDark, context: context),
++                      languageCode: languageCode,
++                    ),
++                  ),
++                );
++              }
++            },
++          ),
++        ),
++      ),
++      _FeatureListItem(
++        icon: Icons.speed,
++        label: 'التمرير التلقائي',
++        onTap: () => openFeatureSheet(
++          title: 'التمرير التلقائي',
++          content:
++              _AutoScrollFeatureContent(textColor: textColor, accentColor: accentColor),
++        ),
++      ),
++      _FeatureListItem(
++        icon: Icons.repeat,
++        label: 'التكرار',
++        onTap: () {
++          Navigator.of(context).pop();
++          showModalBottomSheet(
++            context: context,
++            useRootNavigator: true,
++            isScrollControlled: true,
++            backgroundColor: bgColor,
++            shape: RoundedRectangleBorder(
++              borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
++            ),
++            builder: (ctx) => AyahRepeatSheet(isDark: isDark),
++          );
++        },
++      ),
++    ];
++
++    showModalBottomSheet(
++      context: context,
++      backgroundColor: bgColor,
++      shape: RoundedRectangleBorder(
++        borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
++      ),
++      isScrollControlled: true,
++      builder: (ctx) => _AllFeaturesListSheet(
++        textColor: textColor,
++        accentColor: accentColor,
++        handleColor: defaults.handleColor,
++        items: items,
++      ),
++    );
++  }
++
++  void _showSizeSideMenu(BuildContext context, QuranTopBarStyle defaults) {
++    final bool isRtl = Directionality.of(context) == TextDirection.rtl;
++    showGeneralDialog(
++      context: context,
++      barrierDismissible: true,
++      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
++      barrierColor: Colors.black.withValues(alpha: 0.3),
++      transitionDuration: const Duration(milliseconds: 250),
++      pageBuilder: (dialogContext, _, __) => _SizeSideMenu(
++        isDark: isDark,
++        isRtl: isRtl,
++        backgroundColor: backgroundColor ??
++            defaults.backgroundColor ??
++            AppColors.getBackgroundColor(isDark),
++        textColor: defaults.textColor ?? AppColors.getTextColor(isDark),
++        accentColor: defaults.accentColor ?? Theme.of(context).colorScheme.primary,
++      ),
++      transitionBuilder: (dialogContext, animation, _, child) {
++        final tween = Tween<Offset>(
++          begin: Offset(isRtl ? 1 : -1, 0),
++          end: Offset.zero,
++        ).chain(CurveTween(curve: Curves.easeOutCubic));
++        return SlideTransition(position: animation.drive(tween), child: child);
++      },
++    );
++  }
++}
++
++/// A side panel (opened from the app bar's size icon) to control the
++/// Quran page zoom/font size, mirroring the pinch-to-zoom `scaleFactor`.
++class _SizeSideMenu extends StatelessWidget {
++  const _SizeSideMenu({
++    required this.isDark,
++    required this.isRtl,
++    required this.backgroundColor,
++    required this.textColor,
++    required this.accentColor,
++  });
++
++  final bool isDark;
++  final bool isRtl;
++  final Color backgroundColor;
++  final Color textColor;
++  final Color accentColor;
++
++  static const double _minScale = 1.0;
++  static const double _maxScale = 4.0;
++
++  @override
++  Widget build(BuildContext context) {
++    final quranCtrl = QuranCtrl.instance;
++    final screenWidth = MediaQuery.of(context).size.width;
++    final panelWidth = screenWidth < 360 ? screenWidth * 0.85 : 320.0;
++
++    void setScale(double value) {
++      quranCtrl.state.scaleFactor.value = value.clamp(_minScale, _maxScale);
++      quranCtrl.state.baseScaleFactor.value = quranCtrl.state.scaleFactor.value;
++      quranCtrl.update(['_pageViewBuild']);
++    }
++
++    return Align(
++      alignment: isRtl ? Alignment.centerRight : Alignment.centerLeft,
++      child: Material(
++        color: backgroundColor,
++        elevation: 8,
++        borderRadius: BorderRadius.horizontal(
++          left: isRtl ? const Radius.circular(20) : Radius.zero,
++          right: isRtl ? Radius.zero : const Radius.circular(20),
++        ),
++        child: SafeArea(
++          child: SizedBox(
++            width: panelWidth,
++            child: Padding(
++              padding: const EdgeInsets.all(20),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.stretch,
++                mainAxisSize: MainAxisSize.min,
++                children: [
++                  Row(
++                    children: [
++                      Expanded(
++                        child: Text(
++                          'حجم الخط',
++                          style: TextStyle(
++                            color: textColor,
++                            fontSize: 18,
++                            fontWeight: FontWeight.w700,
++                          ),
++                        ),
++                      ),
++                      IconButton(
++                        icon: Icon(Icons.close, color: textColor),
++                        onPressed: () => Navigator.of(context).pop(),
++                      ),
++                    ],
++                  ),
++                  const SizedBox(height: 12),
++                  Obx(
++                    () => Column(
++                      crossAxisAlignment: CrossAxisAlignment.stretch,
++                      children: [
++                        Row(
++                          children: [
++                            IconButton(
++                              icon: Icon(Icons.remove_circle_outline,
++                                  color: accentColor),
++                              onPressed: () => setScale(
++                                  quranCtrl.state.scaleFactor.value - 0.2),
++                            ),
++                            Expanded(
++                              child: Slider(
++                                value: quranCtrl.state.scaleFactor.value
++                                    .clamp(_minScale, _maxScale),
++                                min: _minScale,
++                                max: _maxScale,
++                                activeColor: accentColor,
++                                onChanged: setScale,
++                              ),
++                            ),
++                            IconButton(
++                              icon: Icon(Icons.add_circle_outline,
++                                  color: accentColor),
++                              onPressed: () => setScale(
++                                  quranCtrl.state.scaleFactor.value + 0.2),
++                            ),
++                          ],
++                        ),
++                        Center(
++                          child: TextButton(
++                            onPressed: () => setScale(1.0),
++                            child: Text(
++                              'إعادة الضبط',
++                              style: TextStyle(color: accentColor),
++                            ),
++                          ),
++                        ),
++                      ],
++                    ),
++                  ),
++                ],
++              ),
++            ),
++          ),
++        ),
++      ),
++    );
++  }
+ }
+ 
+ // BottomSheet container with main TabBar
+@@ -356,3 +695,4 @@ class _MenuBottomSheet extends StatelessWidget {
+     );
+   }
+ }
++

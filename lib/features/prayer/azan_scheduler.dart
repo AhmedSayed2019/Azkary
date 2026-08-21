@@ -26,8 +26,18 @@ class AzanScheduler {
   /// (`notifiers.dart` يستخدم 0..5) أو إشعارات الأذكار.
   static const int _baseId = 7000;
 
-  /// كم يومًا نجدول مقدمًا (يُعاد الجدولة عند كل فتح للتطبيق أو تغيير إعداد).
-  static const int _daysAhead = 2;
+  /// كم يومًا نجدول مقدمًا.
+  ///
+  /// لا شيء يعيد الجدولة والتطبيق مغلق: لا مهمة خلفية ولا استيقاظ عند
+  /// إطلاق الإشعار — الجدولة تُبنى عند فتح التطبيق فقط (ويعيد النظام
+  /// بناء المعلّق منها بعد الإقلاع عبر ScheduledNotificationBootReceiver).
+  /// فأي أفق قصير يعني توقّف الأذان بصمت متى تُرك التطبيق مغلقًا أطول
+  /// منه — بيومين كان يصمت في اليوم الثالث.
+  ///
+  /// أندرويد: ٧ أيام = ٣٥ إشعارًا، أقل بكثير من سقف ٥٠٠ منبّه للتطبيق.
+  /// iOS: سقف النظام ٦٤ إشعارًا معلّقًا للتطبيق كله، وتشاركه تذكيرات
+  /// الأذكار، فنُبقي يومين حتى لا يزاحمها الأذان.
+  static int get _daysAhead => Platform.isAndroid ? 7 : 2;
 
   /// معرّف منبّه النظام القديم (AndroidAlarmManager في notifiers.dart).
   static const int _legacyAlarmId = 0;
@@ -47,8 +57,10 @@ class AzanScheduler {
   /// ملف الأذان المضمّن (res/raw/azan.mp3).
   static const String _azanSound = 'azan';
 
-  /// أيقونة الإشعار الصغيرة (res/drawable/icon.png).
-  static const String _smallIcon = 'icon';
+  /// أيقونة الإشعار الصغيرة (res/drawable/ic_stat_azkary.xml).
+  /// قناع أبيض شفاف كما يشترط أندرويد — `icon` كان شعارًا ملوّنًا يظهر
+  /// مربّعًا داكنًا مصمتًا في شريط الحالة.
+  static const String _smallIcon = 'ic_stat_azkary';
 
   static bool _tzReady = false;
 
@@ -71,8 +83,7 @@ class AzanScheduler {
   static Future<FlutterLocalNotificationsPlugin> _plugin() async {
     final plugin = FlutterLocalNotificationsPlugin();
     const settings = InitializationSettings(
-      // 'icon' = res/drawable/icon.png — المورد الوحيد الموجود فعلًا
-      // (المسمّى القديم 'ic_notify' غير موجود وكان يُفشل التهيئة).
+      // المسمّى القديم 'ic_notify' غير موجود وكان يُفشل التهيئة
       android: AndroidInitializationSettings(_smallIcon),
       iOS: DarwinInitializationSettings(),
     );

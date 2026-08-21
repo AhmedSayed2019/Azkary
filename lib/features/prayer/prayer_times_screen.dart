@@ -6,8 +6,10 @@ import 'package:azkark/features/prayer/azan_scheduler.dart';
 import 'package:azkark/features/prayer/prayer_times_service.dart';
 import 'package:azkark/widgets/arabic_numbers.dart';
 import 'package:azkark/widgets/islamic_header_background.dart';
+import 'package:azkark/widgets/sheet/sheet.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -141,9 +143,19 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     final isToday = _dayOffset == 0;
     final doneCount = viewedDay.five.where((s) => _isDone(viewedDate, s.id)).length;
 
-    return Scaffold(
-      backgroundColor: AppColor.cardColor.themeColor,
-      body: SafeArea(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // أيقونات شريط الحالة فاتحة فوق أخضر الهيدر، تمامًا كالرئيسية
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColor.cardColor.themeColor,
+        body: SafeArea(
+        // top: false — الهيدر نفسه يمتد خلف شريط الحالة ويعوّض الحشوة
+        // داخليًا، وإلا ظهر شريط بلون الخلفية فوق الأخضر.
+        top: false,
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
@@ -187,6 +199,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             ],
           ),
         ),
+        ),
       ),
     );
   }
@@ -216,12 +229,20 @@ class _Header extends StatelessWidget {
     final hour12 = day.next.time.hour % 12 == 0 ? 12 : day.next.time.hour % 12;
     final clock = '$hour12:${day.next.time.minute.toString().padLeft(2, '0')}'.toArabicNumbers;
 
-    return IslamicHeaderBackground(child: Container(
+    // نفس صورة هيدر الرئيسية. fillRegion لأن هذا الهيدر وحده في شاشته
+    // فلا شريحة يلزم أن تتصل بها — الصورة تغطّي المنطقة كما هي مهما
+    // كان ارتفاعها. أي لون معتم على الابن هنا يحجب الصورة خلفه.
+    return HomeHeaderImage(
+      fillRegion: true,
+      borderRadius: BorderRadius.vertical(bottom: Radius.circular(kFormRadius * 2)),
+      child: Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(kFormPaddingAllLarge.w, kFormPaddingAllNormal.h, kFormPaddingAllLarge.w, 48.h),
-      decoration: BoxDecoration(
-        color: AppColor.primaryColor.themeColor,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(kFormRadius * 2)),
+      // الحشوة العلوية تبتلع ارتفاع شريط الحالة لأن SafeArea لم تعد تفعل
+      padding: EdgeInsets.fromLTRB(
+        kFormPaddingAllLarge.w,
+        MediaQuery.viewPaddingOf(context).top + kFormPaddingAllNormal.h,
+        kFormPaddingAllLarge.w,
+        48.h,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -301,30 +322,23 @@ class _Header extends StatelessWidget {
       'karachi': 'كراتشي',
       'northAmerica': 'أمريكا الشمالية (ISNA)',
     };
-    showModalBottomSheet<void>(
+    CustomModalSheet.show<void>(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
-      builder: (sheetContext) => SafeArea(
-        child: Column(
+      child: BaseSheetShell(
+        title: 'طريقة حساب المواقيت',
+        body: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 8.h),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: kFormPaddingAllNormal.h),
-              child: Text('طريقة حساب المواقيت', style: const TextStyle().semiBoldStyle(fontSize: 15).primaryTextColor()),
-            ),
             for (final entry in methods.entries)
-              ListTile(
-                title: Text(entry.value, style: const TextStyle().mediumStyle(fontSize: 14).primaryTextColor()),
-                trailing: entry.key == currentMethodKey
-                    ? Icon(Icons.check_circle, color: AppColor.primaryColor.themeColor)
-                    : null,
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  onMethodSelected(entry.key);
+              CustomSheetRadioItem<String>(
+                title: entry.value,
+                value: entry.key,
+                groupValue: currentMethodKey,
+                onChanged: (key) {
+                  Navigator.of(context).pop();
+                  onMethodSelected(key);
                 },
               ),
-            SizedBox(height: 8.h),
           ],
         ),
       ),

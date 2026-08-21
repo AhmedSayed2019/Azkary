@@ -21,7 +21,7 @@ const notifyIDAdhanMedina = 5;
 Future<FlutterLocalNotificationsPlugin> _initializeNotifiers() async {
   //todo change progaurd rules for release builds (local_notifications)
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('icon'); // ic_notify غير موجود في res/
+      AndroidInitializationSettings('ic_stat_azkary');
 
   const InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
