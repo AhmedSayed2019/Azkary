@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,6 +38,9 @@ class _SearchForZekrState extends State<SearchForZekr> {
       Background(),
       Scaffold(
           appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
             title: Hero(
               tag: 'search',
               child: SearchField(
@@ -59,7 +64,6 @@ class _SearchForZekrState extends State<SearchForZekr> {
         : searchItems.where((word) => word.contains(query)).toList();
 
     return _WordSuggestionList(
-      query: this.query,
       suggestions: suggestions,
     );
   }
@@ -67,12 +71,9 @@ class _SearchForZekrState extends State<SearchForZekr> {
 
 class _WordSuggestionList extends StatelessWidget {
   final List<String> _suggestions;
-  final String _query;
   const _WordSuggestionList({
     required List<String> suggestions,
-    required String query,
-  })  : _suggestions = suggestions,
-        _query = query;
+  }) : _suggestions = suggestions;
 
   @override
   Widget build(BuildContext context) {

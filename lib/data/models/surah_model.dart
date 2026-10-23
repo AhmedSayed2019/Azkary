@@ -52,6 +52,22 @@ class SurahModel {
         _ayaText = ayaText,
         _ayaTextEmlaey = ayaTextEmlaey;
 
+  int get id => _id;
+
+  int get jozz => _jozz;
+
+  int get suraNo => _suraNo;
+
+  String get suraNameEn => _suraNameEn;
+
+  int get lineStart => _lineStart;
+
+  int get lineEnd => _lineEnd;
+
+  int get ayaNo => _ayaNo;
+
+  String get ayaTextEmlaey => _ayaTextEmlaey;
+
   String get ayaText => _ayaText;
 
   String get suraNameAr => _suraNameAr;

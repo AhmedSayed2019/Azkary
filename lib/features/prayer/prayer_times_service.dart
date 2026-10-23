@@ -3,6 +3,7 @@
 // حساب مواقيت الصلاة محلياً بالكامل (يعمل بدون إنترنت)
 // الإنترنت / الـ GPS يُستخدم فقط لتحديث الإحداثيات وتخزينها.
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:adhan/adhan.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,13 +11,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum PrayerId { fajr, sunrise, dhuhr, asr, maghrib, isha }
 
-const Map<PrayerId, String> kPrayerNamesAr = {
-  PrayerId.fajr: 'الفجر',
-  PrayerId.sunrise: 'الشروق',
-  PrayerId.dhuhr: 'الظهر',
-  PrayerId.asr: 'العصر',
-  PrayerId.maghrib: 'المغرب',
-  PrayerId.isha: 'العشاء',
+/// getter لا const: الاسم يُقرأ بلغة المستخدم الحالية، فتغيير
+/// اللغة يغيّره فورًا بدل تجميده عند أول تحميل.
+Map<PrayerId, String> get kPrayerNames => {
+  PrayerId.fajr: 'adhan_fajr'.tr(),
+  PrayerId.sunrise: 'prayer_sunrise'.tr(),
+  PrayerId.dhuhr: 'adhan_dhuhr'.tr(),
+  PrayerId.asr: 'adhan_asr'.tr(),
+  PrayerId.maghrib: 'adhan_magrib'.tr(),
+  PrayerId.isha: 'adhan_isha'.tr(),
 };
 
 class PrayerSlot {
@@ -30,7 +33,7 @@ class PrayerSlot {
     this.isTomorrow = false,
   });
 
-  String get name => kPrayerNamesAr[id]!;
+  String get name => kPrayerNames[id]!;
 }
 
 class PrayerDay {

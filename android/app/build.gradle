@@ -25,15 +25,35 @@ def fMinSdkVersion = localProperties.getProperty('flutter.minSdkVersion').toInte
 def fCompileSdkVersion = localProperties.getProperty('flutter.compileSdkVersion').toInteger()
 
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
+// رقم الإصدار مصدره pubspec.yaml وحده.
+//
+// كان يُقرأ من local.properties، وذاك ملف لا يكتبه إلا `flutter build`:
+// البناء من Android Studio أو من gradle مباشرةً كان يقرأ آخر قيمة كتبها
+// فلاتر — أيًّا كان قِدَمها — فتخرج الحزمة برقم إصدار قديم ترفضه Play
+// بـ«version code has already been used» بينما pubspec يقول غير ذلك.
+// pubspec يُقرأ عند كل بناء، فلا سبيل لانحرافهما بعد اليوم.
+def pubspecVersion = {
+    def file = rootProject.file('../pubspec.yaml')
+    if (!file.exists()) {
+        return null
+    }
+    // مثال السطر: `version: 1.2.8+28`
+    def matcher = file.getText('UTF-8') =~ /(?m)^version:\s*([^\s+]+)\+(\d+)\s*$/
+    return matcher ? [name: matcher[0][1], code: matcher[0][2]] : null
+}()
 
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
+// مَخرج للتجاوز اليدوي: `./gradlew bundleRelease -PversionCode=29`.
+// كان `flutter build --build-number` يؤدّي هذا الدور عبر local.properties،
+// وقد سبقه pubspec الآن، فلا بد من بديل صريح.
+def flutterVersionCode = project.findProperty('versionCode')
+        ?: pubspecVersion?.code
+        ?: localProperties.getProperty('flutter.versionCode')
+        ?: '1'
+
+def flutterVersionName = project.findProperty('versionName')
+        ?: pubspecVersion?.name
+        ?: localProperties.getProperty('flutter.versionName')
+        ?: '1.0'
 
 
 android {
@@ -66,9 +86,6 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' // include x86_64
-        }
     }
     packagingOptions {
         pickFirst '**/libc++_shared.so'
@@ -92,18 +109,22 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            minifyEnabled false
-            shrinkResources false
+            // R8: يحذف الشيفرة والموارد غير المستخدمة (~15-20MB من dex).
+            // قواعد الإبقاء للإضافات في proguard-rules.pro
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // x86_64 للمحاكيات فقط (~29MB) — لا يُشحن في الإصدار. مع
+            // --split-per-abi يتولى Flutter التقسيم ويرفض Gradle وجود الفلتر.
+            if (!project.hasProperty('split-per-abi')) {
+                ndk {
+                    abiFilters 'arm64-v8a', 'armeabi-v7a'
+                }
+            }
         }
     }
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            def appName = "Ecarts" // Change this to your desired APK name
-            def formattedDate = new Date().format('yyyy-MM-dd-HH-mm-ss')
-            def newName = "${appName}-${variant.buildType.name}-${formattedDate}.apk"
-            output.outputFileName = newName
-        }
-    }
+    // لا إعادة تسمية لملفات APK: كانت تعطي كل تقسيمات --split-per-abi الاسم
+    // نفسه فيكتب أحدها فوق الآخر، وأدوات Flutter تتوقع الأسماء الافتراضية.
 }
 
 flutter {
@@ -119,5 +140,4 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("androidx.multidex:multidex:2.0.1")
 
-    implementation 'io.github.muddz:styleabletoast:2.4.0'
 }

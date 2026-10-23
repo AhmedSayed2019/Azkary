@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:azkark/widgets/slider_font_size/button_font_size.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -24,7 +26,14 @@ class AsmaAllahAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onTapFontButton;
 
   @override
-  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
+  Size get preferredSize => Size.fromHeight(AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      iconTheme: const IconThemeData(color: Colors.white),
+      actionsIconTheme: const IconThemeData(color: Colors.white),).preferredSize.height);
 
   @override
   Widget build(BuildContext context) {

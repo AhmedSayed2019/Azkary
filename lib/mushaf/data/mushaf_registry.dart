@@ -14,8 +14,10 @@
 /// ومحرك الرسم (`engine/`) لم تُبنَ بعد — تحتاج عيّنة حقيقية من
 /// `layout.db` (من qul.tarteel.ai/resources/mushaf-layouts) لكتابة
 /// استعلامات SQLite مطابقة للبنية الفعلية بدل افتراضها.
+import 'package:easy_localization/easy_localization.dart';
+
 class MushafDefinition {
-  const MushafDefinition({
+  MushafDefinition({
     required this.id,
     required this.nameAr,
     required this.totalPages,
@@ -53,10 +55,11 @@ class MushafDefinition {
 ///
 /// TODO: `downloadUrl` أدناه عناصر نائبة (placeholders) — لا تشير حاليًا
 /// لحزم فعلية. يجب استبدالها بروابط حقيقية بعد تجهيز الحزم.
-const List<MushafDefinition> mushafs = [
+/// getter لا const: الأسماء تُترجم وقت القراءة.
+List<MushafDefinition> get mushafs => [
   MushafDefinition(
     id: 'qcf_v2',
-    nameAr: 'مصحف المدينة',
+    nameAr: 'mushaf_madinah'.tr(),
     totalPages: 604,
     linesPerPage: 15,
     downloadUrl: '', // TODO: رابط حزمة qcf_v2 بعد رفعها على خادم التطبيق
@@ -64,7 +67,7 @@ const List<MushafDefinition> mushafs = [
   ),
   MushafDefinition(
     id: 'qcf_v4',
-    nameAr: 'مصحف التجويد الملون',
+    nameAr: 'mushaf_tajweed'.tr(),
     totalPages: 604,
     linesPerPage: 15,
     downloadUrl: '', // TODO: رابط حزمة qcf_v4 بعد رفعها على خادم التطبيق
@@ -72,7 +75,7 @@ const List<MushafDefinition> mushafs = [
   ),
   MushafDefinition(
     id: 'indopak_15',
-    nameAr: 'المصحف الهندي',
+    nameAr: 'mushaf_indian'.tr(),
     totalPages: 610,
     linesPerPage: 15,
     downloadUrl: '', // TODO: رابط حزمة indopak_15 بعد رفعها على خادم التطبيق

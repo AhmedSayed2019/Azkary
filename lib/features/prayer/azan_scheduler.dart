@@ -7,16 +7,17 @@
 // iOS: نفس الجدولة بصوت النظام الافتراضي — أصوات إشعارات iOS محدودة
 // بثلاثين ثانية ويلزم ملف ‎.caf يُضاف عبر Xcode لصوت أذان مخصص.
 
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:io' show Platform;
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:azkark/core/utils/timezone_init.dart';
+import 'package:azkark/features/prayer/azan_alarm.dart';
 import 'package:azkark/features/prayer/prayer_times_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 class AzanScheduler {
@@ -62,23 +63,12 @@ class AzanScheduler {
   /// مربّعًا داكنًا مصمتًا في شريط الحالة.
   static const String _smallIcon = 'ic_stat_azkary';
 
-  static bool _tzReady = false;
-
   /// إعادة الجدولة تُستدعى من أماكن عدة قد تتزامن (الإقلاع + قسم الأذان
   /// في الرئيسية). نسلسلها حتى لا يتداخل الإلغاء مع الجدولة.
   static Future<void> _inFlight = Future<void>.value();
 
-  static Future<void> _ensureTimezone() async {
-    if (_tzReady) return;
-    tzdata.initializeTimeZones();
-    try {
-      final name = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(name));
-    } catch (_) {
-      // نبقى على tz.local الافتراضي — الأوقات محلية أصلًا فالفارق معدوم غالبًا
-    }
-    _tzReady = true;
-  }
+  /// مشتركة مع [ReminderScheduler] — القاعدة تُفكّ مرة واحدة لا مرتين.
+  static Future<void> _ensureTimezone() => ensureTimeZones();
 
   static Future<FlutterLocalNotificationsPlugin> _plugin() async {
     final plugin = FlutterLocalNotificationsPlugin();
@@ -87,7 +77,10 @@ class AzanScheduler {
       android: AndroidInitializationSettings(_smallIcon),
       iOS: DarwinInitializationSettings(),
     );
-    await plugin.initialize(settings);
+    await plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: AzanAlarm.onResponse,
+    );
     return plugin;
   }
 
@@ -125,10 +118,10 @@ class AzanScheduler {
         }
       }
 
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         _channelId,
-        'الأذان',
-        channelDescription: 'تنبيه صوتي عند دخول وقت الصلاة',
+        'azan_channel_name'.tr(),
+        channelDescription: 'azan_channel_desc'.tr(),
         importance: Importance.max,
         priority: Priority.high,
         category: AndroidNotificationCategory.alarm,
@@ -138,13 +131,27 @@ class AzanScheduler {
         // الأذان ينتمي لمجرى المنبّه لا الإشعارات: يُسمع بمستوى صوت
         // المنبّه ولا يُقصّ. لا يُغيَّر بعد إنشاء القناة على الجهاز.
         audioAttributesUsage: AudioAttributesUsage.alarm,
+        // يطلق شاشة الأذان فوق القفل حين تكون الشاشة مطفأة، ويظهر عائمًا
+        // (heads-up) حين يكون الهاتف قيد الاستخدام — بدونه كان إشعارًا
+        // عاديًا في الدرج. علم لكل إشعار لا للقناة، فلا يحتاج قناة جديدة.
+        fullScreenIntent: true,
+        visibility: NotificationVisibility.public,
+        autoCancel: true,
+        actions: <AndroidNotificationAction>[
+          AndroidNotificationAction(
+            AzanAlarm.stopActionId,
+            'azan_stop'.tr(),
+            cancelNotification: true,
+            showsUserInterface: false,
+          ),
+        ],
       );
       const iosDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentSound: true,
         interruptionLevel: InterruptionLevel.timeSensitive,
       );
-      const details =
+      final details =
           NotificationDetails(android: androidDetails, iOS: iosDetails);
 
       final now = DateTime.now();
@@ -167,10 +174,11 @@ class AzanScheduler {
           try {
             await plugin.zonedSchedule(
               id++,
-              'حان الآن وقت صلاة ${slot.name}',
+              'azan_now'.tr(namedArgs: {'prayer': slot.name}),
               '${svc.city} — ${_formatTime(slot.time)}',
               when,
               details,
+              payload: AzanAlarm.payload,
               androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
             );
           } on PlatformException catch (e) {
@@ -178,10 +186,11 @@ class AzanScheduler {
             if (e.code == 'exact_alarms_not_permitted') {
               await plugin.zonedSchedule(
                 id++,
-                'حان الآن وقت صلاة ${slot.name}',
+                'azan_now'.tr(namedArgs: {'prayer': slot.name}),
                 '${svc.city} — ${_formatTime(slot.time)}',
                 when,
                 details,
+                payload: AzanAlarm.payload,
                 androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
               );
             } else {
@@ -266,7 +275,7 @@ class AzanScheduler {
 
   static String _formatTime(DateTime time) {
     final hour12 = time.hour % 12 == 0 ? 12 : time.hour % 12;
-    final suffix = time.hour < 12 ? 'ص' : 'م';
+    final suffix = time.hour < 12 ? 'am_short'.tr() : 'pm_short'.tr();
     return '$hour12:${time.minute.toString().padLeft(2, '0')} $suffix';
   }
 }

@@ -1,21 +1,17 @@
 import 'package:azkark/core/res/theme_helper.dart';
-import 'package:azkark/data/models/locationInfo.dart';
 import 'package:azkark/features/adhan/providers/adhan_dependency_provider.dart';
-import 'package:azkark/features/adhan/providers/adhan_provider.dart';
-import 'package:azkark/features/adhan/providers/ahdan_notification_provider.dart';
 import 'package:azkark/features/adhan/providers/location_provider.dart';
-import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/features/refactor/asmaallah/presentation/injection.dart' as asmaallah_refactor_di;
+import 'package:azkark/features/refactor/azkar/presentation/injection.dart' as azkar_refactor_di;
 import 'package:azkark/features/refactor/calender/presentation/injection.dart' as calender_refactor_di;
 import 'package:azkark/features/refactor/categories/presentation/injection.dart' as categories_refactor_di;
 import 'package:azkark/features/refactor/compass/presentation/injection.dart' as compass_refactor_di;
-import 'package:azkark/features/refactor/feedback/presentation/injection.dart' as feedback_refactor_di;
+import 'package:azkark/features/refactor/report/presentation/injection.dart' as report_refactor_di;
 import 'package:azkark/features/refactor/prayer/presentation/injection.dart' as prayer_refactor_di;
 import 'package:azkark/features/refactor/sebha/presentation/injection.dart' as sebha_refactor_di;
 import 'package:azkark/features/refactor/settings/presentation/injection.dart' as settings_refactor_di;
 import 'package:azkark/providers.dart';
 import 'package:azkark/providers/asmaallah_provider.dart';
-import 'package:azkark/providers/azkar_provider.dart';
 import 'package:azkark/providers/categories_provider.dart';
 import 'package:azkark/providers/favorites_provider.dart';
 import 'package:azkark/providers/prayer_provider.dart';
@@ -46,7 +42,6 @@ Future<void> injection() async {
   getIt.registerLazySingleton(() => SettingsProvider());
   getIt.registerLazySingleton(() => CategoriesProvider());
   getIt.registerLazySingleton(() => SebhaProvider());
-  getIt.registerLazySingleton(() => AzkarProvider());
   getIt.registerLazySingleton(() => FavoritesProvider());
   getIt.registerLazySingleton(() => PrayerProvider());
   getIt.registerLazySingleton(() => AsmaAllahProvider());
@@ -63,8 +58,10 @@ Future<void> injection() async {
   await settings_refactor_di.initSettingsRefactorFeatures();
   await asmaallah_refactor_di.initAsmaAllahRefactorFeatures();
   await categories_refactor_di.initCategoriesRefactorFeatures();
+  // بعد categories و settings: نماذج عرض الأذكار تعتمد حالات استخدامهما
+  await azkar_refactor_di.initAzkarRefactorFeatures();
   await calender_refactor_di.initCalenderRefactorFeatures();
-  await feedback_refactor_di.initFeedbackRefactorFeatures();
+  await report_refactor_di.initReportRefactorFeatures();
   await compass_refactor_di.initCompassRefactorFeatures();
 
 

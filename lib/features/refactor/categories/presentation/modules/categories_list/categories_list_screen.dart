@@ -1,15 +1,15 @@
-import 'package:azkark/features/azkar/view_azkar.dart';
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
+import 'package:azkark/features/refactor/azkar/presentation/modules/azkar_list/azkar_list_screen.dart';
 import 'package:azkark/features/refactor/categories/domain/entity/category_entity.dart';
 import 'package:azkark/features/refactor/categories/presentation/modules/categories_list/categories_list_view_model.dart';
 import 'package:azkark/features/refactor/categories/presentation/modules/categories_list/widgets/category_list_item.dart';
 import 'package:azkark/providers.dart';
-import 'package:azkark/providers/azkar_provider.dart';
 import 'package:azkark/util/background.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:azkark/util/navigate_between_pages/fade_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 /// Replaces the legacy `ViewAllCategories` screen — the "all categories"
 /// list, backed by [CategoriesListViewModel] (a factory VM resolved from
@@ -36,14 +36,13 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
     super.dispose();
   }
 
-  Future<void> _openCategory(CategoryEntity category) async {
-    final azkarProvider = Provider.of<AzkarProvider>(context, listen: false);
-    await azkarProvider.initialAllAzkar(category.azkarIndex);
-    // Guard against the widget being unmounted while awaiting the DB read
-    // above (the legacy `Category` widget navigated unconditionally after
-    // the same await, which could push onto a disposed context).
-    if (!mounted) return;
-    Navigator.push(context, FadeRoute(page: const ViewAzkar()));
+  void _openCategory(CategoryEntity category) {
+    // لا تحميل مسبق بعد الآن: الشاشة الجديدة تقرأ أذكارها بنفسها من
+    // AzkarListViewModel، فالتنقّل فوري ولا سياق ينتظر عملية قاعدة بيانات.
+    Navigator.push(
+      context,
+      FadeRoute(page: AzkarListScreen(category: category)),
+    );
   }
 
   @override
@@ -52,6 +51,9 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
       Background(),
       Scaffold(
         appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
           elevation: 0.0,
           title: Text(
             tr('all_categories'),

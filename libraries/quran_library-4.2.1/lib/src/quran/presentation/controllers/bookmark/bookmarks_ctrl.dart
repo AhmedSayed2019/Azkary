@@ -55,12 +55,19 @@ class BookmarksCtrl extends GetxController {
   /// Set بدل List للبحث O(1) بدل O(n)
   Set<int> get bookmarksAyahsSet => _bookmarksAyahsSetCache;
 
+  /// [bookmarksAyahs] بلا تكرار، محسوبة مرة واحدة مع الكاش (بدل
+  /// `toSet().toList()` في كل بناء صفحة).
+  List<int> get bookmarksAyahsUnique => _bookmarksAyahsUniqueCache;
+  List<int> _bookmarksAyahsUniqueCache = const [];
+
   void _rebuildBookmarksCache() {
     _bookmarksAyahsCache = bookmarks.values
         .expand((list) => list)
         .map((bookmark) => bookmark.ayahId)
         .toList();
     _bookmarksAyahsSetCache = _bookmarksAyahsCache.toSet();
+    _bookmarksAyahsUniqueCache =
+        _bookmarksAyahsSetCache.toList(growable: false);
   }
 
   // final BookmarkModel _searchBookmark =

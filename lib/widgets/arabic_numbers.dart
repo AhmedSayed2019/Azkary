@@ -1,5 +1,13 @@
 library arabic_numbers;
 
+import 'package:azkark/core/localization/app_locales.dart';
+
+/// هل نعرض الأرقام بالصيغة العربية الهندية (٠١٢…)؟
+///
+/// في الواجهة العربية فقط. الإنجليزية والفرنسية والألمانية تعرض الأرقام
+/// اللاتينية، وإلا ظهرت المواقيت والعدّاد بحروف لا يقرؤها المستخدم.
+bool get _useArabicDigits => AppLang.isArabic;
+
 class _ArabicNumbers {
   static String convert(Object value) {
     assert(
@@ -15,6 +23,7 @@ class _ArabicNumbers {
   }
 
   static String _toArabicNumbers(String value) {
+    if (!_useArabicDigits) return value;
     return value
         .replaceAll('0', '٠')
         .replaceAll('1', '١')

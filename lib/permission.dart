@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 checkNotificationPermission() async {
@@ -5,14 +6,9 @@ checkNotificationPermission() async {
   //PermissionStatus status1 = await Permission.accessMediaLocation.request();
   // PermissionStatus status2 =
   //     await Permission.locationWhenInUse.request();
-  print('status $status ');
-  if (status.isGranted) {
-    print(true);
-  } else if (status.isPermanentlyDenied) {
-    await openAppSettings();
-  } else if (status.isDenied) {
-    print('Permission Denied');
-  }
+  // لا نفتح إعدادات النظام تلقائيًا عند الرفض الدائم: هذه الدالة تُستدعى
+  // مع كل إقلاع، فكان التطبيق يقذف المستخدم إلى الإعدادات في كل فتح.
+  debugPrint('notification permission: $status');
 }
 
 

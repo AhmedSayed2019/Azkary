@@ -26,18 +26,21 @@
 // فتح للتطبيق بإزاحة عشوائية داخل المجموعة، فيتبدّل المحتوى كلما فُتح التطبيق،
 // وتختلف كل خانة عن أختها في اليوم نفسه.
 
+import 'package:azkark/features/prayer/azan_alarm.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:azkark/core/utils/constants.dart' show zikrNotfications;
 import 'package:azkark/core/utils/hive_helper.dart';
 import 'package:azkark/features/notifications/data/40hadith.dart';
+import 'package:azkark/features/notifications/logic/overlay_scheduler.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:azkark/core/utils/timezone_init.dart';
+import 'package:azkark/features/quran/quran_init.dart';
 import 'package:quran_library/quran.dart' show QuranCtrl;
-import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 /// أنواع التذكيرات المجدولة. كل نوع له قناته ونطاق معرّفاته ومفاتيحه
@@ -46,47 +49,90 @@ enum ReminderKind {
   zikr(
     enabledKey: 'shouldShowZikrNotification2',
     intervalKey: 'timesForShowingZikrNotifications2',
+    deliveryKey: 'zikr_delivery_mode_v1',
     channelId: 'zikr_reminder_v1',
-    channelName: 'تذكير بالأذكار',
+    channelNameKey: 'reminder_zikr_channel',
     baseId: 7100,
-    title: 'ذكر',
+    overlayBaseId: 7600,
+    titleKey: 'zikr',
   ),
   hadith(
     enabledKey: 'shouldShowhadithNotification',
     intervalKey: 'timesForShowinghadithNotifications',
+    deliveryKey: 'hadith_delivery_mode_v1',
     channelId: 'hadith_reminder_v1',
-    channelName: 'تذكير بالأحاديث',
+    channelNameKey: 'reminder_hadith_channel',
     baseId: 7200,
-    title: 'حديث',
+    overlayBaseId: 7700,
+    titleKey: 'hadith_title',
   ),
   ayah(
     enabledKey: 'shouldShowAyahNotification',
     intervalKey: 'timesForShowingAyahNotifications',
+    deliveryKey: 'ayah_delivery_mode_v1',
     channelId: 'ayah_reminder_v1',
-    channelName: 'تذكير بالآيات',
+    channelNameKey: 'reminder_ayah_channel',
     baseId: 7300,
-    title: 'آية',
+    overlayBaseId: 7800,
+    titleKey: 'ayah',
   );
 
   const ReminderKind({
     required this.enabledKey,
     required this.intervalKey,
+    required this.deliveryKey,
     required this.channelId,
-    required this.channelName,
+    required this.channelNameKey,
     required this.baseId,
-    required this.title,
+    required this.overlayBaseId,
+    required this.titleKey,
   });
 
   final String enabledKey;
   final String intervalKey;
+
+  /// مفتاح Hive لطريقة العرض المختارة لهذا النوع — انظر [ReminderDelivery].
+  final String deliveryKey;
   final String channelId;
-  final String channelName;
+  /// مفتاح ترجمة لا نصًا جاهزًا: اسم القناة يُقرأ بلغة المستخدم وقت
+  /// الجدولة. القناة تُجمَّد على الجهاز بعد إنشائها، فتغيير اللغة لاحقًا
+  /// لا يعيد تسميتها — لكن الإشعار نفسه يظل بلغة الجدولة.
+  final String channelNameKey;
 
   /// بداية نطاق معرّفات الإشعارات لهذا النوع (١٠٠ معرّف لكل نوع).
   final int baseId;
 
+  /// بداية نطاق معرّفات منبّهات النافذة العائمة لهذا النوع. نطاق مستقل عن
+  /// [baseId]: المنبّهات يديرها `AndroidAlarmManager` لا الإشعارات، والفصل
+  /// يجعل استنتاج النوع من معرّف المنبّه ممكنًا داخل العزلة الموقَظة.
+  final int overlayBaseId;
+
   /// عنوان الإشعار الظاهر أعلى النص.
-  final String title;
+  final String titleKey;
+}
+
+/// كيف يصل تذكير هذا النوع إلى المستخدم.
+///
+/// كان الاختيار سابقًا مفتاحًا عامًا واحدًا (`zikr_overlay_enabled`) يسري
+/// على الأذكار وحدها ويعمل *فوق* الإشعارات لا بديلًا عنها، فلم يكن للمستخدم
+/// أي وسيلة لقول «الأحاديث كنافذة عائمة فقط» أو «الآيات كإشعار فقط».
+enum ReminderDelivery {
+  notification,
+  floating,
+  both;
+
+  bool get hasNotification => this != ReminderDelivery.floating;
+
+  bool get hasFloating => this != ReminderDelivery.notification;
+
+  /// القيمة المحفوظة في Hive نصًّا لا فهرسًا: إعادة ترتيب الثوابت لاحقًا
+  /// يجب ألا تُبدّل اختيار المستخدم بصمت.
+  static ReminderDelivery fromStorage(Object? raw) {
+    return ReminderDelivery.values.firstWhere(
+      (mode) => mode.name == raw,
+      orElse: () => ReminderDelivery.notification,
+    );
+  }
 }
 
 /// خيارات الفترة. الفهارس مطابقة للقائمة القديمة في شاشة الإشعارات حتى
@@ -132,27 +178,19 @@ class ReminderScheduler {
   /// منتظمة (١٥ ثم ٣٠) وهو ما يناقض ما اختاره المستخدم.
   static const int _androidSlotsPerKind = 72;
 
-  static bool _tzReady = false;
-
   /// نداءات التسليح قد تتزامن (الإقلاع + الشاشة). نسلسلها حتى لا يتداخل
   /// الإلغاء مع الجدولة فتبقى خانات نصف مبنية.
   static Future<void> _inFlight = Future<void>.value();
 
   static final Random _random = Random();
 
+  /// بصمة آخر تسليح ناجح (Hive) — انظر [armOnLaunch].
+  static const String _armedSignatureKey = 'reminders_armed_signature';
+
   // ---------------------------------------------------------------- التهيئة
 
-  static Future<void> _ensureTimezone() async {
-    if (_tzReady) return;
-    tzdata.initializeTimeZones();
-    try {
-      final name = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(name));
-    } catch (_) {
-      // نبقى على المنطقة الافتراضية — الأوقات محلية أصلًا فالفارق معدوم غالبًا
-    }
-    _tzReady = true;
-  }
+  /// مشتركة مع [AzanScheduler] — القاعدة تُفكّ مرة واحدة لا مرتين.
+  static Future<void> _ensureTimezone() => ensureTimeZones();
 
   /// نسخة مهيّأة من الإضافة. نُهيّئها هنا صراحةً بدل الاعتماد على المتغيّر
   /// العام: الإضافة كائن لكل عزلة، والاعتماد على تهيئة تمت في مكان آخر هو
@@ -169,7 +207,11 @@ class ReminderScheduler {
         requestSoundPermission: false,
       ),
     );
-    await plugin.initialize(settings);
+    // الاستجابة تذهب لآخر تهيئة فقط — نمرّر معالج الأذان حتى لا نمسحه
+    await plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: AzanAlarm.onResponse,
+    );
     return plugin;
   }
 
@@ -193,6 +235,11 @@ class ReminderScheduler {
 
   static int intervalMinutes(ReminderKind kind) =>
       kReminderIntervalsMinutes[intervalIndex(kind)];
+
+  /// طريقة العرض المختارة لهذا النوع. الافتراضي إشعار — وهو سلوك النسخ
+  /// السابقة، فالترقية لا تُغيّر شيئًا لمن لم يختر بعد.
+  static ReminderDelivery deliveryOf(ReminderKind kind) =>
+      ReminderDelivery.fromStorage(getValue(kind.deliveryKey));
 
   static int get startHour {
     final raw = getValue(startHourKey);
@@ -220,6 +267,14 @@ class ReminderScheduler {
     await arm();
   }
 
+  /// تغيير طريقة العرض. الإذن (إشعارات / عرض فوق التطبيقات) تفحصه الشاشة
+  /// قبل النداء: المُجدوِل لا يملك سياق واجهة يطلب به إذنًا.
+  static Future<void> setDelivery(
+      ReminderKind kind, ReminderDelivery mode) async {
+    await updateValue(kind.deliveryKey, mode.name);
+    await arm();
+  }
+
   static Future<void> setActiveWindow({int? start, int? end}) async {
     if (start != null) await updateValue(startHourKey, start.clamp(0, 23));
     if (end != null) await updateValue(endHourKey, end.clamp(0, 23));
@@ -236,12 +291,49 @@ class ReminderScheduler {
   /// يلغي كل تذكيراتنا ويعيد بناءها من الإعدادات المحفوظة.
   /// تُستدعى عند الإقلاع وبعد كل تغيير في الشاشة.
   static Future<void> arm() {
-    final next = _inFlight.then((_) => _arm());
+    // النافذة العائمة تشترك مع الإشعارات في الفترة والنافذة النشطة وطريقة
+    // العرض، فأي تغيير يمسّ القناتين معًا. تسليحها هنا يعني أن كل مستدعٍ
+    // (الإقلاع، الشاشة، منح إذن) يحصل على الاثنتين متسقتين بنداء واحد.
+    final next = _inFlight.then((_) => _arm()).then((ok) async {
+      await OverlayScheduler.arm();
+      // لا تُحفظ البصمة عند الفشل، فيُعاد المحاولة في الإقلاع التالي
+      if (ok) await updateValue(_armedSignatureKey, _signature());
+    });
     _inFlight = next;
     return next;
   }
 
-  static Future<void> _arm() async {
+  /// تسليح الإقلاع: يُتخطّى إن لم يتغيّر شيء منذ آخر تسليح ناجح اليوم.
+  ///
+  /// كل تسليح مئات من نداءات الإلغاء والجدولة، وكل نداء في الإضافة يعيد
+  /// كتابة قائمتها المحفوظة كاملة على الخيط الرئيسي لأندرويد — فتكراره مع
+  /// كل فتح للتطبيق كان يُقطّع الرئيسية. الإشعارات متكررة يوميًا فتبقى
+  /// قائمة بلا إعادة. الشاشة وتغيير الإعدادات ومنح الأذونات تستدعي [arm]
+  /// مباشرةً فلا تمرّ بهذا الفحص.
+  static Future<void> armOnLaunch() {
+    if (getValue(_armedSignatureKey) == _signature()) {
+      debugPrint('ReminderScheduler: unchanged since last arm today — skipped');
+      return Future<void>.value();
+    }
+    return arm();
+  }
+
+  /// كل ما يؤثّر في الجدولة. اليوم ضمنها لأن المحتوى يُدوَّر مع كل تسليح
+  /// والنوافذ العائمة لا تغطّي إلا اليوم والغد. العنوان المترجم يمثّل اللغة.
+  static String _signature() {
+    final now = DateTime.now();
+    return [
+      '${now.year}-${now.month}-${now.day}',
+      for (final kind in ReminderKind.values)
+        '${kind.name}:${isEnabled(kind)}:${intervalIndex(kind)}:${deliveryOf(kind).name}',
+      startHour,
+      endHour,
+      getValue('shouldShowSallyNotification') == true,
+      ReminderKind.values.first.titleKey.tr(),
+    ].join('|');
+  }
+
+  static Future<bool> _arm() async {
     try {
       await _ensureTimezone();
       final plugin = await _plugin();
@@ -249,8 +341,11 @@ class ReminderScheduler {
       await _clearLegacy(plugin);
       await _dropStaleChannels();
 
-      final enabled =
-          ReminderKind.values.where(isEnabled).toList(growable: false);
+      // نوع مفعّل بطريقة «عائمة» فقط لا يحجز خانة إشعار ولا حصة من ميزانية
+      // iOS: الخانات المحجوزة له كانت ستُهدر على إشعارات لا تُعرض.
+      final enabled = ReminderKind.values
+          .where((k) => isEnabled(k) && deliveryOf(k).hasNotification)
+          .toList(growable: false);
       final slotBudget = _slotBudgetPerKind(enabled.length);
 
       // نحسب المعرّفات التي ستُعاد جدولتها قبل التنظيف: `cancel` تُسقط
@@ -274,9 +369,11 @@ class ReminderScheduler {
 
       debugPrint('ReminderScheduler: armed $total reminder slots '
           '(${enabled.map((k) => k.name).join(", ")})');
+      return true;
     } catch (e) {
       // الجدولة تحسينية — فشلها يجب ألا يكسر إقلاع التطبيق
       debugPrint('ReminderScheduler.arm failed: $e');
+      return false;
     }
   }
 
@@ -308,7 +405,7 @@ class ReminderScheduler {
     ReminderKind kind,
     int slotBudget,
   ) async {
-    final pool = await _pool(kind);
+    final pool = await contentPool(kind);
     if (pool.isEmpty) {
       debugPrint('ReminderScheduler: ${kind.name} pool empty — skipped');
       return 0;
@@ -340,7 +437,7 @@ class ReminderScheduler {
       final ok = await _schedule(
         plugin,
         id: kind.baseId + i,
-        title: kind.title,
+        title: kind.titleKey.tr(),
         body: body,
         when: when,
         details: _detailsFor(kind, body),
@@ -413,7 +510,10 @@ class ReminderScheduler {
 
   // ---------------------------------------------------------------- المحتوى
 
-  static Future<List<String>> _pool(ReminderKind kind) async {
+  /// عامة لا خاصة: [OverlayScheduler] يقرأ منها ليُودع نصوص النوع في
+  /// SharedPreferences قبل أن توقظه المنبّهات في عزلة بلا Hive ولا مصحف
+  /// محمّل.
+  static Future<List<String>> contentPool(ReminderKind kind) async {
     switch (kind) {
       case ReminderKind.zikr:
         return zikrNotfications
@@ -437,6 +537,9 @@ class ReminderScheduler {
   /// يُرسم صحيحًا داخل إشعار النظام.
   static Future<List<String>> _ayahPool() async {
     try {
+      // تهيئة المكتبة أولًا: QuranCtrl.instance قبلها يقرأ إعدادات المصحف
+      // المحفوظة قبل أن تُهيّأ. التهيئة مشتركة فلا تُحمَّل البيانات مرتين.
+      await ensureQuranReady();
       final ctrl = QuranCtrl.instance;
       if (ctrl.state.allAyahs.isEmpty) {
         await ctrl.ensureCoreDataLoaded();
@@ -457,14 +560,14 @@ class ReminderScheduler {
     return NotificationDetails(
       android: AndroidNotificationDetails(
         kind.channelId,
-        kind.channelName,
-        channelDescription: 'تذكير دوري بـ${kind.title}',
+        kind.channelNameKey.tr(),
+        channelDescription: 'reminder_channel_desc'.tr(namedArgs: {'kind': kind.titleKey.tr()}),
         importance: Importance.high,
         priority: Priority.high,
         category: AndroidNotificationCategory.reminder,
         icon: _smallIcon,
         styleInformation:
-            BigTextStyleInformation(body, contentTitle: kind.title),
+            BigTextStyleInformation(body, contentTitle: kind.titleKey.tr()),
         groupKey: 'azkary_reminders',
       ),
       iOS: const DarwinNotificationDetails(
@@ -489,13 +592,13 @@ class ReminderScheduler {
     }
     await plugin.show(
       _sallyId,
-      'صلِّ على النبي ﷺ',
+      'sally_title'.tr(),
       'اللهم صلِّ وسلِّم على نبينا محمد',
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
           _sallyChannelId,
-          'الصلاة على النبي ﷺ',
-          channelDescription: 'إشعار دائم للتذكير بالصلاة على النبي ﷺ',
+          'sally_channel_name'.tr(),
+          channelDescription: 'sally_channel_desc'.tr(),
           // منخفض عمدًا: إشعار مقيم لا ينبغي أن يُصدر صوتًا أو يقفز للشاشة
           importance: Importance.low,
           priority: Priority.low,
@@ -516,13 +619,13 @@ class ReminderScheduler {
   /// إشعار فوري بنموذج من محتوى النوع — زر «عرض مثال» في الشاشة.
   static Future<bool> showSample(ReminderKind kind) async {
     try {
-      final pool = await _pool(kind);
+      final pool = await contentPool(kind);
       if (pool.isEmpty) return false;
       final plugin = await _plugin();
       final body = pool[_random.nextInt(pool.length)];
       await plugin.show(
         kind.baseId + 99,
-        kind.title,
+        kind.titleKey.tr(),
         body,
         _detailsFor(kind, body),
       );

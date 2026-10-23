@@ -11,7 +11,7 @@ class ExpansionTileSebha extends StatefulWidget {
     this.onExpansionChanged,
     required  this.child,
     this.initiallyExpanded = false,
-  }) : assert(initiallyExpanded != null);
+  });
 
   @override
   _ExpansionTileSebhaState createState() => _ExpansionTileSebhaState();
@@ -42,7 +42,7 @@ class _ExpansionTileSebhaState extends State<ExpansionTileSebha> with SingleTick
 
 
 
-    _isExpanded = PageStorage.of(context)?.readState(context) ?? widget.initiallyExpanded;
+    _isExpanded = PageStorage.of(context).readState(context) ?? widget.initiallyExpanded;
     if (_isExpanded) _controller.value = 1.0;
   }
 
@@ -65,7 +65,7 @@ class _ExpansionTileSebhaState extends State<ExpansionTileSebha> with SingleTick
           });
         });
       }
-      PageStorage.of(context)?.writeState(context, _isExpanded);
+      PageStorage.of(context).writeState(context, _isExpanded);
     });
     if (widget.onExpansionChanged != null)
       widget.onExpansionChanged!(_isExpanded);

@@ -39,37 +39,40 @@ class IslamicHeaderBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: borderRadius ?? BorderRadius.zero,
-      child: Container(
-        color: color ?? AppColor.primaryColor.themeColor,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: IgnorePointer(
-                child: RepaintBoundary(
-                  child: Opacity(
-                    opacity: patternOpacity,
-                    child: SvgPicture.asset(
-                      asset,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      colorFilter: ColorFilter.mode(
-                        patternColor ?? AppColor.rateColor.themeColor,
-                        BlendMode.srcIn,
-                      ),
-                      // يمنع ومضة الفراغ أثناء أول فك ترميز للملف
-                      placeholderBuilder: (_) => const SizedBox.shrink(),
-                    ),
+    final Color pattern = patternColor ?? AppColor.rateColor.themeColor;
+
+    final Widget content = Container(
+      color: color ?? AppColor.primaryColor.themeColor,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: RepaintBoundary(
+                // الشفافية داخل مرشّح اللون لا في Opacity: المرشّح يُطبَّق
+                // على الصورة كطبقة واحدة فالنتيجة نفسها، بلا مرور إضافي خارج
+                // الشاشة يُعاد مع كل إطار (Impeller لا يخزّن الطبقات).
+                child: SvgPicture.asset(
+                  asset,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  colorFilter: ColorFilter.mode(
+                    pattern.withValues(alpha: pattern.a * patternOpacity),
+                    BlendMode.srcIn,
                   ),
+                  // يمنع ومضة الفراغ أثناء أول فك ترميز للملف
+                  placeholderBuilder: (_) => const SizedBox.shrink(),
                 ),
               ),
             ),
-            child,
-          ],
-        ),
+          ),
+          child,
+        ],
       ),
     );
+
+    // قصّ بلا حواف مدوّرة لا يفعل شيئًا سوى كلفة طبقة إضافية
+    if (borderRadius == null) return content;
+    return ClipRRect(borderRadius: borderRadius!, child: content);
   }
 }
 
@@ -84,7 +87,9 @@ Future<void> precacheIslamicPattern() async {
 }
 
 const String kHomeHeaderImageAsset =
-    'assets/images/background/home_header_image.png';
+    // JPEG لا PNG: صورة بلا شفافية، والملف 221KB بدل 2MB فيُفكّ أسرع
+    // عند أول إطار للرئيسية.
+    'assets/images/background/home_header_image.jpg';
 
 /// ارتفاع الشريط المثبت في الرئيسية — يشاركه [HomeHeaderImage] ليحسب
 /// إزاحة الشريحة، فأي تغيير هنا يجب أن يرافقه تغيير `toolbarHeight`.
@@ -117,7 +122,7 @@ class HomeHeaderImage extends StatelessWidget {
     this.topOffset = 0,
     this.borderRadius,
     this.asset = kHomeHeaderImageAsset,
-    this.blurSigma = 2,
+    this.blurSigma = 0,
     this.fillRegion = false,
   });
 
@@ -129,8 +134,12 @@ class HomeHeaderImage extends StatelessWidget {
   final BorderRadiusGeometry? borderRadius;
   final String asset;
 
-  /// شدّة ضبابية الخلفية — ترفع وضوح النص فوق تفاصيل المسجد.
-  /// صفر يعطّلها.
+  /// ضبابية إضافية وقت التشغيل — صفر يعطّلها.
+  ///
+  /// الافتراضي صفر لأن home_header_image.jpg مضبّبة مسبقًا (Gaussian بنحو
+  /// 6.5px على الصورة ≈ sigma 2 منطقية على الشاشة) بالمظهر نفسه. الضبابية
+  /// الحيّة كانت تُعاد على الـ GPU في كل إطار تمرير وكل ثانية من العدّاد.
+  /// لا تُستعمل إلا مع صورة غير مضبّبة.
   final double blurSigma;
 
   /// هيدر قائم بذاته لا يتقاسم الصورة مع جار (شاشة المواقيت مثلًا):

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:math';
 
 import 'package:azkark/core/res/resources.dart';
@@ -79,7 +80,7 @@ class _SettingFontTypeState extends State<SettingFontType>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Text(
-              'نوع الخط',
+              'font_type'.tr(),
               style: const TextStyle().semiBoldStyle().primaryTextColor(),
             ),
             AnimatedBuilder(
@@ -152,33 +153,33 @@ class _SettingFontTypeState extends State<SettingFontType>
       child: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            _buildFontContainer('الخط الإفتراضي', '0', size),
+            _buildFontContainer('font_default'.tr(), '0', size),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                _buildFontContainer('الخط ١', '1', size),
-                _buildFontContainer('الخط ٢', '2', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '1'}), '1', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '2'}), '2', size),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                _buildFontContainer('الخط ٣', '3', size),
-                _buildFontContainer('الخط ٤', '4', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '3'}), '3', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '4'}), '4', size),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                _buildFontContainer('الخط ٥', '5', size),
-                _buildFontContainer('الخط ٦', '6', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '5'}), '5', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '6'}), '6', size),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                _buildFontContainer('الخط ٧', '7', size),
-                _buildFontContainer('الخط ٨', '8', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '7'}), '7', size),
+                _buildFontContainer('font_n'.tr(namedArgs: {'n': '8'}), '8', size),
               ],
             ),
           ],

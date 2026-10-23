@@ -68,13 +68,14 @@ flutter:
         pluginClass: QuranLibraryPlugin
       # ios:
       #   pluginClass: QuranLibraryPlugin
+  # قائمة صريحة بدل `- assets/` و`- assets/jsons/`: لا يُضمَّن في الحزمة إلا ما
+  # يُحمَّل فعلًا. الخطوط المعرّفة في `fonts:` أدناه تُضمَّن تلقائيًا.
+  # (qpc-hafs-word-by-word.json.gz ~1.6MB غير مستخدم فاستُبعد.)
   assets:
-    - assets/
-    - assets/fonts/
-    - assets/fonts/Kufam-Regular.ttf
-    - assets/fonts/NotoNaskhArabic-VariableFont_wght.ttf
-    - assets/fonts/UthmanicHafs_V20.ttf
-    - assets/jsons/
+    - assets/jsons/qpc-v4.json.gz
+    - assets/jsons/qpc_v4_ayah_info.json.gz
+    - assets/jsons/quranV4.json.gz
+    - assets/jsons/surahs_name.json.gz
     - assets/svg/
     - assets/images/
     - assets/saadi.json.gz

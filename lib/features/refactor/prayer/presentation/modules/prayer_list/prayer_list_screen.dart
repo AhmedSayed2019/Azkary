@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/refactor/prayer/presentation/modules/prayer_list/prayer_list_view_model.dart';
 import 'package:azkark/features/refactor/prayer/presentation/modules/prayer_list/widgets/prayer_surah_section.dart';
 import 'package:azkark/providers.dart';
@@ -70,6 +72,9 @@ class _PrayerListScreenState extends State<PrayerListScreen> {
       Background(),
       Scaffold(
         appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
           elevation: 0.0,
           title: Text(
             tr('prayer_bar'),

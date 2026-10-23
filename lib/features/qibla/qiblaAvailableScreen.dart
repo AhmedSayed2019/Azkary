@@ -28,8 +28,6 @@ class QiblaAvailableScreen extends StatelessWidget {
     final qiblaDirection = 2 * pi * (qibla.direction / 360);
     double _lastAngle = 0;
 
-    final compassHeight = context.smallerBetweenHeightAndWidth * 0.6;
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: StreamBuilder<CompassEvent>(
@@ -75,7 +73,7 @@ class QiblaAvailableScreen extends StatelessWidget {
                                   ? tr('qibla')
                                   : heading.getHeadingName(heading),
                               style: TextStyle().semiBoldStyle()
-                                  ?.copyWith(color: Colors.white),
+                                  .copyWith(color: Colors.white),
                             ),
                           ],
                         ),

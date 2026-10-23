@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/refactor/sebha/domain/entity/sebha_entity.dart';
 import 'package:azkark/features/refactor/sebha/presentation/modules/add_edit_sebha/add_edit_sebha_dialog.dart';
 import 'package:azkark/features/refactor/sebha/presentation/modules/sebha_list/sebha_list_view_model.dart';
@@ -57,6 +59,9 @@ class _SebhaListScreenState extends State<SebhaListScreen> {
       Background(),
       Scaffold(
         appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
           elevation: 0.0,
           title: Text(
             tr('sebha_bar'),

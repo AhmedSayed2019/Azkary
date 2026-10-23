@@ -1,11 +1,13 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:azkark/core/localization/db_translations.dart';
 import 'dart:async';
 
 import 'package:azkark/core/utils/hive_helper.dart';
 import 'package:azkark/data/local/cache_consumer.dart';
 import 'package:azkark/data/models/preference.dart';
 import 'package:azkark/features/notifications/logic/reminder_scheduler.dart';
-import 'package:azkark/features/notifications/logic/zikr_overlay_scheduler.dart';
-import 'package:azkark/features/notifications/views/zikr_overlay.dart';
+import 'package:azkark/core/localization/app_locales.dart';
+import 'package:azkark/features/notifications/views/reminder_overlay.dart';
 import 'package:azkark/features/prayer/azan_scheduler.dart';
 import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/firebase_options.dart';
@@ -15,7 +17,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:quran_library/quran.dart';
+import 'package:azkark/features/quran/quran_init.dart';
 
 import 'app.dart';
 // import 'features/quran/common/storage/repository/storage_manager.dart';
@@ -88,37 +90,35 @@ import 'app.dart';
 @pragma('vm:entry-point')
 void overlayMain() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ZikrOverlay());
+  runApp(const ReminderOverlay());
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await injection();
 
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } on FirebaseException catch (e) {
-    if (e.code != 'duplicate-app') rethrow;
-  }
-
   //adan
   await initPreferences();
-  //Quran
-  await QuranLibrary.init();
-
   await EasyLocalization.ensureInitialized();
-
-  CacheConsumer.init();
   await initializeHive();
-  // نسيج هيدر الرئيسية — تحميله مسبقًا يمنع ومضة الخلفية عند أول بناء
-  await precacheIslamicPattern();
 
-  // إعادة تسليح الجدولة عند كل تشغيل (دون حجب الإقلاع)
-  unawaited(AzanScheduler.reschedule());
-  unawaited(ReminderScheduler.arm());
-  unawaited(ZikrOverlayScheduler.arm());
+  unawaited(_initializeFirebase());
+  unawaited(_initializeOptionalUiServices());
+
+  // الأعمال الثقيلة التي لا يحتاجها أول إطار تُؤجَّل إلى ما بعده: كانت
+  // تبدأ هنا فتتزاحم مع شاشة البداية والرئيسية على خيط الواجهة (فكّ JSON
+  // المصحف، قاعدة المناطق الزمنية مرتين، ومئات عمليات الجدولة).
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    // شاشة المصحف تنتظرها بنفسها إن فُتحت قبل هذه اللحظة
+    Future.delayed(const Duration(seconds: 2), () => unawaited(ensureQuranReady()));
+    Future.delayed(const Duration(seconds: 4), () {
+      // إعادة تسليح الجدولة عند كل تشغيل — ما جُدول سابقًا باقٍ في النظام
+      // حتى ذلك الحين، فلا يفوت شيء بالتأخير.
+      unawaited(AzanScheduler.reschedule());
+      // يسلّح الإشعارات والنوافذ العائمة معًا، ويتخطّى إن لم يتغيّر شيء اليوم
+      unawaited(ReminderScheduler.armOnLaunch());
+    });
+  });
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -126,14 +126,33 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [
-        Locale("ar"),
-      ],
+      supportedLocales: kSupportedLocales,
       path: 'assets/translations',
+      // العربية هي لغة المحتوى الأصلية، فهي الاحتياط حين تكون لغة الجهاز
+      // غير مدعومة أو ينقص مفتاح من ملف الترجمة.
+      fallbackLocale: const Locale('ar'),
       startLocale: const Locale('ar'),
-      child: const GenerateMultiProvider(
-        child: MyApp(),
+      child: GenerateMultiProvider(
+        child: const MyApp(),
       ),
     ),
   );
+}
+
+Future<void> _initializeFirebase() async {
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') rethrow;
+  }
+}
+
+Future<void> _initializeOptionalUiServices() async {
+  CacheConsumer.init();
+  await DbTranslations.load(
+    (await SharedPreferences.getInstance()).getString('locale') ?? 'ar',
+  );
+  await precacheIslamicPattern();
 }

@@ -1,3 +1,5 @@
+import 'package:azkark/core/localization/app_locales.dart';
+import 'package:azkark/core/localization/language_sheet.dart';
 import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/core/res/theme_helper.dart';
 import 'package:azkark/core/utils/messaging_helper.dart';
@@ -5,14 +7,12 @@ import 'package:azkark/features/adhan/providers/location_provider.dart';
 // import 'package:azkark/features/QuranPages/bloc/player_bar_bloc.dart';
 // import 'package:azkark/features/QuranPages/bloc/player_bloc_bloc.dart';
 // import 'package:azkark/features/QuranPages/bloc/quran_page_player_bloc.dart';
-import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/features/home/widgets/azan/azan_section.dart';
 import 'package:azkark/features/home/widgets/categories_view.dart';
-import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
 import 'package:azkark/features/notifications/views/all_notification_page.dart';
 import 'package:azkark/widgets/islamic_header_background.dart';
-import 'package:azkark/features/refactor/feedback/domain/entity/feedback_form_type.dart';
-import 'package:azkark/features/refactor/feedback/presentation/modules/feedback_webview/feedback_webview_screen.dart';
+import 'package:azkark/features/refactor/report/domain/entity/report_type.dart';
+import 'package:azkark/features/refactor/report/presentation/modules/report_form/report_form_screen.dart';
 import 'package:azkark/features/refactor/settings/presentation/modules/settings/settings_screen.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:azkark/initializeData.dart';
@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage> {
                   delegate: SliverChildListDelegate(
                     <Widget>[
                       const HomeCategoriesView(),
-                      _buildAllAzkarCard('عرض كل الأذكار', context),
+                      _buildAllAzkarCard('show_all_azkar'.tr(), context),
                       for (int i = 0; i < sectionsProvider.length; i += 2)
                         _buildRowCategories(sectionsProvider, i, context),
                     ],
@@ -178,6 +178,13 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
               ),
+              // اختيار لغة التطبيق
+              _buildMenuTile(
+                context: sheetContext,
+                icon: Icons.translate_rounded,
+                title: '${tr('language')} — ${context.locale.displayName}',
+                onTap: () => LanguageSheet.show(context),
+              ),
               _buildMenuTile(
                 context: sheetContext,
                 icon: Icons.notifications_none,
@@ -188,13 +195,13 @@ class _HomePageState extends State<HomePage> {
                 context: sheetContext,
                 icon: Icons.bug_report_outlined,
                 title: tr('report_a_bug'),
-                onTap: () => Navigator.push(context, ScaleRoute(page: const FeedbackWebviewScreen(formType: FeedbackFormType.bugReport))),
+                onTap: () => Navigator.push(context, ScaleRoute(page: const ReportFormScreen(initialType: ReportType.bug))),
               ),
               _buildMenuTile(
                 context: sheetContext,
                 icon: Icons.lightbulb_outline,
                 title: tr('request_a_feature'),
-                onTap: () => Navigator.push(context, ScaleRoute(page: const FeedbackWebviewScreen(formType: FeedbackFormType.featureRequest))),
+                onTap: () => Navigator.push(context, ScaleRoute(page: const ReportFormScreen(initialType: ReportType.feature))),
               ),
               const SizedBox(height: 8),
             ],
@@ -296,7 +303,12 @@ class _HomePageState extends State<HomePage> {
                     child: Container(
                       padding: const EdgeInsets.all(5.0),
                       width: size.width * 0.4,
-                      child: Image.asset('assets/images/sections/${sectionModel.id}.png', fit: BoxFit.contain),
+                      // صور 512px تُعرض بنحو 40% من العرض — تُفكّ بحجم العرض
+                      child: Image.asset(
+                        'assets/images/sections/${sectionModel.id}.png',
+                        fit: BoxFit.contain,
+                        cacheWidth: (size.width * 0.4 * MediaQuery.devicePixelRatioOf(context)).round(),
+                      ),
                     ),
                   ),
                   Text(sectionModel.name,

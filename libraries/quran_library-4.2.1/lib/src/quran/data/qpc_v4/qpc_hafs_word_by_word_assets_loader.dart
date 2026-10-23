@@ -15,6 +15,9 @@ class QpcHafsWordByWordStore {
   }
 }
 
+/// ملاحظة: الملف qpc-hafs-word-by-word.json.gz (~1.6MB) لم يعد مُضمَّنًا في
+/// الحزمة (pubspec) لأن هذا المحمّل غير مستخدم؛ أضِفه إلى assets قبل استدعاء
+/// [load].
 class QpcHafsWordByWordAssetsLoader {
   static const _wbwGzPath =
       'packages/quran_library/assets/jsons/qpc-hafs-word-by-word.json.gz';

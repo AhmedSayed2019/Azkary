@@ -1,6 +1,5 @@
 import 'package:azkark/providers.dart';
 import 'package:mq_storage/mq_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 PreferencesStorage _preferences =getIt<PreferencesStorage>();
 

@@ -1,4 +1,3 @@
-import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/core/utils/helpers/gps_location_helper.dart';
 import 'package:azkark/features/adhan/location_finding_screen.dart';
 import 'package:azkark/features/adhan/location_not_available_screen.dart';
@@ -22,7 +21,7 @@ class AdhanScreen extends StatelessWidget {
         child: (locationState is LocationAvailable)
             ? ChangeNotifierProvider(
                 create: (_) => AdhanProvider(adhanDep, locationState.locationInfo),
-                child: AdhanAvailableScreen(locationState.locationInfo))
+                child: AdhanAvailableScreen())
             : (locationState is LocationFinding)
                 ? const LocationFindingScreen()
                 : (locationState is LocationNotAvailable)

@@ -1,4 +1,3 @@
-import 'package:azkark/util/colors.dart';
 import 'package:flutter/material.dart';
 
 class NotFound extends StatelessWidget {
@@ -13,7 +12,7 @@ class NotFound extends StatelessWidget {
       child: Image.asset(
         'assets/images/icons/not_fount/no_found.png',
         fit: BoxFit.contain,
-        color: Theme.of(context).cardColor!.withAlpha(200),
+        color: Theme.of(context).cardColor.withAlpha(200),
         colorBlendMode: BlendMode.modulate,
         height: size.height * 0.4,
       ),

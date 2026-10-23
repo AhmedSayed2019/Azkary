@@ -5,7 +5,6 @@ import 'package:azkark/data/models/adhan.dart';
 import 'package:azkark/data/models/locationInfo.dart';
 import 'package:azkark/features/adhan/common.dart';
 import 'package:azkark/features/adhan/providers/adhan_dependency_provider.dart';
-import 'package:azkark/localization/app_localizations.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 

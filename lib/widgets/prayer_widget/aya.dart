@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/util/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +24,7 @@ class Aya extends StatefulWidget {
 
 class _AyaState extends State<Aya> {
   String get text =>
-      'بسم الله الرحمن الرحيم \n ﴿ ${widget._prayer.aya} ﴾ \n***********\nسورة : ${widget._prayer.surah}\n***********\nالأية : ${widget._prayer.ayaNumber}';
+      'بسم الله الرحمن الرحيم \n ﴿ ${widget._prayer.aya} ﴾ \n***********\n${'surah_n'.tr(namedArgs: {'surah': widget._prayer.surah})}\n***********\n${'ayah_n'.tr(namedArgs: {'n': '${widget._prayer.ayaNumber}'})}';
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +142,7 @@ class _AyaState extends State<Aya> {
 
   Widget _buildNameSurahField() {
     return Text(
-      'سورة ${widget._prayer.surah}',
+      'surah_n'.tr(namedArgs: {'surah': widget._prayer.surah}),
       style: TextStyle(
         color: teal[50],
         fontSize: 13,
@@ -151,7 +152,7 @@ class _AyaState extends State<Aya> {
 
   Widget _buildAyaNumberField() {
     return Text(
-      'الآية ${widget._prayer.ayaNumber}',
+      'ayah_n'.tr(namedArgs: {'n': '${widget._prayer.ayaNumber}'}),
       style: TextStyle(
         color: teal[50],
         fontSize: 13,

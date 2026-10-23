@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/refactor/asmaallah/domain/entity/asma_allah_entity.dart';
 import 'package:azkark/pages/search/components/not_found.dart';
 import 'package:azkark/pages/search/components/search_field.dart';
@@ -37,6 +39,9 @@ class _AsmaAllahSearchScreenState extends State<AsmaAllahSearchScreen> {
       Background(),
       Scaffold(
         appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
           elevation: 0.0,
           title: SearchField(
             title: '${tr('search_for_asmaallah')} . . . ',

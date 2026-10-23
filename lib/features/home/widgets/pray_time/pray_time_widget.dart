@@ -32,9 +32,8 @@ class MqSalaahTimeWidget extends StatelessWidget {
           location: provider.timeZoneLocation,
           onLocationPressed: () {},
 
-          // Guard against null before the first fix:
-          lat: pos.latitude ?? 0.0,
-          lon: pos.longitude ?? 0.0,
+          lat: pos.latitude,
+          lon: pos.longitude,
         );
       },
     );

@@ -62,6 +62,13 @@ class File {
     );
   }
 
+  Future<File> rename(String newPath) async {
+    throw UnsupportedError(
+      'File operations are not supported on web platform. '
+      'Use web-specific APIs like IndexedDB or browser storage instead.',
+    );
+  }
+
   Future<void> writeAsString(String contents, {bool flush = false}) async {
     throw UnsupportedError(
       'File operations are not supported on web platform. '

@@ -326,15 +326,15 @@ data/ … domain/ … presentation/ …
 
 ## Migration status (audit 2026-08-18)
 
-**Migrated** (in `lib/features/refactor/`): `asmaallah`, `calender`, `categories`,
-`compass`, `feedback`, `prayer` (Quran-verse prayers), `sebha`, `settings`.
+**Migrated** (in `lib/features/refactor/`): `asmaallah`, `azkar`, `calender`,
+`categories`, `compass`, `feedback`, `prayer` (Quran-verse prayers), `sebha`,
+`settings`.
 
 **Pending — legacy code still in use:**
 
 | Feature | Legacy source | Notes |
 |---|---|---|
-| azkar reading | `lib/features/azkar/` + `lib/providers/azkar_provider.dart` | highest traffic; screens restyled 2026-08 but architecture is legacy |
-| sections/categories nav | `lib/pages/categories/` + `sections_provider.dart` | side-rail drawer screen |
+| sections/categories nav | `lib/pages/categories/` + `sections_provider.dart` | side-rail drawer screen; its `Category` card bridges to `AzkarListScreen` by mapping the legacy model to `CategoryEntity` — drop the bridge when this migrates |
 | favorites | `lib/pages/favorites/` + `favorites_provider.dart` | |
 | search | `lib/pages/search/` | |
 | home | `lib/features/home/` | azan section + grid; new code, legacy architecture |

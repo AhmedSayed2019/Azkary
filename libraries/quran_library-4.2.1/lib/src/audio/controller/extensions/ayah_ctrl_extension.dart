@@ -446,12 +446,14 @@ extension AyahCtrlExtension on AudioCtrl {
       return;
     }
     final dir = await state.dir;
+    // قراءة مجلد القارئ مرة واحدة بدل ~6236 استدعاء File.exists متتاليًا.
+    final fileExists = _batchedExistsChecker();
     for (final surah in QuranCtrl.instance.surahs) {
       for (final ayah in surah.ayahs) {
         try {
           final fileName = _ayahFileNameFor(surah.surahNumber, ayah.ayahNumber);
           final path = join(dir.path, fileName);
-          final exists = await File(path).exists();
+          final exists = await fileExists(path);
           state.ayahsDownloadStatus[ayah.ayahUQNumber] = exists;
         } catch (_) {
           // تجاهل أي خطأ في الحساب واستمر
@@ -479,10 +481,11 @@ extension AyahCtrlExtension on AudioCtrl {
       final surah = QuranCtrl.instance.surahs
           .firstWhere((s) => s.surahNumber == surahNumber);
       final dir = await state.dir;
+      final fileExists = _batchedExistsChecker();
       for (final ayah in surah.ayahs) {
         final fileName = _ayahFileNameFor(surahNumber, ayah.ayahNumber);
         final path = join(dir.path, fileName);
-        if (!await File(path).exists()) {
+        if (!await fileExists(path)) {
           state.box.write(key, false);
           return false;
         }

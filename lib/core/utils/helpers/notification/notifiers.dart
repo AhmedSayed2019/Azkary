@@ -1,3 +1,4 @@
+import 'package:azkark/features/prayer/azan_alarm.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:azkark/core/utils/helpers/extensions.dart';
 import 'package:azkark/core/utils/helpers/gps_location_helper.dart';
@@ -27,7 +28,10 @@ Future<FlutterLocalNotificationsPlugin> _initializeNotifiers() async {
     android: initializationSettingsAndroid,
   );
   final notifier = FlutterLocalNotificationsPlugin();
-  await notifier.initialize(initializationSettings);
+  await notifier.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: AzanAlarm.onResponse,
+  );
 
   return notifier;
 }
@@ -255,11 +259,6 @@ Future<void> _notifyAdhan({
           'Next: ${nextAdhan.title} (${nextAdhan.startTime.localizeTimeTo()} -  ${nextAdhan.endTime.localizeTimeTo()})';
     }
 
-    //final success = await FlutterBackground.initialize(androidConfig: androidConfig);
-/*    try {
-      await initFlutterAndroidBackgroundService();
-    } catch (e) {}*/
-
     final notifier = await _initializeNotifiers();
     await notifier.show(
       0,
@@ -267,23 +266,6 @@ Future<void> _notifyAdhan({
       body,
       await _getNotifyDetails(notifyID, isPersistent),
     );
-
-   /* if (isPersistent) {
-      await notifier.cancelAll();
-      if (await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
-        await FlutterForegroundTask.updateService(
-          notificationTitle: title,
-          notificationText: body,
-        );
-      } else {
-        await FlutterForegroundTask.startService(
-          notificationTitle: title,
-          notificationText: body,
-        );
-      }
-    } else {
-      await FlutterForegroundTask.stopService();
-    }*/
   } catch (e) {
     print(e);
   }

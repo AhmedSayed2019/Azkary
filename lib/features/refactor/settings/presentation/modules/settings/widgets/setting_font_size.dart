@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:azkark/widgets/slider_font_size/slider_font_size.dart';
@@ -62,7 +63,7 @@ class _SettingFontSizeState extends State<SettingFontSize> {
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Text(
-                    'حجم الخط',
+                    'font_size'.tr(),
                     style: const TextStyle().semiBoldStyle().primaryTextColor(),
                   ),
                 ),

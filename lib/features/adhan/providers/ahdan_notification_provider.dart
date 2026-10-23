@@ -2,7 +2,6 @@ import 'package:azkark/data/models/adhan.dart';
 import 'package:azkark/data/models/locationInfo.dart';
 import 'package:azkark/features/adhan/providers/adhan_dependency_provider.dart';
 import 'package:azkark/features/adhan/providers/adhan_provider.dart';
-import 'package:azkark/localization/app_localizations.dart';
 
 class AdhanNotificationProvider extends AdhanProvider {
   AdhanNotificationProvider(AdhanDependencyProvider adhanDependencyProvider,
@@ -15,12 +14,15 @@ class AdhanNotificationProvider extends AdhanProvider {
         element.modifyForNotification();
       });
 
-    return list.firstWhere(
-        (element) =>
-            element.isCurrent &&
-            (adhanDependencyProvider.showPersistant ||
-                adhanDependencyProvider.notifyID(element.type) != 0),
-        orElse: () => null as Adhan);
+    for (final element in list) {
+      if (element.isCurrent &&
+          (adhanDependencyProvider.showPersistant ||
+              adhanDependencyProvider.notifyID(element.type) != 0)) {
+        return element;
+      }
+    }
+
+    return null;
   }
 
   Adhan? get nextNotifcationAdhan {

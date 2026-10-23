@@ -6,11 +6,16 @@
 // المفتاح لا يُقلب إلا بعد التأكد من إذن الإشعارات وإتمام الجدولة فعليًا،
 // والألوان من `AppColor` فتتبع الوضع الليلي تلقائيًا.
 
+import 'dart:io' show Platform;
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/core/utils/permissions/app_permissions.dart';
+import 'package:azkark/features/notifications/logic/overlay_palette.dart';
 import 'package:azkark/features/notifications/logic/reminder_scheduler.dart';
-import 'package:azkark/features/notifications/logic/zikr_overlay_scheduler.dart';
+import 'package:azkark/features/notifications/logic/overlay_scheduler.dart';
+import 'package:azkark/features/notifications/views/reminder_pill.dart';
 import 'package:azkark/features/prayer/azan_scheduler.dart';
 import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +32,14 @@ class _NotificationsPageState extends State<NotificationsPage>
   List<AppPermissionState> _permissions = const [];
   int _pending = 0;
   bool _busy = false;
-  bool _overlayOn = false;
+
+  /// إذن «العرض فوق التطبيقات». يُقرأ مرة عند كل عودة للمقدمة بدل قراءته
+  /// داخل build: الفحص عبر قناة نظام، لا يصلح لدالة بناء متزامنة.
+  bool _overlayAllowed = false;
+
+  /// لون الحبّة العائمة. في SharedPreferences لا في Hive — تقرؤه عزلة
+  /// المنبّه — فيُقرأ هنا مرة ويُحتفظ به للبناء المتزامن.
+  OverlayPillColor _pillColor = kDefaultOverlayPillColor;
 
   @override
   void initState() {
@@ -52,16 +64,25 @@ class _NotificationsPageState extends State<NotificationsPage>
   Future<void> _refresh() async {
     final permissions = await AppPermissions.audit();
     final pending = await ReminderScheduler.pendingCount();
-    // المفتاح يعكس الواقع: مفعّل في التفضيلات *و* الإذن ممنوح فعلًا،
-    // فسحب الإذن من إعدادات النظام يُطفئه بدل أن يبقى أخضر كاذبًا.
-    final overlayOn = await ZikrOverlayScheduler.enabled() &&
-        await ZikrOverlayScheduler.hasPermission();
+    final overlayAllowed = await OverlayScheduler.hasPermission();
+    final pillColor = await OverlayScheduler.pillColor();
     if (!mounted) return;
     setState(() {
       _permissions = permissions;
       _pending = pending;
-      _overlayOn = overlayOn;
+      _overlayAllowed = overlayAllowed;
+      _pillColor = pillColor;
     });
+  }
+
+  /// أي نوع يُعرض كنافذة عائمة؟ اختيار اللون بلا نافذة عائمة زرٌّ لا يفعل
+  /// شيئًا، فالقسم يظهر بظهور أول نوع عائم ويختفي باختفائه.
+  bool get _hasFloating => OverlayScheduler.floatingKinds.isNotEmpty;
+
+  Future<void> _setPillColor(OverlayPillColor color) async {
+    if (color == _pillColor) return;
+    setState(() => _pillColor = color);
+    await OverlayScheduler.setPillColor(color);
   }
 
   List<AppPermissionState> get _missing =>
@@ -71,19 +92,22 @@ class _NotificationsPageState extends State<NotificationsPage>
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle().mediumStyle(fontSize: 13).colorWhite(),
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            style: const TextStyle().mediumStyle(fontSize: 13).colorWhite(),
+          ),
+          backgroundColor: error
+              ? AppColor.errorColor.themeColor
+              : AppColor.primaryColor.themeColor,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(kScreenPaddingNormal.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
         ),
-        backgroundColor: error
-            ? AppColor.errorColor.themeColor
-            : AppColor.primaryColor.themeColor,
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(kScreenPaddingNormal.w),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-      ));
+      );
   }
 
   /// تفعيل/تعطيل تذكير. لا نقلب المفتاح قبل إذن الإشعارات: بدونه تنجح
@@ -93,12 +117,13 @@ class _NotificationsPageState extends State<NotificationsPage>
     setState(() => _busy = true);
     try {
       if (value && !await AppPermissions.ensureNotifications()) {
-        _toast('لن تصلك التنبيهات قبل السماح بالإشعارات', error: true);
+        _toast('notif_need_permission'.tr(), error: true);
         return;
       }
       await ReminderScheduler.setEnabled(kind, value);
-      if (value && !await AppPermissions.isGranted(AppPermissionKind.exactAlarm)) {
-        _toast('فُعِّل التذكير — فعّل «المنبهات الدقيقة» ليصل في وقته بالضبط');
+      if (value &&
+          !await AppPermissions.isGranted(AppPermissionKind.exactAlarm)) {
+        _toast('notif_enabled_exact_hint'.tr());
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -111,30 +136,55 @@ class _NotificationsPageState extends State<NotificationsPage>
     await _refresh();
   }
 
+  /// «عرض مثال» يعرض ما اختاره المستخدم فعلًا لا إشعارًا دائمًا: زر يُظهر
+  /// إشعارًا بينما الوضع «نافذة عائمة» يجعل المعاينة اختبارًا لشيء آخر.
   Future<void> _sample(ReminderKind kind) async {
-    if (!await AppPermissions.ensureNotifications()) {
-      _toast('لن تصلك التنبيهات قبل السماح بالإشعارات', error: true);
-      return;
+    final mode = ReminderScheduler.deliveryOf(kind);
+    var shown = false;
+    String? failure;
+
+    if (mode.hasNotification) {
+      if (await AppPermissions.ensureNotifications()) {
+        shown = await ReminderScheduler.showSample(kind) || shown;
+      } else {
+        failure = 'notif_need_permission'.tr();
+      }
     }
-    final ok = await ReminderScheduler.showSample(kind);
-    if (!ok) _toast('تعذّر عرض المثال', error: true);
+
+    if (mode.hasFloating) {
+      if (await OverlayScheduler.hasPermission()) {
+        shown = await OverlayScheduler.showSample(kind) || shown;
+      } else {
+        failure = 'overlay_needs_permission'.tr();
+      }
+    }
+
+    if (failure != null) {
+      _toast(failure, error: true);
+    } else if (!shown) {
+      _toast('notif_preview_failed'.tr(), error: true);
+    }
   }
 
-  /// إذن «العرض فوق التطبيقات» لا يُمنح بحوار عادي بل من شاشة إعدادات
-  /// مستقلة، فنطلبه أولًا ولا نُفعّل المفتاح إن رجع المستخدم بلا منح.
-  Future<void> _toggleOverlay(bool value) async {
-    if (_busy) return;
+  /// طريقة عرض نوع بعينه. كل وضع يحتاج إذنه: الإشعار إذن الإشعارات،
+  /// والنافذة العائمة إذن «العرض فوق التطبيقات» — وهو لا يُمنح بحوار عادي
+  /// بل من شاشة إعدادات مستقلة. لا نحفظ الاختيار قبل المنح، وإلا بقي
+  /// معروضًا في الواجهة بينما لا يصل المستخدم شيء.
+  Future<void> _setDelivery(ReminderKind kind, ReminderDelivery mode) async {
+    if (_busy || mode == ReminderScheduler.deliveryOf(kind)) return;
     setState(() => _busy = true);
     try {
-      if (value && !await ZikrOverlayScheduler.hasPermission()) {
-        final granted = await ZikrOverlayScheduler.requestPermission();
-        if (!granted) {
-          _toast('يحتاج الذكر العائم إذن «العرض فوق التطبيقات»', error: true);
+      if (mode.hasNotification && !await AppPermissions.ensureNotifications()) {
+        _toast('notif_need_permission'.tr(), error: true);
+        return;
+      }
+      if (mode.hasFloating && !await OverlayScheduler.hasPermission()) {
+        if (!await OverlayScheduler.requestPermission()) {
+          _toast('overlay_needs_permission'.tr(), error: true);
           return;
         }
       }
-      await ZikrOverlayScheduler.setEnabled(value);
-      if (mounted) setState(() => _overlayOn = value);
+      await ReminderScheduler.setDelivery(kind, mode);
     } finally {
       if (mounted) setState(() => _busy = false);
       await _refresh();
@@ -143,7 +193,7 @@ class _NotificationsPageState extends State<NotificationsPage>
 
   Future<void> _toggleSally(bool value) async {
     if (value && !await AppPermissions.ensureNotifications()) {
-      _toast('لن تصلك التنبيهات قبل السماح بالإشعارات', error: true);
+      _toast('notif_need_permission'.tr(), error: true);
       return;
     }
     await ReminderScheduler.setSallyEnabled(value);
@@ -157,7 +207,7 @@ class _NotificationsPageState extends State<NotificationsPage>
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: current, minute: 0),
-      helpText: isStart ? 'بداية التذكير' : 'نهاية التذكير',
+      helpText: isStart ? 'reminder_start'.tr() : 'reminder_end'.tr(),
     );
     if (picked == null) return;
     await ReminderScheduler.setActiveWindow(
@@ -201,42 +251,57 @@ class _NotificationsPageState extends State<NotificationsPage>
                   ),
                   SizedBox(height: kScreenPaddingNormal.h),
                 ],
-                const _SectionLabel('التذكيرات'),
+                _SectionLabel('reminders'.tr()),
                 SizedBox(height: kFormPaddingAllNormal.h),
                 _ReminderCard(
                   icon: Icons.self_improvement_rounded,
-                  title: 'الأذكار',
-                  subtitle: 'ذكر مختار يصلك على مدار اليوم',
+                  title: 'adhkar'.tr(),
+                  subtitle: 'adhkar_desc'.tr(),
                   kind: ReminderKind.zikr,
                   busy: _busy,
+                  overlayAllowed: _overlayAllowed,
                   onToggle: _toggleReminder,
                   onInterval: _setInterval,
+                  onDelivery: _setDelivery,
                   onSample: _sample,
                 ),
                 SizedBox(height: kFormPaddingAllNormal.h),
                 _ReminderCard(
                   icon: Icons.menu_book_rounded,
-                  title: 'الأحاديث',
-                  subtitle: 'حديث من الأربعين النووية',
+                  title: 'ahadith'.tr(),
+                  subtitle: 'ahadith_desc'.tr(),
                   kind: ReminderKind.hadith,
                   busy: _busy,
+                  overlayAllowed: _overlayAllowed,
                   onToggle: _toggleReminder,
                   onInterval: _setInterval,
+                  onDelivery: _setDelivery,
                   onSample: _sample,
                 ),
                 SizedBox(height: kFormPaddingAllNormal.h),
                 _ReminderCard(
                   icon: Icons.import_contacts_rounded,
-                  title: 'الآيات',
-                  subtitle: 'آية من كتاب الله',
+                  title: 'ayat'.tr(),
+                  subtitle: 'ayat_desc'.tr(),
                   kind: ReminderKind.ayah,
                   busy: _busy,
+                  overlayAllowed: _overlayAllowed,
                   onToggle: _toggleReminder,
                   onInterval: _setInterval,
+                  onDelivery: _setDelivery,
                   onSample: _sample,
                 ),
+                if (_hasFloating) ...[
+                  SizedBox(height: kScreenPaddingNormal.h),
+                  _SectionLabel('overlay_color'.tr()),
+                  SizedBox(height: kFormPaddingAllNormal.h),
+                  _OverlayColorCard(
+                    selected: _pillColor,
+                    onPick: _setPillColor,
+                  ),
+                ],
                 SizedBox(height: kScreenPaddingNormal.h),
-                const _SectionLabel('أوقات التذكير'),
+                _SectionLabel('reminder_times'.tr()),
                 SizedBox(height: kFormPaddingAllNormal.h),
                 _ActiveWindowCard(
                   start: ReminderScheduler.startHour,
@@ -244,21 +309,12 @@ class _NotificationsPageState extends State<NotificationsPage>
                   onTap: (isStart) => _setHour(isStart: isStart),
                 ),
                 SizedBox(height: kScreenPaddingNormal.h),
-                const _SectionLabel('إشعار دائم'),
+                _SectionLabel('persistent_notification'.tr()),
                 SizedBox(height: kFormPaddingAllNormal.h),
                 _SimpleToggleCard(
-                  icon: Icons.picture_in_picture_alt_rounded,
-                  title: 'الذكر العائم فوق التطبيقات',
-                  subtitle:
-                      'فقاعة ذكر تظهر فوق أي تطبيق، وتعمل والتطبيق مغلق',
-                  value: _overlayOn,
-                  onChanged: _toggleOverlay,
-                ),
-                SizedBox(height: kFormPaddingAllLarge.h),
-                _SimpleToggleCard(
                   icon: Icons.favorite_rounded,
-                  title: 'الصلاة على النبي ﷺ',
-                  subtitle: 'إشعار مقيم لا يُمسح، بلا صوت ولا إزعاج',
+                  title: 'sally_channel_name'.tr(),
+                  subtitle: 'sally_toggle_desc'.tr(),
                   value: ReminderScheduler.isSallyEnabled,
                   onChanged: _toggleSally,
                 ),
@@ -288,8 +344,10 @@ class _NotificationsPageState extends State<NotificationsPage>
           centerTitle: true,
           titlePadding: EdgeInsets.only(bottom: kFormPaddingAllLarge.h),
           title: Text(
-            'التنبيهات',
-            style: const TextStyle().semiBoldStyle(fontSize: 16).customColor(onGreen),
+            'alerts'.tr(),
+            style: const TextStyle()
+                .semiBoldStyle(fontSize: 16)
+                .customColor(onGreen),
           ),
           background: SafeArea(
             child: Padding(
@@ -303,11 +361,14 @@ class _NotificationsPageState extends State<NotificationsPage>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_active_outlined,
-                      size: 30.r, color: AppColor.rateColor.themeColor),
+                  Icon(
+                    Icons.notifications_active_outlined,
+                    size: 30.r,
+                    color: AppColor.rateColor.themeColor,
+                  ),
                   SizedBox(height: kFormPaddingAllNormal.h),
                   Text(
-                    'تصلك في مواعيدها حتى والتطبيق مغلق',
+                    'alerts_desc'.tr(),
                     textAlign: TextAlign.center,
                     style: const TextStyle()
                         .mediumStyle(fontSize: 12)
@@ -399,26 +460,32 @@ class _PermissionsPanel extends StatelessWidget {
   final List<AppPermissionState> missing;
   final ValueChanged<AppPermissionKind> onFix;
 
-  static const Map<AppPermissionKind, (IconData, String, String)> _copy = {
+  // لم تعد const: tr() تُقرأ عند البناء لا عند الترجمة
+  static Map<AppPermissionKind, (IconData, String, String)> _copy = {
     AppPermissionKind.notifications: (
       Icons.notifications_active_rounded,
-      'إذن الإشعارات',
-      'بدونه لن يظهر أي تنبيه على الجهاز مهما ضبطت الإعدادات',
+      'perm_notifications'.tr(),
+      'perm_notifications_desc'.tr(),
     ),
     AppPermissionKind.exactAlarm: (
       Icons.alarm_on_rounded,
-      'المنبهات الدقيقة',
-      'يجعل الأذان والتذكيرات تصل في وقتها بدل تأخير قد يبلغ ساعة',
+      'perm_exact_alarms'.tr(),
+      'perm_exact_alarms_desc'.tr(),
+    ),
+    AppPermissionKind.fullScreen: (
+      Icons.fullscreen_rounded,
+      'perm_full_screen'.tr(),
+      'perm_full_screen_desc'.tr(),
     ),
     AppPermissionKind.batteryOptimization: (
       Icons.battery_saver_rounded,
-      'استثناء من توفير الطاقة',
-      'يمنع النظام من إسقاط التنبيهات أثناء إغلاق التطبيق',
+      'perm_battery'.tr(),
+      'perm_battery_desc'.tr(),
     ),
     AppPermissionKind.location: (
       Icons.location_on_rounded,
-      'الموقع',
-      'لحساب مواقيت الصلاة والأذان في مدينتك',
+      'perm_location'.tr(),
+      'perm_location_desc'.tr(),
     ),
   };
 
@@ -442,7 +509,7 @@ class _PermissionsPanel extends StatelessWidget {
               SizedBox(width: kFormPaddingAllNormal.w),
               Expanded(
                 child: Text(
-                  'أذونات مطلوبة',
+                  'perms_required'.tr(),
                   style: const TextStyle()
                       .semiBoldStyle(fontSize: 14)
                       .primaryTextColor(),
@@ -452,7 +519,7 @@ class _PermissionsPanel extends StatelessWidget {
           ),
           SizedBox(height: kFormPaddingAllSmall.h),
           Text(
-            'التنبيهات لن تعمل والتطبيق مغلق قبل منح ما يلي:',
+            'perms_required_desc'.tr(),
             style: const TextStyle()
                 .mediumStyle(fontSize: 11)
                 .customColor(AppColor.textSecondaryDark.themeColor),
@@ -492,14 +559,16 @@ class _PermissionsPanel extends StatelessWidget {
                     onPressed: () => onFix(state.kind),
                     style: TextButton.styleFrom(
                       minimumSize: Size(56.w, 32.h),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: kFormPaddingAllNormal.w),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: kFormPaddingAllNormal.w,
+                      ),
                       backgroundColor: gold.withValues(alpha: 0.16),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r)),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
                     ),
                     child: Text(
-                      'تفعيل',
+                      'enable'.tr(),
                       style: const TextStyle()
                           .semiBoldStyle(fontSize: 11.5)
                           .customColor(gold),
@@ -523,8 +592,10 @@ class _ReminderCard extends StatelessWidget {
     required this.subtitle,
     required this.kind,
     required this.busy,
+    required this.overlayAllowed,
     required this.onToggle,
     required this.onInterval,
+    required this.onDelivery,
     required this.onSample,
   });
 
@@ -533,13 +604,20 @@ class _ReminderCard extends StatelessWidget {
   final String subtitle;
   final ReminderKind kind;
   final bool busy;
+
+  /// إذن «العرض فوق التطبيقات». يُظهر تنبيهًا تحت المُحدِّد حين يكون
+  /// المستخدم قد اختار وضعًا عائمًا ثم سحب الإذن من إعدادات النظام —
+  /// وإلا بدا الخيار مفعّلًا بينما لا تظهر أي نافذة.
+  final bool overlayAllowed;
   final void Function(ReminderKind, bool) onToggle;
   final void Function(ReminderKind, int) onInterval;
+  final void Function(ReminderKind, ReminderDelivery) onDelivery;
   final void Function(ReminderKind) onSample;
 
   @override
   Widget build(BuildContext context) {
     final enabled = ReminderScheduler.isEnabled(kind);
+    final delivery = ReminderScheduler.deliveryOf(kind);
     final green = AppColor.primaryColor.themeColor;
 
     return _Card(
@@ -579,8 +657,9 @@ class _ReminderCard extends StatelessWidget {
           ),
           AnimatedCrossFade(
             duration: const Duration(milliseconds: 180),
-            crossFadeState:
-                enabled ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+            crossFadeState: enabled
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
             firstChild: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -590,7 +669,7 @@ class _ReminderCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'كل',
+                      'every'.tr(),
                       style: const TextStyle()
                           .semiBoldStyle(fontSize: 12)
                           .customColor(AppColor.textSecondaryDark.themeColor),
@@ -615,15 +694,54 @@ class _ReminderCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                // النافذة العائمة إضافة أندرويد خالصة (SYSTEM_ALERT_WINDOW)؛
+                // على iOS لا مُحدِّد أصلًا، والإشعار هو الوضع الوحيد.
+                if (Platform.isAndroid) ...[
+                  SizedBox(height: kFormPaddingAllLarge.h),
+                  Text(
+                    'delivery_mode'.tr(),
+                    style: const TextStyle()
+                        .semiBoldStyle(fontSize: 12)
+                        .customColor(AppColor.textSecondaryDark.themeColor),
+                  ),
+                  SizedBox(height: kFormPaddingAllNormal.h),
+                  Row(
+                    children: [
+                      for (final mode in ReminderDelivery.values) ...[
+                        Expanded(
+                          child: _DeliveryChip(
+                            mode: mode,
+                            selected: delivery == mode,
+                            onTap: busy ? null : () => onDelivery(kind, mode),
+                          ),
+                        ),
+                        if (mode != ReminderDelivery.values.last)
+                          SizedBox(width: kFormPaddingAllSmall.w + 2),
+                      ],
+                    ],
+                  ),
+                  if (delivery.hasFloating && !overlayAllowed) ...[
+                    SizedBox(height: kFormPaddingAllSmall.h),
+                    Text(
+                      'overlay_needs_permission'.tr(),
+                      style: const TextStyle()
+                          .mediumStyle(fontSize: 10.5)
+                          .customColor(AppColor.errorColor.themeColor),
+                    ),
+                  ],
+                ],
                 SizedBox(height: kFormPaddingAllNormal.h),
                 Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: TextButton.icon(
                     onPressed: () => onSample(kind),
-                    icon: Icon(Icons.notifications_none_rounded,
-                        size: 18.r, color: green),
+                    icon: Icon(
+                      Icons.notifications_none_rounded,
+                      size: 18.r,
+                      color: green,
+                    ),
                     label: Text(
-                      'عرض مثال الآن',
+                      'show_example_now'.tr(),
                       style: const TextStyle()
                           .semiBoldStyle(fontSize: 12)
                           .customColor(green),
@@ -645,6 +763,70 @@ class _ReminderCard extends StatelessWidget {
   }
 }
 
+/// خيار واحد من مُحدِّد طريقة العرض. أوسع من [_IntervalChip] وبأيقونة:
+/// الفرق بين «إشعار» و«عائم» سلوكي لا رقمي، فالأيقونة تُغني عن قراءة النص.
+class _DeliveryChip extends StatelessWidget {
+  const _DeliveryChip({
+    required this.mode,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ReminderDelivery mode;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  (IconData, String) get _copy => switch (mode) {
+    ReminderDelivery.notification => (
+      Icons.notifications_none_rounded,
+      'delivery_notification'.tr(),
+    ),
+    ReminderDelivery.floating => (
+      Icons.picture_in_picture_alt_rounded,
+      'delivery_floating'.tr(),
+    ),
+    ReminderDelivery.both => (Icons.done_all_rounded, 'delivery_both'.tr()),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final green = AppColor.primaryColor.themeColor;
+    final (icon, label) = _copy;
+    final foreground = selected
+        ? Colors.white
+        : AppColor.textSecondaryDark.themeColor;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: kFormPaddingAllNormal.h),
+        decoration: BoxDecoration(
+          color: selected ? green : AppColor.grayScaleColor.themeColor,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: selected ? green : AppColor.borderColor.themeColor,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18.r, color: foreground),
+            SizedBox(height: 4.h),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle()
+                  .semiBoldStyle(fontSize: 10.5)
+                  .customColor(foreground),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _IntervalChip extends StatelessWidget {
   const _IntervalChip({
     required this.minutes,
@@ -657,9 +839,12 @@ class _IntervalChip extends StatelessWidget {
   final VoidCallback onTap;
 
   String get _label {
-    if (minutes < 60) return '$minutes د';
-    if (minutes % 60 == 0) return '${minutes ~/ 60} س';
-    return '${(minutes / 60).toStringAsFixed(1)} س';
+    if (minutes < 60) return 'minutes_short'.tr(namedArgs: {'n': '$minutes'});
+    if (minutes % 60 == 0)
+      return 'hours_short'.tr(namedArgs: {'n': '${minutes ~/ 60}'});
+    return 'hours_short'.tr(
+      namedArgs: {'n': (minutes / 60).toStringAsFixed(1)},
+    );
   }
 
   @override
@@ -680,7 +865,9 @@ class _IntervalChip extends StatelessWidget {
         ),
         child: Text(
           _label,
-          style: const TextStyle().semiBoldStyle(fontSize: 11.5).customColor(
+          style: const TextStyle()
+              .semiBoldStyle(fontSize: 11.5)
+              .customColor(
                 selected ? Colors.white : AppColor.textSecondaryDark.themeColor,
               ),
         ),
@@ -703,7 +890,7 @@ class _ActiveWindowCard extends StatelessWidget {
 
   static String _fmt(int hour) {
     final h12 = hour % 12 == 0 ? 12 : hour % 12;
-    return '$h12:00 ${hour < 12 ? 'ص' : 'م'}';
+    return '$h12:00 ${hour < 12 ? 'am_short'.tr() : 'pm_short'.tr()}';
   }
 
   @override
@@ -717,7 +904,7 @@ class _ActiveWindowCard extends StatelessWidget {
               SizedBox(width: kFormPaddingAllLarge.w),
               Expanded(
                 child: Text(
-                  'لا تصلك التذكيرات خارج هذه الفترة',
+                  'outside_window_note'.tr(),
                   style: const TextStyle()
                       .mediumStyle(fontSize: 12)
                       .customColor(AppColor.textSecondaryDark.themeColor),
@@ -730,7 +917,7 @@ class _ActiveWindowCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _HourBox(
-                  label: 'من',
+                  label: 'from'.tr(),
                   value: _fmt(start),
                   onTap: () => onTap(true),
                 ),
@@ -738,7 +925,7 @@ class _ActiveWindowCard extends StatelessWidget {
               SizedBox(width: kFormPaddingAllNormal.w),
               Expanded(
                 child: _HourBox(
-                  label: 'إلى',
+                  label: 'to'.tr(),
                   value: _fmt(end),
                   onTap: () => onTap(false),
                 ),
@@ -852,6 +1039,73 @@ class _SimpleToggleCard extends StatelessWidget {
   }
 }
 
+/// اختيار لون الحبّة العائمة: صفٌّ لكل لون، فيه الحبّة نفسها لا مربّع لون.
+///
+/// المعاينة هي [ReminderPill] عينها التي ترسمها عزلة النافذة — لا نسخة
+/// تشبهها: ما يراه المستخدم هنا هو حرفيًا ما سيظهر فوق تطبيقاته.
+class _OverlayColorCard extends StatelessWidget {
+  const _OverlayColorCard({required this.selected, required this.onPick});
+
+  final OverlayPillColor selected;
+  final ValueChanged<OverlayPillColor> onPick;
+
+  /// نصّ المعاينة عربيّ مهما كانت لغة الواجهة: محتوى النافذة نفسه عربيّ
+  /// (الأذكار والأحاديث والآيات لا تُترجم)، فمعاينةٌ بالإنجليزية تُري
+  /// المستخدم سطرًا لن يراه قط.
+  static const String _sample = 'لا إله إلا الله وحده لا شريك له';
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      // RadioGroup لا groupValue/onChanged على كل زر: الأخيران متقاعدان
+      // منذ Flutter 3.32، والمجموعة هي التي تحمل القيمة الآن.
+      child: RadioGroup<OverlayPillColor>(
+        groupValue: selected,
+        onChanged: (picked) {
+          if (picked != null) onPick(picked);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'overlay_color_desc'.tr(),
+              style: const TextStyle()
+                  .mediumStyle(fontSize: 11)
+                  .customColor(AppColor.hintColor.themeColor),
+            ),
+            SizedBox(height: kFormPaddingAllLarge.h),
+            for (final color in OverlayPillColor.values) ...[
+              Row(
+                children: [
+                  // الحبّة تتقولب على نصّها، فـExpanded حولها ليتحاذى
+                  // مؤشّر الاختيار في الصفوف كلها مهما اختلف عرضها.
+                  Expanded(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: ReminderPill(
+                        text: _sample,
+                        color: color,
+                        onTap: () => onPick(color),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: kFormPaddingAllNormal.w),
+                  Radio<OverlayPillColor>(
+                    value: color,
+                    activeColor: color.color,
+                  ),
+                ],
+              ),
+              if (color != OverlayPillColor.values.last)
+                SizedBox(height: kFormPaddingAllNormal.h),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// يعرض عدد التذكيرات المسجّلة لدى النظام فعلًا — دليل ملموس على أن
 /// الجدولة تمت، لا مجرد مفتاح أخضر.
 class _StatusFooter extends StatelessWidget {
@@ -875,8 +1129,8 @@ class _StatusFooter extends StatelessWidget {
         Expanded(
           child: Text(
             pending > 0
-                ? 'مسجَّل لدى النظام: $pending تذكيرًا — تصلك حتى والتطبيق مغلق.'
-                : 'لا توجد تذكيرات مجدولة حاليًا.',
+                ? 'registered_reminders'.tr(namedArgs: {'n': '$pending'})
+                : 'no_reminders_scheduled'.tr(),
             style: const TextStyle()
                 .mediumStyle(fontSize: 11)
                 .customColor(AppColor.hintColor.themeColor),

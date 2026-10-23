@@ -515,19 +515,15 @@ class SurahDisplayScreen extends StatelessWidget {
     SurahCtrl surahCtrl,
   ) {
     final realPageIndex = surahCtrl.getRealQuranPageNumber(pageIndex);
-    QuranFontsService.ensurePagesLoaded(realPageIndex, radius: 10).then((_) {
-      // update();
-      // update(['_pageViewBuild']);
-      // تحميل بقية الصفحات في الخلفية
-      QuranFontsService.loadRemainingInBackground(
-        startNearPage: realPageIndex,
-        progress: QuranCtrl.instance.state.fontsLoadProgress,
-        ready: QuranCtrl.instance.state.fontsReady,
-      ).then((_) {
-        // update();
-        surahCtrl.update(['_pageViewBuild']);
+    // نافذة خطوط صغيرة حول الصفحة فقط، ولا شيء إن كانت جاهزة: الاستدعاء
+    // يقع داخل build، والتحديث غير المشروط بعده يعيد البناء بلا نهاية.
+    if (!QuranFontsService.isPageReady(realPageIndex)) {
+      QuranFontsService.ensurePagesLoaded(realPageIndex, radius: 3).then((_) {
+        if (QuranFontsService.isPageReady(realPageIndex)) {
+          surahCtrl.update(['_pageViewBuild']);
+        }
       });
-    });
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(

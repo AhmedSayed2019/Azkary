@@ -13,11 +13,34 @@ class QuranFontsService {
 
   static const int _totalPages = 604;
 
-  /// الصفحات المحمّلة في هذا التشغيل (1-based).
-  static final Set<int> _loadedPages = {};
+  /// متغيرات الخط المسجّلة لكل صفحة (1-based): لاحقة اسم العائلة
+  /// ('' فاتح بتجويد، 'd' داكن بتجويد، 'n' فاتح بلا تجويد، 'nd' داكن بلا
+  /// تجويد، 'nr' أحمر للخلاف).
+  ///
+  /// كان كل تحميل صفحة يسجّل المتغيرات الخمسة دفعة واحدة، وكل
+  /// [loadFontFromList] يعيد تخطيط كل نصوص التطبيق ويحجز ذاكرة أصلية لا
+  /// تُحرَّر. الآن يُسجَّل المتغير المطلوب للإعدادات الحالية فقط، ويُسجَّل غيره
+  /// كسولًا حين يتغير الوضع الداكن/التجويد/القراءات العشر.
+  static final Map<int, Set<String>> _registered = {};
 
-  /// Futures لمنع تكرار تحميل نفس الصفحة عند الاستدعاء المتزامن.
-  static final Map<int, Future<void>> _pageLoadFutures = {};
+  /// Futures لمنع تكرار تسجيل نفس المتغير لنفس الصفحة عند الاستدعاء المتزامن.
+  static final Map<String, Future<void>> _variantLoadFutures = {};
+
+  /// Futures لمنع تكرار قراءة/فك ضغط نفس الصفحة.
+  static final Map<int, Future<Uint8List>> _baseBytesFutures = {};
+
+  /// كاش LRU صغير لبايتات الخط الأصلية (المفكوكة) للصفحات القريبة، لتسجيل
+  /// متغير جديد عند تغيّر الإعدادات دون إعادة القراءة/فك الضغط.
+  static final Map<int, Uint8List> _baseBytesCache = {};
+  static const int _maxBaseBytesCache = 12;
+
+  /// آخر قيمة معروفة للوضع الداكن (تُحدَّث من [isPageReady]/[ensurePagesLoaded]
+  /// و[FontsExtension.getFontPath]) — للمستدعين الذين لا يعرفونها.
+  static bool _lastIsDark =
+      PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+
+  /// صفحات طُلب لها متغير غير مسجّل أثناء البناء وجُدول تسجيله.
+  static final Set<int> _pendingVariantPages = {};
 
   /// Future واحد لتحميل الخلفية لمنع التكرار.
   static Future<void>? _backgroundLoadFuture;
@@ -26,14 +49,78 @@ class QuranFontsService {
   static Directory? _cacheDir;
   static bool _cacheDirInitialized = false;
 
-  /// هل الصفحة المحددة جاهزة للعرض؟ (1-based)
-  static bool isPageReady(int page) => _loadedPages.contains(page);
+  /// لاحقة المتغير المناسب للإعدادات (مطابقة لـ [FontsExtension.getFontPath]).
+  static String variantSuffix({required bool isDark, required bool tajweed}) =>
+      tajweed ? (isDark ? 'd' : '') : (isDark ? 'nd' : 'n');
+
+  static bool get _isTenRecitations {
+    if (Get.isRegistered<WordInfoCtrl>()) {
+      return WordInfoCtrl.instance.isTenRecitations;
+    }
+    return (GetStorage().read(_StorageConstants().isTenRecitations) ?? 0) == 1;
+  }
+
+  /// المتغيرات اللازمة لعرض صفحة بالإعدادات الحالية.
+  static Set<String> _requiredVariants({bool? isDark}) {
+    final dark = isDark ?? _lastIsDark;
+    final tajweed = QuranCtrl.instance.state.isTajweedEnabled.value;
+    final variants = <String>{variantSuffix(isDark: dark, tajweed: tajweed)};
+    // كلمات الخلاف تُرسم بالخط الأحمر حين يكون التجويد معطّلًا مع القراءات العشر.
+    if (!tajweed && _isTenRecitations) variants.add('nr');
+    return variants;
+  }
+
+  /// هل متغير معيّن مسجّل للصفحة (1-based)؟
+  static bool isVariantRegistered(int page, String suffix) =>
+      _registered[page]?.contains(suffix) ?? false;
+
+  /// هل الصفحة المحددة جاهزة للعرض بالإعدادات الحالية؟ (1-based)
+  ///
+  /// [isDark] إن مُرّر يُحفظ كآخر قيمة معروفة للوضع الداكن.
+  static bool isPageReady(int page, {bool? isDark}) {
+    if (isDark != null) _lastIsDark = isDark;
+    final reg = _registered[page];
+    if (reg == null) return false;
+    return reg.containsAll(_requiredVariants());
+  }
+
+  /// يُستدعى من [FontsExtension.getFontPath] أثناء البناء: إن لم يكن المتغير
+  /// المطلوب مسجّلًا بعد (تغيّر الوضع الداكن/التجويد)، يُجدول تسجيله بعد
+  /// الإطار ثم يُعاد بناء الصفحة.
+  static void noteVariantUsed(int page, String suffix, {bool? isDark}) {
+    if (isDark != null) _lastIsDark = isDark;
+    if (isVariantRegistered(page, suffix)) return;
+    if (!_pendingVariantPages.add(page)) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final cacheDir = await _ensureCacheDir();
+        await Future.wait([
+          _loadVariant(page, suffix, cacheDir),
+          for (final v in _requiredVariants())
+            if (v != suffix && !isVariantRegistered(page, v))
+              _loadVariant(page, v, cacheDir),
+        ]);
+      } finally {
+        _pendingVariantPages.remove(page);
+      }
+      if (isVariantRegistered(page, suffix)) _notifyPageFontsChanged(page);
+    });
+  }
+
+  /// إعادة بناء صفحة المصحف بعد تسجيل متغير جديد لها. (النصوص المعروضة
+  /// بالعائلة الجديدة يُعاد تخطيطها تلقائيًا عند تسجيل الخط عبر systemFonts.)
+  static void _notifyPageFontsChanged(int page) {
+    if (!Get.isRegistered<QuranCtrl>()) return;
+    final ctrl = QuranCtrl.instance;
+    if (ctrl.isClosed) return;
+    ctrl.update(['qpc_page_${page - 1}']);
+  }
 
   /// عدد الصفحات المحمّلة حتى الآن.
-  static int get loadedCount => _loadedPages.length;
+  static int get loadedCount => _registered.length;
 
   /// هل تم تحميل جميع الصفحات؟
-  static bool get allLoaded => _loadedPages.length >= _totalPages;
+  static bool get allLoaded => _registered.length >= _totalPages;
 
   /// اسم عائلة الخط للصفحة المحددة (page1 .. page604).
   static String getFontFamily(int pageIndex) => 'page${pageIndex + 1}';
@@ -70,9 +157,8 @@ class QuranFontsService {
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final dir = Directory('${appDir.path}/quran_fonts_cache');
-      if (!dir.existsSync()) {
-        await dir.create(recursive: true);
-      }
+      // create(recursive) لا يفشل إن كان المجلد موجودًا — بلا existsSync.
+      await dir.create(recursive: true);
       _cacheDir = dir;
     } catch (e) {
       log('QuranFontsService: failed to create cache dir: $e',
@@ -89,19 +175,37 @@ class QuranFontsService {
   /// تحميل الصفحات القريبة من [centerPage] (1-based) بنصف قطر [radius].
   ///
   /// مثال: `ensurePagesLoaded(100, radius: 10)` يحمّل الصفحات 90–110.
-  /// يتم تخطّي الصفحات المحمّلة مسبقًا. يُنتظر حتى انتهاء التحميل.
+  /// يُسجَّل لكل صفحة المتغير اللازم للإعدادات الحالية فقط (انظر
+  /// [isPageReady]). يتم تخطّي ما سُجّل مسبقًا. يُنتظر حتى انتهاء التحميل.
   static Future<void> ensurePagesLoaded(
     int centerPage, {
     int radius = 10,
+    bool? isDark,
   }) async {
-    final cacheDir = await _ensureCacheDir();
+    if (isDark != null) _lastIsDark = isDark;
+    final variants = _requiredVariants();
+    final center = centerPage.clamp(1, _totalPages);
     final start = (centerPage - radius).clamp(1, _totalPages);
     final end = (centerPage + radius).clamp(1, _totalPages);
 
+    // الصفحة المركزية أولاً ثم الأقرب فالأبعد.
+    final order = <int>[center];
+    for (int d = 1; d <= radius; d++) {
+      if (center + d <= end) order.add(center + d);
+      if (center - d >= start) order.add(center - d);
+    }
+
+    Directory? cacheDir;
+    var cacheDirResolved = false;
     final futures = <Future<void>>[];
-    for (int p = start; p <= end; p++) {
-      if (!_loadedPages.contains(p)) {
-        futures.add(_loadSinglePage(p, cacheDir));
+    for (final p in order) {
+      for (final v in variants) {
+        if (isVariantRegistered(p, v)) continue;
+        if (!cacheDirResolved) {
+          cacheDir = await _ensureCacheDir();
+          cacheDirResolved = true;
+        }
+        futures.add(_loadVariant(p, v, cacheDir));
       }
     }
 
@@ -142,9 +246,11 @@ class QuranFontsService {
     final loadOrder = _buildLoadOrder(startNearPage);
 
     for (final page in loadOrder) {
-      if (_loadedPages.contains(page)) continue;
-      await _loadSinglePage(page, cacheDir);
-      progress.value = _loadedPages.length / _totalPages;
+      for (final v in _requiredVariants()) {
+        if (isVariantRegistered(page, v)) continue;
+        await _loadVariant(page, v, cacheDir);
+      }
+      progress.value = _registered.length / _totalPages;
     }
 
     progress.value = 1.0;
@@ -170,86 +276,103 @@ class QuranFontsService {
   }
 
   // ---------------------------------------------------------------------------
-  // تحميل صفحة واحدة مع كل المتغيرات (4 خطوط)
+  // تسجيل متغير واحد لصفحة واحدة
   // ---------------------------------------------------------------------------
 
-  /// تحميل صفحة واحدة (1-based) مع متغيراتها الأربعة.
+  /// تسجيل متغير واحد [suffix] للصفحة [page] (1-based).
   ///
   /// - `page{N}` — فاتح مع تجويد
   /// - `page{N}d` — داكن مع تجويد (CPAL: أسود→أبيض)
   /// - `page{N}n` — فاتح بدون تجويد (CPAL: كل الألوان→أسود)
   /// - `page{N}nd` — داكن بدون تجويد (CPAL: كل الألوان→أبيض)
-  static Future<void> _loadSinglePage(int page, Directory? cacheDir) {
-    // منع التكرار عند الاستدعاء المتزامن لنفس الصفحة
-    return _pageLoadFutures.putIfAbsent(page, () async {
+  /// - `page{N}nr` — أحمر للخلاف (CPAL: كل الألوان→أحمر)
+  static Future<void> _loadVariant(
+      int page, String suffix, Directory? cacheDir) {
+    final key = '$page:$suffix';
+    return _variantLoadFutures.putIfAbsent(key, () async {
       try {
-        Uint8List fontBytes;
-        final familyName = 'page$page';
-
-        // جرّب قراءة الكاش أولاً
-        if (cacheDir != null) {
-          final cachedFile = File('${cacheDir.path}/$familyName.ttf');
-          if (cachedFile.existsSync()) {
-            fontBytes = Uint8List.fromList(await cachedFile.readAsBytes());
-          } else {
-            fontBytes = await _decompressFromAsset(page);
-            try {
-              await cachedFile.writeAsBytes(fontBytes, flush: true);
-            } catch (e) {
-              log('QuranFontsService: cache write failed for page $page: $e',
-                  name: 'QuranFontsService');
-            }
-          }
-        } else {
-          fontBytes = await _decompressFromAsset(page);
-        }
-
-        // 1. خط فاتح أصلي
-        await loadFontFromList(fontBytes, fontFamily: familyName);
-
-        // 2. خط داكن: CPAL أسود → أبيض
-        final darkBytes = _modifyCpalBaseColor(
-          Uint8List.fromList(fontBytes),
-          const Color(0xFFFFFFFF),
-        );
-        await loadFontFromList(darkBytes, fontFamily: '${familyName}d');
-
-        // 3. بدون تجويد فاتح: كل الألوان → أسود
-        final ntBytes = _modifyCpalAllColors(
-          Uint8List.fromList(fontBytes),
-          const Color(0xFF000000),
-        );
-        await loadFontFromList(ntBytes, fontFamily: '${familyName}n');
-
-        // 4. بدون تجويد داكن: كل الألوان → أبيض
-        final ntdBytes = _modifyCpalAllColors(
-          Uint8List.fromList(fontBytes),
-          const Color(0xFFFFFFFF),
-        );
-        await loadFontFromList(ntdBytes, fontFamily: '${familyName}nd');
-
-        // 5. أحمر للخلاف (القراءات العشر): كل الألوان → أحمر
-        final nrBytes = _modifyCpalAllColors(
-          Uint8List.fromList(fontBytes),
-          const Color(0xFFFF0000),
-        );
-        await loadFontFromList(nrBytes, fontFamily: '${familyName}nr');
-
-        _loadedPages.add(page);
+        final base = await _baseBytes(page, cacheDir);
+        // المتغيرات تعدّل CPAL في مكانه، فتعمل على نسخة؛ الأصل يبقى في الكاش
+        // (loadFontFromList ينسخ البايتات إلى المحرك ولا يعدّلها).
+        final Uint8List bytes = switch (suffix) {
+          'd' => _modifyCpalBaseColor(
+              Uint8List.fromList(base), const Color(0xFFFFFFFF)),
+          'n' => _modifyCpalAllColors(
+              Uint8List.fromList(base), const Color(0xFF000000)),
+          'nd' => _modifyCpalAllColors(
+              Uint8List.fromList(base), const Color(0xFFFFFFFF)),
+          'nr' => _modifyCpalAllColors(
+              Uint8List.fromList(base), const Color(0xFFFF0000)),
+          _ => base,
+        };
+        await loadFontFromList(bytes, fontFamily: 'page$page$suffix');
+        (_registered[page] ??= <String>{}).add(suffix);
       } catch (e, st) {
-        log('QuranFontsService: failed to load font page $page: $e',
+        log('QuranFontsService: failed to load font page$page$suffix: $e',
             name: 'QuranFontsService', stackTrace: st);
+        // السماح بإعادة المحاولة لاحقًا (المستدعون يتحققون من الجاهزية قبل
+        // التحديث، فلا حلقة إعادة بناء).
+        _variantLoadFutures.remove(key);
       }
     });
   }
 
+  /// بايتات الخط الأصلية (المفكوكة) للصفحة: من كاش الذاكرة، ثم كاش القرص،
+  /// ثم فك ضغط الـ asset.
+  static Future<Uint8List> _baseBytes(int page, Directory? cacheDir) {
+    final cached = _baseBytesCache.remove(page);
+    if (cached != null) {
+      _baseBytesCache[page] = cached; // الأحدث استخدامًا في النهاية
+      return Future.value(cached);
+    }
+    return _baseBytesFutures.putIfAbsent(page, () async {
+      try {
+        final bytes = await _readOrDecompress(page, cacheDir);
+        _baseBytesCache[page] = bytes;
+        while (_baseBytesCache.length > _maxBaseBytesCache) {
+          _baseBytesCache.remove(_baseBytesCache.keys.first);
+        }
+        return bytes;
+      } finally {
+        _baseBytesFutures.remove(page);
+      }
+    });
+  }
+
+  static Future<Uint8List> _readOrDecompress(
+      int page, Directory? cacheDir) async {
+    if (cacheDir == null) return _decompressFromAsset(page);
+
+    final cachedFile = File('${cacheDir.path}/page$page.ttf');
+    // قراءة مباشرة بدل existsSync على عزلة الواجهة: الغياب يرمي استثناءً.
+    try {
+      final bytes = await cachedFile.readAsBytes();
+      if (bytes.isNotEmpty) return bytes;
+    } catch (_) {}
+
+    final bytes = await _decompressFromAsset(page);
+    // الكتابة لا تؤخر التسجيل؛ ملف مؤقت ثم إعادة تسمية كي لا يُقرأ ملف
+    // مبتور إن أُغلق التطبيق أثناء الكتابة.
+    final tmp = File('${cachedFile.path}.tmp');
+    tmp
+        .writeAsBytes(bytes, flush: true)
+        .then((_) => tmp.rename(cachedFile.path))
+        .catchError((Object e) {
+      log('QuranFontsService: cache write failed for page $page: $e',
+          name: 'QuranFontsService');
+      return cachedFile;
+    });
+    return bytes;
+  }
+
   /// فك ضغط ملف `.ttf.gz` من الـ assets.
+  ///
+  /// zlib الأصلي (dart:io) على المنصات الأصلية — جزء من ميلي ثانية للصفحة،
+  /// أرخص من إنشاء عزلة — و`archive` على الويب. بلا نسخة إضافية للبايتات.
   static Future<Uint8List> _decompressFromAsset(int page) async {
     final data = await rootBundle.load(_assetPath(page));
-    final gzBytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    final decompressed = const GZipDecoder().decodeBytes(gzBytes);
-    return Uint8List.fromList(decompressed);
+    return gunzipBytes(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
   }
 
   // ---------------------------------------------------------------------------
@@ -373,15 +496,17 @@ class QuranFontsService {
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final cacheDir = Directory('${appDir.path}/quran_fonts_cache');
-      if (cacheDir.existsSync()) {
+      if (await cacheDir.exists()) {
         await cacheDir.delete(recursive: true);
       }
     } catch (e) {
       log('QuranFontsService: clearCache failed: $e',
           name: 'QuranFontsService');
     }
-    _loadedPages.clear();
-    _pageLoadFutures.clear();
+    _registered.clear();
+    _variantLoadFutures.clear();
+    _baseBytesFutures.clear();
+    _baseBytesCache.clear();
     _backgroundLoadFuture = null;
     _cacheDir = null;
     _cacheDirInitialized = false;

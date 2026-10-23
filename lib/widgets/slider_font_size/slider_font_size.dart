@@ -1,7 +1,6 @@
 import 'package:azkark/core/res/color.dart';
 import 'package:flutter/material.dart';
 
-import '../../util/colors.dart';
 
 class SliderFontSize extends StatelessWidget {
   final double _fontSize, _min, _max;
@@ -48,7 +47,7 @@ class SliderFontSize extends StatelessWidget {
                 trackHeight: 4.0,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12.0),
                 thumbColor: Theme.of(context).primaryColor,
-                overlayColor: Theme.of(context).primaryColor!.withAlpha(15),
+                overlayColor: Theme.of(context).primaryColor.withAlpha(15),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
                 tickMarkShape: const RoundSliderTickMarkShape(),
                 activeTickMarkColor: Theme.of(context).primaryColor,
@@ -58,9 +57,9 @@ class SliderFontSize extends StatelessWidget {
                 valueIndicatorTextStyle: TextStyle(color: AppColor.textColorLite.themeColor, fontSize: _fontSize),
               ),
               child: Slider(
-                min: 14,
-                max: 30,
-                divisions: 8,
+                min: _min,
+                max: _max,
+                divisions: _divisions?.toInt() ?? 8,
                 label: '$_fontSize',
                 value: _fontSize,
                 onChanged: _onChanged,

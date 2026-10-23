@@ -38,7 +38,6 @@ ColorScheme buildSchemeTheme(bool isDarkMode) {
   final outlineVariant  = onSurface.withOpacity(0.30); // subtle stroke
 
   // Inverse surface (for bottom sheets/snackbars in opposite theme surfaces)
-  final inverseSurface  = Color.alphaBlend(onSurface.withOpacity(0.90), Colors.transparent);
   final inversePrimary  = _shiftLightness(primary, isDarkMode ? 0.40 : -0.25);
 
   // Scrim/shadow (modals & elevation)

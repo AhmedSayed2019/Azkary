@@ -1,13 +1,14 @@
 
+import 'package:azkark/core/localization/db_translations.dart';
+import 'package:azkark/core/localization/app_locales.dart';
 import 'dart:ui'as ui;
 
 import 'package:azkark/core/res/theme/theme.dart';
 import 'package:azkark/core/res/theme_helper.dart';
 import 'package:azkark/features/home/home_page.dart';
+import 'package:azkark/features/prayer/azan_alarm.dart';
 import 'package:azkark/features/home/loading_page.dart';
 import 'package:azkark/features/splash/splash_gate.dart';
-import 'package:azkark/pages/home/home_page.dart';
-import 'package:azkark/pages/home/loading_page.dart';
 import 'package:azkark/providers/sections_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:easy_overlay/easy_overlay.dart';
@@ -17,7 +18,6 @@ import 'package:provider/provider.dart';
 // import 'core/res/theme/theme.dart';
 
 import 'localization/app_localizations_delegate.dart';
-import 'util/app_theme.dart';
 
 BuildContext? appContext;
 
@@ -33,6 +33,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     Provider.of<ThemeHelper>(context,listen: false).getCurrentTheme();
+    // فُتح التطبيق من إشعار الأذان (فوق شاشة القفل)؟ نعرض شاشة الأذان
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => AzanAlarm.handleLaunch());
     // getIt<SettingViewModel>().getCurrentTheme();
     super.initState();
   }
@@ -42,6 +45,10 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     bool isDarkMode = context.watch<ThemeHelper>().isDarkMode;
     appContext = context;
+    // شيفرة بلا سياق (تحويل الأرقام) تقرأ اللغة من هنا
+    AppLang.code = context.locale.languageCode;
+    // ترجمة محتوى قاعدة الأذكار تتبع اللغة كذلك (لا تفعل شيئًا إن لم تتغيّر)
+    DbTranslations.load(context.locale.languageCode);
 
     return MaterialApp(
       theme: lightTheme,
@@ -78,31 +85,33 @@ class _MyAppState extends State<MyApp> {
 
 
 
-      title: 'سكينة',
+      navigatorKey: AzanAlarm.navigatorKey,
+      title: 'app_name'.tr(),
       debugShowCheckedModeBanner: false,
       builder: EasyOverlay.init(),
       home: Directionality(
-        textDirection:ui. TextDirection.rtl,
+        // الاتجاه يتبع اللغة: العربية RTL وبقية اللغات LTR. كان مثبتًا على
+        // RTL فكانت الإنجليزية والفرنسية والألمانية تُرسم معكوسة.
+        textDirection: context.locale.languageCode == 'ar'
+            ? ui.TextDirection.rtl
+            : ui.TextDirection.ltr,
         // شاشة البداية طبقة فوق المحتوى: هذا يُبنى خلفها من الإطار الأول
+        // لا انتظار لتهيئة المصحف هنا: الرئيسية لا تحتاجها، وشاشة المصحف
+        // تنتظرها بنفسها (quran_init.dart). ما يحجب الرئيسية الآن هو بيانات
+        // الأقسام وحدها، وتُقرأ من القاعدة بالتوازي.
         child: SplashGate(
-        child: Consumer<SectionsProvider>(
-            builder: (context, sectionProvider, widget) {
-              return sectionProvider.isNewUser ? FutureBuilder(
-                future: sectionProvider.tryToGetData(context),
-                builder: (context, result) {
-                  if (result.connectionState == ConnectionState.waiting) {
-                    print(' The page is  Loading !!');
-                    return LoadingPage();
-                  } else {
-                    print(' Username is Hemeda ');
-                    return const HomePage();
-                    // return HomePage();
-                  }
-                },
-              )
-                  : const HomePage();
-            }),
-      ),
+          child: Builder(
+            builder: (context) => FutureBuilder<bool>(
+              // المستقبل مخزّن داخل المزوّد فلا يُعاد إطلاقه مع كل بناء
+              future: Provider.of<SectionsProvider>(context, listen: false)
+                  .tryToGetData(context),
+              builder: (context, result) =>
+                  result.connectionState == ConnectionState.done
+                      ? const HomePage()
+                      : LoadingPage(),
+            ),
+          ),
+        ),
       ),
     );
   }

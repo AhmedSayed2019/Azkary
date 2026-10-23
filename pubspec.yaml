@@ -2,7 +2,7 @@ name: azkark
 description: An azkar app for muslim.
 publish_to: none
 
-version: 1.2.5+25
+version: 1.2.8+28
 
 environment:
   sdk: ^3.8.1
@@ -99,7 +99,7 @@ dependencies:
   geocoding: ^4.0.0 # Reverse-geocodes coordinates to a city name
 
 
-  share_plus: ^11.1.0 # Share content across apps
+  #   share_plus: ^11.1.0 # Share content across apps  # غير مستخدم — أُزيل لتصغير التطبيق
 
   # UI Components
 #  shimmer: ^3.0.0 # Shimmer loading effect
@@ -107,18 +107,25 @@ dependencies:
 #  flutter_html: ^3.0.0-beta.2 # HTML rendering
 
 #  modal_bottom_sheet: ^3.0.0-pre # Customizable bottom sheets
-  cupertino_icons: ^1.0.8 # iOS-style icons
+  #   cupertino_icons: ^1.0.8 # iOS-style icons  # غير مستخدم — أُزيل لتصغير التطبيق
 
   # Firebase
   firebase_core: ^4.0.0 # Firebase core integration
   firebase_analytics: ^12.0.0
+  # وجهة بلاغات المستخدمين — مجموعة `reports`. حلّت محل نماذج Google Forms
+  # التي كانت تُفتح في WebView: نموذج داخل التطبيق يعمل بلا متصفح، ويصل
+  # مصحوبًا بإصدار التطبيق والجهاز بلا أن يكتبها المستخدم بيده.
+  cloud_firestore: ^6.0.0
+  # إصدار التطبيق يُقرأ من الحزمة لا يُكتب يدويًا: رقم مجمَّد في الشيفرة
+  # يصير كذبًا عند أول إصدار، والبلاغ بإصدار خاطئ أسوأ من بلاغ بلا إصدار.
+  package_info_plus: ^8.3.1
 
   #    Local
 #  shared_preferences: ^2.0.15
   sqflite: ^2.3.3+1
 #  image_gallery_saver: ^2.0.3
 #  image_gallery_saver_plus: ^4.0.1
-  fluttertoast: ^8.2.12
+  #   fluttertoast: ^8.2.12  # غير مستخدم — أُزيل لتصغير التطبيق
 #  share_plus:
 #  easy_container: ^1.0.6
 
@@ -159,10 +166,10 @@ dependencies:
 #  syncfusion_flutter_sliders: ^20.3.59
 #  arabic_roman_conv: ^0.1.0-dev.2
 #  flutter_animated_dialog: ^2.0.1  # auto_size_text: ^3.0.0
-  rive: ^0.13.4 # for awesome dialog "animations"
+  #   rive: ^0.13.4 # for awesome dialog "animations"  # غير مستخدم — أُزيل لتصغير التطبيق
 
 
-  screenshot: ^3.0.0
+  #   screenshot: ^3.0.0  # غير مستخدم — أُزيل لتصغير التطبيق
 #  in_app_review:
 
 #  azlistview_plus: ^3.0.0
@@ -181,8 +188,8 @@ dependencies:
   easy_overlay: ^1.0.1
 #  flutter_displaymode: ^0.6.0
 #  flutter_compass: ^0.8.1
-  url_launcher: ^6.2.5 # Open URLs and deep links
-  webview_flutter: ^4.7.0
+  #   url_launcher: ^6.2.5 # Open URLs and deep links  # غير مستخدم — أُزيل لتصغير التطبيق
+  #   webview_flutter: ^4.7.0  # غير مستخدم — أُزيل لتصغير التطبيق
 
 
   #  firebase_core:
@@ -218,7 +225,7 @@ dependencies:
 
   #  flutter_dotenv: ^5.0.2
   hive: ^2.0.5
-  hive_flutter: ^1.1.0
+  #   hive_flutter: ^1.1.0  # غير مستخدم — أُزيل لتصغير التطبيق
 
 #  wakelock_plus: ^1.2.8
 #  intl_utils: ^2.6.1
@@ -235,10 +242,9 @@ dependencies:
 
 
   #    Q
-  auto_route: ^3.2.4
+  #   auto_route: ^3.2.4  # غير مستخدم — أُزيل لتصغير التطبيق
 #  adhan
   adhan: ^2.0.0-nullsafety.1
-  flutter_foreground_task: ^9.1.0
   android_alarm_manager_plus: ^5.0.0
 
 
@@ -308,7 +314,9 @@ flutter:
     - assets/images/icons/qibla/
     - assets/lang/
     - assets/images/campass/
-    - assets/
+    # كان هنا `- assets/` فيُضمّ كل ملف في جذر المجلد، ومنها
+    # hafs_smart_v8.json (7.6MB) الذي لا يقرؤه أي كود. database.db مذكورة
+    # صراحةً أعلاه.
 
     - assets/images/
     - .env
@@ -317,19 +325,20 @@ flutter:
 #    - assets/images/1024/
 #    - assets/images/font/quran/
     - assets/translations/
+    - assets/db_translations/
 
 
   fonts:
 
     - family: '0'
       fonts:
-        - asset: assets/fonts/rb/rb_regular.ttf
-        - asset: assets/fonts/rb/rb_bold.ttf
+        - asset: assets/fonts/RB/rb_regular.ttf
+        - asset: assets/fonts/RB/rb_bold.ttf
 
     - family: '1'
       fonts:
-        - asset: assets/fonts/janna/janna_regular.ttf
-        - asset: assets/fonts/janna/janna_bold.ttf
+        - asset: assets/fonts/Janna/janna_regular.ttf
+        - asset: assets/fonts/Janna/janna_bold.ttf
 
     - family: '2'
       fonts:
@@ -360,124 +369,11 @@ flutter:
     - family: '8'
       fonts:
         - asset: assets/fonts/Ruqaa.ttf
-    - family: quran
-      fonts:
-        - asset: assets/fonts/al_quran/HafsSmart_08.ttf
-    - family: me_quran
-      fonts:
-        - asset: assets/fonts/al_quran/me_quran.ttf
-
-    - family: '0'
-      fonts:
-        - asset: assets/fonts/rb/rb_regular.ttf
-        - asset: assets/fonts/rb/rb_bold.ttf
-
-    - family: '1'
-      fonts:
-        - asset: assets/fonts/janna/janna_regular.ttf
-        - asset: assets/fonts/janna/janna_bold.ttf
-
-    - family: '2'
-      fonts:
-        - asset: assets/fonts/al_quran/al_quran_regular.ttf
-        - asset: assets/fonts/al_quran/al_quran_bold.ttf
-
-    - family: '3'
-      fonts:
-        - asset: assets/fonts/uthman_taha_naskh/uthman_taha_naskh_regular.otf
-        - asset: assets/fonts/uthman_taha_naskh/uthman_taha_naskh_bold.otf
-
-    - family: '4'
-      fonts:
-        - asset: assets/fonts/DroidArabic.otf
-
-    - family: '5'
-      fonts:
-        - asset: assets/fonts/JF.otf
-
-    - family: '6'
-      fonts:
-        - asset: assets/fonts/noorehuda.ttf
-
-    - family: '7'
-      fonts:
-        - asset: assets/fonts/noorehira.ttf
-
-    - family: '8'
-      fonts:
-        - asset: assets/fonts/Ruqaa.ttf
-    - family: quran
-      fonts:
-        - asset: assets/fonts/al_quran/HafsSmart_08.ttf
-    - family: me_quran
-      fonts:
-        - asset: assets/fonts/al_quran/me_quran.ttf
-    - family: AmiriQuran
-      fonts:
-        - asset: assets/fonts/amiriQuran_regular.ttf
-
     - family: Taha
       fonts:
         - asset: assets/fonts/taha.ttf
-    - family: me
-      fonts:
-        - asset: assets/fonts/me_quran.ttf
-
-    - family: UthmanicHafs13
-      fonts:
-        - asset: assets/fonts/uthmanicHafs1_ver13.otf
-
-    - family: "qaloon"
-      fonts:
-        - asset: assets/fonts/qaloon.ttf
-
-    - family: "pdsm"
-      fonts:
-        - asset: assets/fonts/pdms.otf
     - family: cairo
       fonts:
         - asset: assets/fonts/Cairo-Regular.ttf
         - asset: assets/fonts/Cairo-Bold.ttf
           weight: 700
-    - family: "noor ehuda"
-      fonts:
-        - asset: assets/fonts/noorehuda-org.ttf
-
-    - family: "hafs-nastaleeq-ver10-org"
-      fonts:
-        - asset: assets/fonts/hafs-nastaleeq-ver10-org.otf
-    - family: "jomhuria-regular-full-org"
-      fonts:
-        - asset: assets/fonts/jomhuria-regular-full-org.ttf
-
-    - family: "mada-regular-full"
-      fonts:
-        - asset: assets/fonts/mada-regular-full.ttf
-    - family: "markazi-text-regular-full-org"
-      fonts:
-        - asset: assets/fonts/markazi-text-regular-full-org.ttf
-    - family: "noto-kufi-arabic-regular-full"
-      fonts:
-        - asset: assets/fonts/noto-kufi-arabic-regular-full.ttf
-
-    - family: "qumbul-v7-full"
-      fonts:
-        - asset: assets/fonts/qumbul-v7-full.ttf
-    - family: "qur-std"
-      fonts:
-        - asset: assets/fonts/qur-std.ttf
-
-    - family: "shorooq-full-org"
-      fonts:
-        - asset: assets/fonts/shorooq-full-org.ttf
-
-    - family: "arsura"
-      fonts:
-        - asset: assets/fonts/arsura.ttf
-
-    - family: "KFGQPC Uthmanic Script HAFS Regular"
-      fonts:
-        - asset: assets/fonts/kfgqpc_uthmanic_script_hafs_regular.otf
-    - family: "roboto"
-      fonts:
-        - asset: assets/fonts/roboto.ttf

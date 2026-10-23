@@ -1,6 +1,5 @@
 import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/core/utils/helpers/extensions.dart';
-import 'package:azkark/data/models/locationInfo.dart';
 import 'package:azkark/features/adhan/providers/adhan_provider.dart';
 import 'package:azkark/features/adhan/widgets/AdhanDateChanger.dart';
 import 'package:azkark/features/adhan/widgets/AdhanList.dart';
@@ -10,9 +9,8 @@ import 'package:provider/provider.dart';
 
 class AdhanAvailableScreen extends StatelessWidget {
   final PageController _adhanListPageController;
-  final LocationInfo _locationInfo;
 
-  AdhanAvailableScreen(this._locationInfo)
+  AdhanAvailableScreen()
       : _adhanListPageController = PageController(initialPage: centerPage);
 
   @override

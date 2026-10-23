@@ -2,7 +2,6 @@
 import 'package:azkark/core/res/theme_helper.dart';
 import 'package:azkark/features/adhan/providers/adhan_dependency_provider.dart';
 import 'package:azkark/features/adhan/providers/location_provider.dart';
-import 'package:azkark/features/home/get_data/get_data.dart';
 import 'package:azkark/features/home/widgets/pray_time/provider/location_provider.dart';
 import 'package:azkark/features/refactor/settings/presentation/settings_view_model.dart';
 import 'package:flutter/material.dart';
@@ -10,10 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mq_prayer_time/mq_prayer_time.dart';
 import 'package:mq_storage/mq_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/asmaallah_provider.dart';
-import 'providers/azkar_provider.dart';
 import 'providers/categories_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'providers/prayer_provider.dart';
@@ -54,13 +51,11 @@ class _GenerateMultiProviderState extends State<GenerateMultiProvider> {
         ChangeNotifierProvider<SettingsViewModel>(create: (context) => getIt<SettingsViewModel>()),
         ChangeNotifierProvider<CategoriesProvider>(create: (context) =>  getIt<CategoriesProvider>()),
         ChangeNotifierProvider<SebhaProvider>(create: (context) =>  getIt<SebhaProvider>()),
-        ChangeNotifierProvider<AzkarProvider>(create: (context) =>  getIt<AzkarProvider>()),
         ChangeNotifierProvider<FavoritesProvider>(create: (context) =>  getIt<FavoritesProvider>()),
         ChangeNotifierProvider<PrayerProvider>(create: (context) =>  getIt<PrayerProvider>()),
         ChangeNotifierProvider<AsmaAllahProvider>(create: (context) =>  getIt<AsmaAllahProvider>()),
         // ChangeNotifierProvider<GetDataProvider>(create: (context) =>  getIt<GetDataProvider>()),
 
-        ChangeNotifierProvider<ThemeHelper>(create: (context) => getIt<ThemeHelper>()),
         ChangeNotifierProvider<ThemeHelper>(create: (context) => getIt<ThemeHelper>()),
 
         //adan

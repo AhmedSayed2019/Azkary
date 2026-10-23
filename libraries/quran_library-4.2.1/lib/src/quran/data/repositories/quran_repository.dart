@@ -46,8 +46,10 @@ class QuranRepository {
   ///   An exception if there is an error while fetching the Surah data.
   Future<Map<String, dynamic>> getSurahs() async {
     const gzPath = 'packages/quran_library/assets/jsons/surahs_name.json.gz';
+    // cache: false — يُستدعى مرة واحدة (fetchSurahs) ويُحوَّل إلى نماذج.
     return _gzipJsonAssetService.loadJsonMap(
       gzPath,
+      cache: false,
     );
   }
 
@@ -64,8 +66,11 @@ class QuranRepository {
   /// ```
   Future<List<dynamic>> getQuranDataV3() async {
     const gzPath = 'packages/quran_library/assets/jsons/quranV4.json.gz';
+    // cache: false — يُحلَّل مرة واحدة إلى نماذج في QuranCtrl، فلا داعي
+    // لإبقاء نصه الخام (~5.5MB) في الذاكرة طوال عمر التطبيق. كاش القرص باقٍ.
     final jsonResponse = await _gzipJsonAssetService.loadJsonMap(
       gzPath,
+      cache: false,
     );
     List<dynamic> surahsJson = jsonResponse['data']['surahs'];
     return surahsJson;

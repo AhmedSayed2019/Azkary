@@ -51,8 +51,10 @@ class WordInfoCtrl extends GetxController
         _StorageConstants().isTenRecitations,
         idx,
       );
-      update(['word_info_data']);
-      QuranCtrl.instance.update();
+      // كل الأسطر تتأثر (تلوين الخلاف). خط CPAL الأحمر يُسجَّل كسولًا عند
+      // أول استخدام (getRedFontPath)، فلا حاجة لـ update() العام على QuranCtrl
+      // الذي كان يعيد بناء الشاشة كلها.
+      updateAllWordInfoPages();
     };
     tabController.addListener(_tabControllerListener!);
     super.onInit();
@@ -79,15 +81,48 @@ class WordInfoCtrl extends GetxController
     recitationsDataRevision++;
   }
 
-  void setSelectedWord(WordRef ref) {
+  /// صفحة (0-based) الكلمة المحددة حاليًا — لتحديث أسطرها وحدها عند المسح.
+  int? _selectedWordPageIndex;
+
+  /// معرّف تحديث بيانات الكلمات لأسطر صفحة واحدة.
+  static String pageUpdateId(int pageIndex) => 'word_info_page_$pageIndex';
+
+  /// تحديث كل مستمعي بيانات الكلمات (تغيّر تبويب القراءات، اكتمال التحميل،
+  /// وصول بيانات القراءات): 'word_info_data' + معرّفات كل الصفحات.
+  void updateAllWordInfoPages() {
+    update([
+      'word_info_data',
+      for (int i = 0; i < 604; i++) pageUpdateId(i),
+    ]);
+  }
+
+  /// تحديد كلمة. [pageIndex] (0-based) يحصر إعادة البناء في أسطر الصفحة
+  /// السابقة والجديدة بدل كل الأسطر (~75 سطرًا حيًّا) عند كل ضغطة.
+  void setSelectedWord(WordRef ref, {int? pageIndex}) {
+    final previousPage = _selectedWordPageIndex;
     selectedWordRef.value = ref;
-    update(['word_info_data']);
+    _selectedWordPageIndex = pageIndex;
+    if (pageIndex == null) {
+      updateAllWordInfoPages();
+      return;
+    }
+    update([
+      pageUpdateId(pageIndex),
+      if (previousPage != null && previousPage != pageIndex)
+        pageUpdateId(previousPage),
+    ]);
   }
 
   void clearSelectedWord() {
     if (selectedWordRef.value == null) return;
+    final previousPage = _selectedWordPageIndex;
     selectedWordRef.value = null;
-    update(['word_info_data']);
+    _selectedWordPageIndex = null;
+    if (previousPage == null) {
+      updateAllWordInfoPages();
+    } else {
+      update([pageUpdateId(previousPage)]);
+    }
   }
 
   bool isKindAvailable(WordInfoKind kind) => _repository.isKindDownloaded(kind);
@@ -131,7 +166,8 @@ class WordInfoCtrl extends GetxController
       isDownloading.value = false;
       downloadingKind.value = null;
       downloadProgress.value = 100.0;
-      update(['word_info_download', 'word_info_data']);
+      update(['word_info_download']);
+      updateAllWordInfoPages();
     } catch (e) {
       isPreparingDownload.value = false;
       isDownloading.value = false;
@@ -146,7 +182,7 @@ class WordInfoCtrl extends GetxController
     final didLoad = await _repository.prewarmRecitationsSurah(surahNumber);
     if (!didLoad) return;
     _bumpRecitationsRevision();
-    update(['word_info_data']);
+    updateAllWordInfoPages();
   }
 
   Future<void> prewarmRecitationsSurahs(Iterable<int> surahNumbers) async {
@@ -159,7 +195,7 @@ class WordInfoCtrl extends GetxController
     if (didPrewarmAny) {
       log('Prewarming recitations for surahs: $unique', name: 'WordInfoCtrl');
       _bumpRecitationsRevision();
-      update(['word_info_data']);
+      updateAllWordInfoPages();
     }
   }
 

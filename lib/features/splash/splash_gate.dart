@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 const String kSplashBackgroundAsset =
-    'assets/images/background/splashhome_bacground_image.png';
+    'assets/images/background/splashhome_bacground_image.jpg';
 const String kSplashLogoAsset = 'assets/images/app/logo.png';
 
 /// أخضر مطابق لأعلى صورة الخلفية — يملأ الشاشة قبل فك ترميز الصورة
@@ -43,9 +43,11 @@ class _SplashGateState extends State<SplashGate>
   void initState() {
     super.initState();
 
+    // مدة ثابتة يدفعها المستخدم مع كل فتح للتطبيق — ثانيتان كانتا تجعلانه
+    // يبدو بطيئًا. الفترات أدناه نسبية فتنكمش الحركة كلها معها.
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1100),
     );
 
     _logoFade = CurvedAnimation(

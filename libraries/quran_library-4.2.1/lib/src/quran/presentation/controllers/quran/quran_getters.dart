@@ -64,20 +64,12 @@ extension QuranGetters on QuranCtrl {
     Get.forceAppUpdate();
 
     if (idx == 0 && !QuranFontsService.allLoaded) {
-      // خطوط التجويد: تحميل كسول — الصفحات القريبة أولاً ثم البقية في الخلفية
+      // خطوط التجويد: تحميل كسول لنافذة صغيرة حول الصفحة الحالية فقط؛ بقية
+      // الصفحات تُحمّل عند التقليب إليها. تحميل الـ604 كلها في الخلفية كان
+      // يعيد تخطيط كل نصوص التطبيق لدقائق ويستهلك مئات الميغابايت.
       final currentPage = lastPage.clamp(1, 604);
-      QuranFontsService.ensurePagesLoaded(currentPage, radius: 10).then((_) {
-        // update();
-        // update(['_pageViewBuild']);
-        // تحميل بقية الصفحات في الخلفية
-        QuranFontsService.loadRemainingInBackground(
-          startNearPage: currentPage,
-          progress: state.fontsLoadProgress,
-          ready: state.fontsReady,
-        ).then((_) {
-          // update();
-          update(['_pageViewBuild']);
-        });
+      QuranFontsService.ensurePagesLoaded(currentPage, radius: 3).then((_) {
+        update(['_pageViewBuild']);
       });
     }
   }
@@ -134,7 +126,16 @@ extension QuranGetters on QuranCtrl {
 
   /// get page number by ayah unique number
 
-  int getPageNumberByAyahUqNumber(int ayahUnequeNumber) => state.pages
+  int getPageNumberByAyahUqNumber(int ayahUnequeNumber) {
+    // O(1) عبر فهرس الآيات: الصفحات مجمّعة حسب ayah.page.
+    final ayah = _ayahByUqCache[ayahUnequeNumber];
+    if (ayah != null && state.pages.length == 604) {
+      return (ayah.page >= 1 && ayah.page <= 604) ? ayah.page : 1;
+    }
+    return _getPageNumberByAyahUqNumberSlow(ayahUnequeNumber);
+  }
+
+  int _getPageNumberByAyahUqNumberSlow(int ayahUnequeNumber) => state.pages
           .firstWhere(
               (p) =>
                   p.isEmpty == false &&
@@ -180,10 +181,17 @@ extension QuranGetters on QuranCtrl {
 
   /// will return the surah number of the first ayahs..
   /// even if the page contains another surah.
-  int getSurahNumberFromPage(int pageNumber) => surahs
-      .firstWhere(
-          (s) => s.ayahs.firstWhereOrNull((a) => a.page == pageNumber) != null)
-      .surahNumber;
+  int getSurahNumberFromPage(int pageNumber) {
+    _ensurePageLookups();
+    if (pageNumber >= 1 && pageNumber <= _surahsByPage.length) {
+      final onPage = _surahsByPage[pageNumber - 1];
+      if (onPage.isNotEmpty) return onPage.first.surahNumber;
+    }
+    return surahs
+        .firstWhere((s) =>
+            s.ayahs.firstWhereOrNull((a) => a.page == pageNumber) != null)
+        .surahNumber;
+  }
 
   /// Retrieves a list of Surahs present on a specific page.
   ///
@@ -194,24 +202,9 @@ extension QuranGetters on QuranCtrl {
   ///   `List<SurahModel>`: A list of SurahModel representing the Surahs on the specified page.
   List<SurahModel> getSurahsByPageNumber(int pageNumber) {
     if (getPageAyahsByIndex(pageNumber - 1).isEmpty) return [];
-    List<AyahModel> pageAyahs = getPageAyahsByIndex(pageNumber - 1);
-    List<SurahModel> surahsOnPage = [];
-    for (AyahModel ayah in pageAyahs) {
-      SurahModel surah = surahs.firstWhere(
-          (s) => s.ayahs.any((a) => a.ayahUQNumber == ayah.ayahUQNumber),
-          orElse: () => SurahModel(
-                surahNumber: 1,
-                arabicName: 'Unknown',
-                englishName: 'Unknown',
-                revelationType: 'Unknown',
-                ayahs: [],
-              ));
-      if (!surahsOnPage.any((s) => s.surahNumber == surah.surahNumber) &&
-          surah.surahNumber != -1) {
-        surahsOnPage.add(surah);
-      }
-    }
-    return surahsOnPage;
+    // O(1): محسوبة مسبقًا لكل صفحة (نسخة جديدة كما كان سابقًا).
+    _ensurePageLookups();
+    return List<SurahModel>.of(_surahsByPage[pageNumber - 1]);
   }
 
   /// Retrieves the current Surah data for a given page number.
@@ -226,10 +219,8 @@ extension QuranGetters on QuranCtrl {
   ///   `SurahModel`: The SurahModel representing the Surah of the first Ayah on the specified page.
   SurahModel getCurrentSurahByPageNumber(int pageNumber) {
     final firstAyah = getPageAyahsByIndex(pageNumber - 1).first;
-    return surahs.firstWhere(
-      (s) => s.ayahs.any((a) => a.ayahUQNumber == firstAyah.ayahUQNumber),
-      orElse: () => surahs.first,
-    );
+    _ensurePageLookups();
+    return _surahByAyahUq[firstAyah.ayahUQNumber] ?? surahs.first;
   }
 
   /// Retrieves the Surah data for a given Ayah.
@@ -242,10 +233,10 @@ extension QuranGetters on QuranCtrl {
   ///
   /// Returns:
   ///   `SurahModel`: The SurahModel representing the Surah of the given Ayah.
-  SurahModel getSurahDataByAyah(AyahModel ayah) => surahs.firstWhere(
-        (s) => s.ayahs.any((a) => a.ayahUQNumber == ayah.ayahUQNumber),
-        orElse: () => surahs.first,
-      );
+  SurahModel getSurahDataByAyah(AyahModel ayah) {
+    _ensurePageLookups();
+    return _surahByAyahUq[ayah.ayahUQNumber] ?? surahs.first;
+  }
 
   /// Retrieves the Surah data for a given unique Ayah number.
   ///
@@ -259,8 +250,11 @@ extension QuranGetters on QuranCtrl {
   /// Returns:
   ///   `SurahModel`: The SurahModel representing the Surah containing
   ///   the Ayah with the given unique number.
-  SurahModel getSurahDataByAyahUQ(int ayah) =>
-      surahs.firstWhere((s) => s.ayahs.any((a) => a.ayahUQNumber == ayah));
+  SurahModel getSurahDataByAyahUQ(int ayah) {
+    _ensurePageLookups();
+    return _surahByAyahUq[ayah] ??
+        surahs.firstWhere((s) => s.ayahs.any((a) => a.ayahUQNumber == ayah));
+  }
 
   /// Retrieves the Juz data for a given page number.
   ///
@@ -275,6 +269,13 @@ extension QuranGetters on QuranCtrl {
   ///   Ayah on the specified page. If no Ayah is found, an empty AyahModel
   ///   is returned.
   AyahModel getJuzByPage(int page) {
+    // state.pages مجمّعة بترتيب allAyahs، فأول آية في الصفحة هي نفسها أول
+    // تطابق كان firstWhere يجده — O(1) بدل مسح 6236 آية.
+    if (state.pages.length == 604) {
+      if (page < 0 || page >= 604) return AyahModel.empty();
+      final pageAyahs = state.pages[page];
+      return pageAyahs.isEmpty ? AyahModel.empty() : pageAyahs.first;
+    }
     return state.allAyahs.firstWhere(
       (a) => a.page == page + 1,
       orElse: () => AyahModel.empty(),
@@ -314,21 +315,21 @@ extension QuranGetters on QuranCtrl {
   /// Returns:
   ///   `String`: A string indicating the Hizb quarter of the given page number.
   String getHizbQuarterDisplayByPage(int pageNumber) {
-    final List<AyahModel> currentPageAyahs =
-        state.allAyahs.where((ayah) => ayah.page == pageNumber).toList();
-    if (currentPageAyahs.isEmpty) return "";
+    _ensurePageLookups();
+    if (pageNumber < 1 || pageNumber > _maxHizbQuarterByPage.length) {
+      return "";
+    }
 
-    // Find the highest Hizb quarter on the current page
-    int? currentMaxHizbQuarter =
-        currentPageAyahs.map((ayah) => ayah.hizb!).reduce(math.max);
+    // Highest Hizb quarter on the current page (precomputed per page).
+    final int? currentMaxHizbQuarter = _maxHizbQuarterByPage[pageNumber - 1];
+    if (currentMaxHizbQuarter == null) return "";
 
-    // Store/update the highest Hizb quarter for this page
-    state.pageToHizbQuarterMap[pageNumber] = currentMaxHizbQuarter;
-
-    // For displaying the Hizb quarter, check if this is a new Hizb quarter different from the previous page's Hizb quarter
+    // يُعرض الربع إن اختلف عن ربع الصفحة السابقة الفعلي. سابقًا كانت المقارنة
+    // مع خريطة تُملأ أثناء البناء، فتعتمد النتيجة على ترتيب زيارة الصفحات
+    // (صفحة سابقة لم تُبنَ = عرض دائمًا).
     // For the first page, there is no "previous page" to compare, so display its Hizb quarter
     if (pageNumber == 1 ||
-        state.pageToHizbQuarterMap[pageNumber - 1] != currentMaxHizbQuarter) {
+        _maxHizbQuarterByPage[pageNumber - 2] != currentMaxHizbQuarter) {
       int hizbNumber = ((currentMaxHizbQuarter - 1) ~/ 4) + 1;
       int quarterPosition = (currentMaxHizbQuarter - 1) % 4;
 
@@ -468,21 +469,20 @@ extension QuranGetters on QuranCtrl {
   void showControlToggle({bool enableMultiSelect = false}) {
     state.isShowMenu.value = false;
     if (!enableMultiSelect) {
-      if (AudioCtrl.instance.state.isPlaying.value) {
+      // لا تُنشئ AudioCtrl (وتهيئته الثقيلة) لمجرد نقرة: غير المُنشأ لا يشغّل.
+      final isPlaying = Get.isRegistered<AudioCtrl>() &&
+          AudioCtrl.instance.state.isPlaying.value;
+      // معرّفات الصفحات 0-based بينما currentPageNumber يبدأ من 1.
+      final currentPageId = 'selection_page_${state.currentPageNumber.value - 1}';
+      if (isPlaying) {
         isShowControl.toggle();
-        update([
-          'isShowControl',
-          'selection_page_${state.currentPageNumber.value}'
-        ]);
+        update(['isShowControl', currentPageId]);
       } else if (selectedAyahsByUnequeNumber.isNotEmpty) {
         clearSelection();
       } else {
-        clearSelection();
+        // التحديد فارغ هنا، فلا داعي لـ clearSelection().
         isShowControl.toggle();
-        update([
-          'isShowControl',
-          'selection_page_${state.currentPageNumber.value}'
-        ]);
+        update(['isShowControl', currentPageId]);
       }
     }
   }

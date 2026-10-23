@@ -471,12 +471,18 @@ class QuranLibraryScreen extends StatelessWidget {
                               _onScaleUpdate(details, quranCtrl);
                             },
                             onScaleEnd: (_) {
+                              // isScaling (Rx) يعيد بناء الـ Obx أدناه وحده؛
+                              // لا حاجة لـ update() العام لإعادة بناء الشاشة.
                               if (quranCtrl.state.isScaling.value) {
                                 quranCtrl.state.isScaling.value = false;
-                                quranCtrl.update();
                               }
                             },
                             child: Obx(() {
+                              // اشتراك صريح: physics كل أوضاع العرض تعتمد على
+                              // isScaling، فتغيّره يعيد بناء هذا الجزء فقط.
+                              // ignore: unused_local_variable
+                              final isScaling =
+                                  quranCtrl.state.isScaling.value;
                               // تحقق من تفعيل السكرول التلقائي أولاً
                               if (AutoScrollCtrl
                                   .instance.state.isActive.value) {
@@ -685,14 +691,14 @@ class QuranLibraryScreen extends StatelessWidget {
 
   void _onScaleUpdate(ScaleUpdateDetails details, QuranCtrl quranCtrl) {
     // عند وجود إصبعين أو أكثر نعتبرها عملية تكبير/تصغير ونوقف سكرول الصفحات
+    // isScaling (Rx) يعيد بناء Obx الصفحات وحده؛ update() العام كان يعيد
+    // بناء الشاشة كلها مع بداية/نهاية كل تكبير.
     if (details.pointerCount >= 2 && quranCtrl.state.isScaling.value == false) {
       quranCtrl.state.isScaling.value = true;
-      quranCtrl.update();
     } else if (details.pointerCount < 2 &&
         quranCtrl.state.isScaling.value == true) {
       // عاد المستخدم لإصبع واحد -> أعِد تفعيل السحب
       quranCtrl.state.isScaling.value = false;
-      quranCtrl.update();
     }
     quranCtrl.updateTextScale(details);
   }
@@ -783,15 +789,24 @@ class QuranLibraryScreen extends StatelessWidget {
         // لا تلمس الـ Overlay إذا كان المستخدم يدير الحدث بنفسه
         onPageChanged!(pageIndex);
       }
+      // الخفيف فورًا (مؤشر الصفحة يبقى سريع الاستجابة أثناء السحب)...
       quranCtrl.state.currentPageNumber.value = pageIndex + 1;
-      quranCtrl.saveLastPage(pageIndex + 1);
+      quranCtrl.lastPage = pageIndex + 1;
 
-      if (quranCtrl.state.fontsSelected.value == 0) {
-        // جدولة تحضير QPC v4 بعد خمول حتى لا ينافس أثناء التقليب.
-        quranCtrl.scheduleQpcV4AllPagesPrebuild();
-        // تحميل كسول: تأكد من جاهزية الصفحات القريبة من الصفحة الحالية
-        // QuranFontsService.ensurePagesLoaded(pageIndex + 1, radius: 3);
-      }
+      // ...والثقيل بعد توقف التمرير: onPageChanged يُطلق منتصف السحب، والحفظ
+      // وتسجيل الخطوط وبناء الكتل كانت تنافس إطارات السحب نفسها.
+      quranCtrl.runAfterPageSettled(() {
+        final page = quranCtrl.state.currentPageNumber.value;
+        quranCtrl.saveLastPage(page);
+
+        if (quranCtrl.state.fontsSelected.value == 0) {
+          // تحضير كتل QPC v4 للصفحة الحالية وجاراتها (±2) فقط.
+          quranCtrl.prewarmQpcV4Pages(page - 1);
+          // تحميل كسول: نافذة خطوط صغيرة حول الصفحة الحالية بدل تحميل
+          // الصفحات الـ604 كلها في الخلفية.
+          QuranFontsService.ensurePagesLoaded(page, radius: 3);
+        }
+      });
     });
   }
 }

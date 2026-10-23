@@ -36,6 +36,10 @@ class PatchedPreloadPageView extends StatefulWidget {
   /// عند false، لا يُضاف هامش قبل أول عنصر وبعد آخر عنصر.
   final bool padEnds;
 
+  /// هل يمرّر أي [PatchedPreloadPageView] الآن (سحب أو حركة أو ارتداد)؟
+  static bool get isAnyScrolling =>
+      _PatchedPreloadPageViewState._scrolling.isNotEmpty;
+
   @override
   State<PatchedPreloadPageView> createState() => _PatchedPreloadPageViewState();
 }
@@ -43,10 +47,23 @@ class PatchedPreloadPageView extends StatefulWidget {
 class _PatchedPreloadPageViewState extends State<PatchedPreloadPageView> {
   int _lastReportedPage = 0;
 
+  /// نُسخ هذا الـ PageView التي تمرّر الآن (سحب أو حركة/ارتداد).
+  ///
+  /// [onPageChanged] يُطلق أثناء السحب (لإبقاء مؤشر الصفحة سريع الاستجابة)،
+  /// أما العمل الثقيل (الحفظ وتحميل الخطوط وتحضير الكتل) فينتظر توقف التمرير
+  /// عبر [PatchedPreloadPageView.isAnyScrolling].
+  static final Set<_PatchedPreloadPageViewState> _scrolling = {};
+
   @override
   void initState() {
     super.initState();
     _lastReportedPage = widget.controller.initialPage;
+  }
+
+  @override
+  void dispose() {
+    _scrolling.remove(this);
+    super.dispose();
   }
 
   AxisDirection _getDirection(BuildContext context) {
@@ -75,6 +92,13 @@ class _PatchedPreloadPageViewState extends State<PatchedPreloadPageView> {
 
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
+        if (notification.depth == 0) {
+          if (notification is ScrollStartNotification) {
+            _scrolling.add(this);
+          } else if (notification is ScrollEndNotification) {
+            _scrolling.remove(this);
+          }
+        }
         if (notification.depth == 0 &&
             widget.onPageChanged != null &&
             notification is ScrollUpdateNotification) {

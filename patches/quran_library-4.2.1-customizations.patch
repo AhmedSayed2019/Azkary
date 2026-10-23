@@ -20,10 +20,18 @@ index dc07de7..9ef8c77 100644
  # https://dart.dev/tools/analysis
 \ No newline at end of file
 diff --git a/libraries/quran_library-4.2.1/lib/quran.dart b/libraries/quran_library-4.2.1/lib/quran.dart
-index ca9b5f8..271818d 100644
+index ca9b5f8..d5d8c4d 100644
 --- a/libraries/quran_library-4.2.1/lib/quran.dart
 +++ b/libraries/quran_library-4.2.1/lib/quran.dart
-@@ -117,6 +117,7 @@ part 'src/quran/presentation/widgets/download_fonts_page/page_build.dart';
+@@ -1,6 +1,7 @@
+ import 'dart:async' show Completer, StreamSubscription, Timer;
+ import 'dart:convert' show jsonDecode, jsonEncode;
+ import 'dart:developer' show log;
++import 'dart:isolate' show Isolate;
+ import 'dart:math' as math show max, min;
+ import 'dart:ui';
+ 
+@@ -117,6 +118,7 @@ part 'src/quran/presentation/widgets/download_fonts_page/page_build.dart';
  part 'src/quran/presentation/widgets/download_fonts_page/qpc_v4_flowing_text.dart';
  part 'src/quran/presentation/widgets/download_fonts_page/quran_fonts_page.dart';
  part 'src/quran/presentation/widgets/download_fonts_page/rich_text_build.dart';
@@ -51,6 +59,30 @@ index 7389a9f..49b2ebd 100644
  part 'widgets/ayah_skip_next.dart';
  part 'widgets/ayah_skip_previouse.dart';
  part 'widgets/package_seek_bar.dart';
+diff --git a/libraries/quran_library-4.2.1/lib/src/audio/controller/audio_ctrl.dart b/libraries/quran_library-4.2.1/lib/src/audio/controller/audio_ctrl.dart
+index 63eaccd..eafbdfd 100644
+--- a/libraries/quran_library-4.2.1/lib/src/audio/controller/audio_ctrl.dart
++++ b/libraries/quran_library-4.2.1/lib/src/audio/controller/audio_ctrl.dart
+@@ -137,11 +137,17 @@ class AudioCtrl extends GetxController {
+     try {
+       await AudioService.init(
+         builder: () => AudioHandler.instance,
++        // `ongoing: false` + `stopForegroundOnPause: false` معًا لا صدفةً:
++        // AudioServiceConfig يؤكّد أن `ongoing` يستلزم `stopForegroundOnPause`،
++        // والتركيبة السابقة (كلاهما true) كانت تُنزل الخدمة من المقدمة عند
++        // الإيقاف المؤقت فيختفي المشغّل من مركز الإشعارات ويصير استئناف
++        // التلاوة مستحيلًا من خارج التطبيق. الآن يبقى الإشعار ظاهرًا أثناء
++        // الإيقاف المؤقت، ويظل قابلًا للمسح بالسحب حين ينتهي المستخدم منه.
+         config: const AudioServiceConfig(
+           androidNotificationChannelId: 'com.alheekmah.quranPackage.audio',
+           androidNotificationChannelName: 'Audio playback',
+-          androidNotificationOngoing: true,
+-          androidStopForegroundOnPause: true,
++          androidNotificationOngoing: false,
++          androidStopForegroundOnPause: false,
+         ),
+       );
+       state.audioServiceInitialized.value = true;
 diff --git a/libraries/quran_library-4.2.1/lib/src/audio/controller/extensions/ayah_repeat_ctrl_extension.dart b/libraries/quran_library-4.2.1/lib/src/audio/controller/extensions/ayah_repeat_ctrl_extension.dart
 new file mode 100644
 index 0000000..5664442
@@ -1060,6 +1092,110 @@ index 0000000..22234f6
 +    );
 +  }
 +}
+diff --git a/libraries/quran_library-4.2.1/lib/src/flutter_quran_utils.dart b/libraries/quran_library-4.2.1/lib/src/flutter_quran_utils.dart
+index 1085e40..5d4151f 100644
+--- a/libraries/quran_library-4.2.1/lib/src/flutter_quran_utils.dart
++++ b/libraries/quran_library-4.2.1/lib/src/flutter_quran_utils.dart
+@@ -114,16 +114,17 @@ class QuranLibrary {
+     //   QuranCtrl.instance.deleteOldFonts();
+     // }
+ 
+-    // Load data in parallel
+-    final futures = <Future<void>>[
+-      QuranCtrl.instance.loadQuranDataV3(),
+-      QuranCtrl.instance.fetchSurahs(),
+-    ];
+-
+-    await Future.wait<void>(futures);
+-
+-    /// must be initilized after QuranCtrl, because it uses it
+-    AudioCtrl.instance;
++    // تحميل بيانات المصحف عبر Future واحد مشترك: QuranCtrl.onInit يطلق
++    // ensureCoreDataLoaded بالفعل، واستدعاء loadQuranDataV3/fetchSurahs
++    // مباشرة هنا كان يسابقه فيُفك JSON المصحف مرتين وتتضاعف allAyahs.
++    // Load core data through the single shared future (QuranCtrl.onInit
++    // already starts it); calling the loaders directly here raced it.
++    await QuranCtrl.instance.ensureCoreDataLoaded();
++
++    // AudioCtrl لا يُنشأ هنا: AudioCtrl.instance ينشئه كسولًا عند أول وصول.
++    // إنشاؤه عند التهيئة كان يفحص وجود ملفات 6236 آية ويشغّل AudioService
++    // مع كل تشغيل للتطبيق حتى لمن لا يستمع أبدًا.
++    // AudioCtrl is created lazily by its `instance` getter on first use.
+ 
+     // تسجيل الخطوط المحفوظة دفعة واحدة في الخلفية إن كانت متاحة
+     // if (kIsWeb) {
+diff --git a/libraries/quran_library-4.2.1/lib/src/pages/quran_library_screen.dart b/libraries/quran_library-4.2.1/lib/src/pages/quran_library_screen.dart
+index 8150d08..b07b0f5 100644
+--- a/libraries/quran_library-4.2.1/lib/src/pages/quran_library_screen.dart
++++ b/libraries/quran_library-4.2.1/lib/src/pages/quran_library_screen.dart
+@@ -787,10 +787,11 @@ class QuranLibraryScreen extends StatelessWidget {
+       quranCtrl.saveLastPage(pageIndex + 1);
+ 
+       if (quranCtrl.state.fontsSelected.value == 0) {
+-        // جدولة تحضير QPC v4 بعد خمول حتى لا ينافس أثناء التقليب.
++        // تحضير كتل QPC v4 للصفحة الحالية وجاراتها (±2) فقط.
+         quranCtrl.scheduleQpcV4AllPagesPrebuild();
+-        // تحميل كسول: تأكد من جاهزية الصفحات القريبة من الصفحة الحالية
+-        // QuranFontsService.ensurePagesLoaded(pageIndex + 1, radius: 3);
++        // تحميل كسول: نافذة خطوط صغيرة حول الصفحة الحالية بدل تحميل
++        // الصفحات الـ604 كلها في الخلفية.
++        QuranFontsService.ensurePagesLoaded(pageIndex + 1, radius: 3);
+       }
+     });
+   }
+diff --git a/libraries/quran_library-4.2.1/lib/src/pages/surah_display_screen.dart b/libraries/quran_library-4.2.1/lib/src/pages/surah_display_screen.dart
+index 372bc55..75ac7b3 100644
+--- a/libraries/quran_library-4.2.1/lib/src/pages/surah_display_screen.dart
++++ b/libraries/quran_library-4.2.1/lib/src/pages/surah_display_screen.dart
+@@ -515,19 +515,15 @@ class SurahDisplayScreen extends StatelessWidget {
+     SurahCtrl surahCtrl,
+   ) {
+     final realPageIndex = surahCtrl.getRealQuranPageNumber(pageIndex);
+-    QuranFontsService.ensurePagesLoaded(realPageIndex, radius: 10).then((_) {
+-      // update();
+-      // update(['_pageViewBuild']);
+-      // تحميل بقية الصفحات في الخلفية
+-      QuranFontsService.loadRemainingInBackground(
+-        startNearPage: realPageIndex,
+-        progress: QuranCtrl.instance.state.fontsLoadProgress,
+-        ready: QuranCtrl.instance.state.fontsReady,
+-      ).then((_) {
+-        // update();
+-        surahCtrl.update(['_pageViewBuild']);
++    // نافذة خطوط صغيرة حول الصفحة فقط، ولا شيء إن كانت جاهزة: الاستدعاء
++    // يقع داخل build، والتحديث غير المشروط بعده يعيد البناء بلا نهاية.
++    if (!QuranFontsService.isPageReady(realPageIndex)) {
++      QuranFontsService.ensurePagesLoaded(realPageIndex, radius: 3).then((_) {
++        if (QuranFontsService.isPageReady(realPageIndex)) {
++          surahCtrl.update(['_pageViewBuild']);
++        }
+       });
+-    });
++    }
+ 
+     return Container(
+       padding: EdgeInsets.symmetric(
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/core/services/quran_fonts_service.dart b/libraries/quran_library-4.2.1/lib/src/quran/core/services/quran_fonts_service.dart
+index a9fae47..0405c0a 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/core/services/quran_fonts_service.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/core/services/quran_fonts_service.dart
+@@ -246,10 +246,12 @@ class QuranFontsService {
+   /// فك ضغط ملف `.ttf.gz` من الـ assets.
+   static Future<Uint8List> _decompressFromAsset(int page) async {
+     final data = await rootBundle.load(_assetPath(page));
+-    final gzBytes =
+-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+-    final decompressed = const GZipDecoder().decodeBytes(gzBytes);
+-    return Uint8List.fromList(decompressed);
++    // نسخة مستقلة (لا view على ذاكرة الـ asset) لتُرسل إلى العزلة بأمان.
++    final gzBytes = Uint8List.fromList(
++        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
++    // فك الضغط Dart خالص (~270KB لكل صفحة) — خارج عزلة الواجهة.
++    return Isolate.run(
++        () => Uint8List.fromList(const GZipDecoder().decodeBytes(gzBytes)));
+   }
+ 
+   // ---------------------------------------------------------------------------
 diff --git a/libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_style.dart b/libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_style.dart
 index c15fe78..6961f9b 100644
 --- a/libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_style.dart
@@ -1120,6 +1256,183 @@ index c15fe78..6961f9b 100644
      );
    }
  }
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/data/qpc_v4/qpc_v4_assets_loader.dart b/libraries/quran_library-4.2.1/lib/src/quran/data/qpc_v4/qpc_v4_assets_loader.dart
+index cbd30b2..30fafc6 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/data/qpc_v4/qpc_v4_assets_loader.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/data/qpc_v4/qpc_v4_assets_loader.dart
+@@ -18,8 +18,11 @@ class QpcV4AssetsLoader {
+ 
+   static Future<QpcV4AssetsStore> load() async {
+     const jsonService = GzipJsonAssetService();
++    // cache: false — الملفان (~15MB نصًا) يُحلَّلان مرة واحدة إلى المخزن
++    // أدناه، فلا داعي لإبقاء نصهما الخام في الذاكرة. كاش القرص باقٍ.
+     final ayahInfoDecoded = await jsonService.loadJsonDynamic(
+       _ayahInfoGzPath,
++      cache: false,
+     );
+     if (ayahInfoDecoded is! List) {
+       throw const FormatException('qpc_v4_ayah_info.json must be a JSON List');
+@@ -38,6 +41,7 @@ class QpcV4AssetsLoader {
+ 
+     final wordsDecoded = await jsonService.loadJsonDynamic(
+       _wordsGzPath,
++      cache: false,
+     );
+     if (wordsDecoded is! Map) {
+       throw const FormatException('qpc-v4.json must be a JSON Map');
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/data/repositories/quran_repository.dart b/libraries/quran_library-4.2.1/lib/src/quran/data/repositories/quran_repository.dart
+index 912e4de..63829fd 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/data/repositories/quran_repository.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/data/repositories/quran_repository.dart
+@@ -46,8 +46,10 @@ class QuranRepository {
+   ///   An exception if there is an error while fetching the Surah data.
+   Future<Map<String, dynamic>> getSurahs() async {
+     const gzPath = 'packages/quran_library/assets/jsons/surahs_name.json.gz';
++    // cache: false — يُستدعى مرة واحدة (fetchSurahs) ويُحوَّل إلى نماذج.
+     return _gzipJsonAssetService.loadJsonMap(
+       gzPath,
++      cache: false,
+     );
+   }
+ 
+@@ -64,8 +66,11 @@ class QuranRepository {
+   /// ```
+   Future<List<dynamic>> getQuranDataV3() async {
+     const gzPath = 'packages/quran_library/assets/jsons/quranV4.json.gz';
++    // cache: false — يُحلَّل مرة واحدة إلى نماذج في QuranCtrl، فلا داعي
++    // لإبقاء نصه الخام (~5.5MB) في الذاكرة طوال عمر التطبيق. كاش القرص باقٍ.
+     final jsonResponse = await _gzipJsonAssetService.loadJsonMap(
+       gzPath,
++      cache: false,
+     );
+     List<dynamic> surahsJson = jsonResponse['data']['surahs'];
+     return surahsJson;
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_ctrl.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_ctrl.dart
+index 2e96b53..aac9cb6 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_ctrl.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_ctrl.dart
+@@ -18,7 +18,6 @@ class QuranCtrl extends GetxController {
+   QpcV4PageRenderer? _qpcV4PageRenderer;
+   final Map<int, List<QpcV4RenderBlock>> _qpcV4BlocksByPage = {};
+   Future<void>? _qpcV4PrebuildAllFuture;
+-  bool _qpcV4PrebuildStarted = false;
+   Timer? _qpcV4IdlePrebuildTimer;
+ 
+   bool get isQpcV4AllPagesPrebuilt => _qpcV4BlocksByPage.length >= 604;
+@@ -189,6 +188,9 @@ class QuranCtrl extends GetxController {
+     }
+     if (surahs.isEmpty) {
+       List<dynamic> surahsJson = await _quranRepository.getQuranDataV3();
++      // مستدعٍ آخر (ensureCoreDataLoaded أو AudioCtrl) ربما أكمل التحميل
++      // أثناء الانتظار — لا نُضيف الآيات والصفحات مرتين.
++      if (surahs.isNotEmpty) return;
+       surahs =
+           surahsJson.map((s) => SurahModel.fromDownloadedFontsJson(s)).toList();
+ 
+@@ -207,19 +209,22 @@ class QuranCtrl extends GetxController {
+ 
+       // مزامنة قائمة الآيات على مستوى الـ instance
+       ayahs.addAll(state.allAyahs);
+-      List.generate(604, (pageIndex) {
+-        state.pages.add(state.allAyahs
+-            .where((ayah) => ayah.page == pageIndex + 1)
+-            .toList());
+-      });
++      // تجميع الآيات حسب الصفحة في مرور واحد بدل 604 مرورًا على 6236 آية.
++      // الترتيب داخل الصفحة هو ترتيب allAyahs كما كان مع where().
++      final ayahsByPage =
++          List<List<AyahModel>>.generate(604, (_) => <AyahModel>[]);
++      for (final ayah in state.allAyahs) {
++        if (ayah.page >= 1 && ayah.page <= 604) {
++          ayahsByPage[ayah.page - 1].add(ayah);
++        }
++      }
++      state.pages.addAll(ayahsByPage);
+       state.isQuranLoaded = true;
+       _buildAyahUqIndexIfNeeded();
+ 
+-      // تحميل كسول لملفات QPC v4 فقط عند تفعيل الخط المحمّل (code v4)
+-      if (isQpcV4Enabled) {
+-        // لا ننتظر هنا لتجنب إبطاء init في الحالات الأخرى.
+-        Future(() => _ensureQpcV4AssetsLoaded());
+-      }
++      // ملفات QPC v4 (~15MB JSON) لا تُحمّل هنا: أول بناء لصفحة يطلبها عبر
++      // getQpcV4BlocksForPageSync → prewarmQpcV4Pages → _ensureQpcV4AssetsLoaded.
++      // تحميلها عند كل تهيئة كان يجمّد الرئيسية لحظة ظهورها.
+       // log('Pages Length: ${state.pages.length}', name: 'Quran Controller');
+     }
+   }
+@@ -294,7 +299,6 @@ class QuranCtrl extends GetxController {
+ 
+     _qpcV4PrebuildAllFuture = () async {
+       if (_qpcV4BlocksByPage.length >= 604) return;
+-      _qpcV4PrebuildStarted = true;
+ 
+       // نبني بزمن-ميزانية صغيرة مع تأخير بسيط لتقليل منافسة الـ UI أثناء الاستخدام.
+       const totalPages = 604;
+@@ -322,21 +326,21 @@ class QuranCtrl extends GetxController {
+     await _qpcV4PrebuildAllFuture;
+   }
+ 
+-  /// جدولة تحضير كل صفحات QPC v4 بعد فترة خمول.
+-  /// الهدف: منع منافسة CPU أثناء تقليب الصفحات.
++  /// كانت تجدول بناء كتل الصفحات الـ604 كلها على عزلة الواجهة بعد ثانيتين
++  /// من الخمول، فتنافس التقليب لثوانٍ. صارت تحضّر الصفحة الحالية وجاراتها
++  /// (±2) فقط بعد مهلة قصيرة؛ أي صفحة أبعد تُبنى عند طلبها عبر
++  /// [getQpcV4BlocksForPageSync]. [ensureQpcV4AllPagesPrebuilt] باقية لمن
++  /// يستدعيها صراحةً.
++  ///
++  /// Now prewarms only the current page ±2 (debounced); the full 604-page
++  /// prebuild is no longer scheduled automatically.
+   void scheduleQpcV4AllPagesPrebuild(
+-      {Duration delay = const Duration(seconds: 2)}) {
++      {Duration delay = const Duration(milliseconds: 150)}) {
+     if (!isQpcV4Enabled) return;
+-    if (_qpcV4BlocksByPage.length >= 604) return;
+-    if (_qpcV4PrebuildStarted) return;
+-    log('Scheduling QPC v4 prebuild for all pages after $delay of idle time',
+-        name: 'QPCv4');
+-
+     _qpcV4IdlePrebuildTimer?.cancel();
+     _qpcV4IdlePrebuildTimer = Timer(delay, () {
+-      if (!isQpcV4Enabled) return;
+-      if (_qpcV4PrebuildStarted) return;
+-      Future(() => ensureQpcV4AllPagesPrebuilt());
++      if (isClosed || !isQpcV4Enabled) return;
++      prewarmQpcV4Pages(state.currentPageNumber.value - 1);
+     });
+   }
+ 
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_getters.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_getters.dart
+index 02d07c0..c12b532 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_getters.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_getters.dart
+@@ -64,20 +64,12 @@ extension QuranGetters on QuranCtrl {
+     Get.forceAppUpdate();
+ 
+     if (idx == 0 && !QuranFontsService.allLoaded) {
+-      // خطوط التجويد: تحميل كسول — الصفحات القريبة أولاً ثم البقية في الخلفية
++      // خطوط التجويد: تحميل كسول لنافذة صغيرة حول الصفحة الحالية فقط؛ بقية
++      // الصفحات تُحمّل عند التقليب إليها. تحميل الـ604 كلها في الخلفية كان
++      // يعيد تخطيط كل نصوص التطبيق لدقائق ويستهلك مئات الميغابايت.
+       final currentPage = lastPage.clamp(1, 604);
+-      QuranFontsService.ensurePagesLoaded(currentPage, radius: 10).then((_) {
+-        // update();
+-        // update(['_pageViewBuild']);
+-        // تحميل بقية الصفحات في الخلفية
+-        QuranFontsService.loadRemainingInBackground(
+-          startNearPage: currentPage,
+-          progress: state.fontsLoadProgress,
+-          ready: state.fontsReady,
+-        ).then((_) {
+-          // update();
+-          update(['_pageViewBuild']);
+-        });
++      QuranFontsService.ensurePagesLoaded(currentPage, radius: 3).then((_) {
++        update(['_pageViewBuild']);
+       });
+     }
+   }
 diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart
 index 70d6bf3..735bbf0 100644
 --- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart
@@ -1169,6 +1482,60 @@ index 70d6bf3..735bbf0 100644
                        // زر التفسير
                        if (s.showTafsirButton ?? true) {
                          addDividerIfNeeded();
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/page_build.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/page_build.dart
+index 215d163..c4116b5 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/page_build.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/page_build.dart
+@@ -67,9 +67,13 @@ class PageBuild extends StatelessWidget {
+     final int pageNumber = pageIndex + 1;
+     if (!QuranFontsService.isPageReady(pageNumber)) {
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+-        QuranFontsService.ensurePagesLoaded(pageNumber, radius: 10).then((_) {
+-          quranCtrl.update();
+-          quranCtrl.update(['_pageViewBuild']);
++        QuranFontsService.ensurePagesLoaded(pageNumber, radius: 3).then((_) {
++          // تحديث هذه الصفحة وحدها: update() العام كان يعيد بناء الشاشة كلها
++          // وكل الصفحات الحيّة مع كل صفحة يكتمل خطها. والشرط يمنع حلقة
++          // إعادة بناء لا تنتهي إن فشل تحميل خط الصفحة.
++          if (QuranFontsService.isPageReady(pageNumber)) {
++            quranCtrl.update(['qpc_page_$pageIndex']);
++          }
+         });
+       });
+       return const Center(child: CircularProgressIndicator.adaptive());
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/quran_fonts_page.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/quran_fonts_page.dart
+index ca4c219..9d44226 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/quran_fonts_page.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/quran_fonts_page.dart
+@@ -63,10 +63,8 @@ class _QuranFontsPage extends StatelessWidget {
+     return GetBuilder<QuranCtrl>(
+       id: 'qpc_page_$pageIndex',
+       builder: (quranCtrl) {
+-        if (quranCtrl.isQpcV4Enabled && !quranCtrl.isQpcV4AllPagesPrebuilt) {
+-          quranCtrl.scheduleQpcV4AllPagesPrebuild();
+-        }
+-
++        // لا جدولة تحضير هنا: بناء الصفحة يطلب كتلها بنفسه عبر
++        // getQpcV4BlocksForPageSync، والتحضير المجاور يتم عند تغيير الصفحة.
+         if (quranCtrl.state.pages.isEmpty) {
+           return circularProgressWidget ??
+               const CircularProgressIndicator.adaptive();
+@@ -138,9 +136,12 @@ class _QuranFontsPage extends StatelessWidget {
+     final int pageNumber = pageIndex + 1;
+     if (!QuranFontsService.isPageReady(pageNumber)) {
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+-        QuranFontsService.ensurePagesLoaded(pageNumber, radius: 10).then((_) {
+-          quranCtrl.update();
+-          quranCtrl.update(['_pageViewBuild']);
++        QuranFontsService.ensurePagesLoaded(pageNumber, radius: 3).then((_) {
++          // تحديث هذه الصفحة وحدها (معرّف الـ GetBuilder أعلاه) بدل update()
++          // العام الذي يعيد بناء الشاشة كلها؛ والشرط يمنع حلقة عند الفشل.
++          if (QuranFontsService.isPageReady(pageNumber)) {
++            quranCtrl.update(['qpc_page_$pageIndex']);
++          }
+         });
+       });
+       return circularProgressWidget ??
 diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/features_sheet/all_features_sheet.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/features_sheet/all_features_sheet.dart
 new file mode 100644
 index 0000000..060ba7d
@@ -1471,6 +1838,32 @@ index 0000000..060ba7d
 +    );
 +  }
 +}
+diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/page_view_build.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/page_view_build.dart
+index e2cd8e8..e8efc9e 100644
+--- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/page_view_build.dart
++++ b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/page_view_build.dart
+@@ -1,6 +1,11 @@
+ part of '/quran.dart';
+ 
+-/// ويدجت مساعدة للحفاظ على الصفحة حيّة ضمن PageView
++/// كانت تُبقي كل صفحة زارها المستخدم حيّة إلى الأبد: تتراكم الذاكرة، وكل
++/// إعادة بناء للـ PageView تعيد بناء تلك الصفحات كلها. صارت لا تُبقي شيئًا —
++/// preloadPagesCount يحفظ الجارات (±2) أصلًا، وكتل QPC مخزّنة في QuranCtrl
++/// فإعادة بناء صفحة عادت إليها رخيصة.
++///
++/// No longer keeps pages alive; the preload window already retains ±2.
+ class _KeepAlive extends StatefulWidget {
+   const _KeepAlive({required this.child});
+   final Widget child;
+@@ -11,7 +16,7 @@ class _KeepAlive extends StatefulWidget {
+ class _KeepAliveState extends State<_KeepAlive>
+     with AutomaticKeepAliveClientMixin {
+   @override
+-  bool get wantKeepAlive => true;
++  bool get wantKeepAlive => false;
+   @override
+   Widget build(BuildContext context) {
+     super.build(context);
 diff --git a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart b/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart
 index f6a968d..5edc11d 100644
 --- a/libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart
@@ -1835,3 +2228,89 @@ index f6a968d..5edc11d 100644
    }
  }
 +
+diff --git a/libraries/quran_library-4.2.1/lib/src/service/gzip_json_asset_service_io.dart b/libraries/quran_library-4.2.1/lib/src/service/gzip_json_asset_service_io.dart
+index 2e44910..b5ca0d0 100644
+--- a/libraries/quran_library-4.2.1/lib/src/service/gzip_json_asset_service_io.dart
++++ b/libraries/quran_library-4.2.1/lib/src/service/gzip_json_asset_service_io.dart
+@@ -1,5 +1,6 @@
+ import 'dart:convert' show base64Url, jsonDecode, utf8;
+ import 'dart:io' show Directory, File;
++import 'dart:isolate' show Isolate;
+ import 'dart:typed_data' show Uint8List;
+ 
+ import 'package:archive/archive.dart' show GZipDecoder;
+@@ -44,6 +45,13 @@ class GzipJsonAssetService {
+   static final Map<String, Future<String>> _inflightText =
+       <String, Future<String>>{};
+ 
++  /// ملفات المصحف تبلغ ~14MB بعد فك الضغط، وفكّ ترميزها على عزلة الواجهة
++  /// كان يجمّدها لمئات الأجزاء من الثانية. ما فوق هذا الحد يُعالج في عزلة
++  /// منفصلة عبر [Isolate.run]؛ وما دونه يبقى محليًا لأن كلفة العزلة تفوقه.
++  ///
++  /// Payloads at or above this size are decoded on a background isolate.
++  static const int _offMainThreshold = 64 * 1024;
++
+   /// إرجاع مسار ملف الكاش للـ asset (أو null إن كان Disk Cache معطّل).
+   ///
+   /// هذا مفيد أيضًا للاختبارات.
+@@ -63,6 +71,21 @@ class GzipJsonAssetService {
+     return jsonDecode(text);
+   }
+ 
++  // دوال ثابتة عمدًا: الإغلاق المُرسل إلى العزلة يلتقط المعامل وحده، لا
++  // `this` (الذي قد يحمل documentsPathProvider غير القابل للإرسال).
++  static Future<dynamic> _jsonDecodeOffMain(String text) async {
++    if (text.length < _offMainThreshold) return jsonDecode(text);
++    return Isolate.run(() => jsonDecode(text));
++  }
++
++  static Future<String> _utf8DecodeOffMain(Uint8List bytes) async {
++    if (bytes.length < _offMainThreshold) return utf8.decode(bytes);
++    return Isolate.run(() => utf8.decode(bytes));
++  }
++
++  static Future<String> _gunzipToStringOffMain(Uint8List gzBytes) =>
++      Isolate.run(() => decodeGzipBytesToString(gzBytes));
++
+   Future<dynamic> loadJsonDynamic(
+     String assetPath, {
+     String? fallbackPlainAssetPath,
+@@ -73,7 +96,7 @@ class GzipJsonAssetService {
+       fallbackPlainAssetPath: fallbackPlainAssetPath,
+       cache: cache,
+     );
+-    return jsonDecode(text);
++    return _jsonDecodeOffMain(text);
+   }
+ 
+   Future<List<dynamic>> loadJsonList(
+@@ -187,7 +210,7 @@ class GzipJsonAssetService {
+       if (!await file.exists()) return null;
+       final bytes = await file.readAsBytes();
+       if (bytes.isEmpty) return null;
+-      return utf8.decode(bytes);
++      return await _utf8DecodeOffMain(bytes);
+     } catch (_) {
+       return null;
+     }
+@@ -227,14 +250,16 @@ class GzipJsonAssetService {
+   }
+ 
+   Future<String> _loadAndDecodeTextFromAssets(String assetPath) async {
++    // rootBundle يبقى على عزلة الواجهة؛ فك الضغط/الترميز (Dart خالص) خارجها.
+     final data = await rootBundle.load(assetPath);
+-    final bytes =
+-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
++    // نسخة مستقلة لا view على ذاكرة الـ asset، لتُرسل إلى العزلة بأمان.
++    final bytes = Uint8List.fromList(
++        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
+ 
+     if (assetPath.endsWith('.gz')) {
+-      return decodeGzipBytesToString(bytes);
++      return _gunzipToStringOffMain(bytes);
+     }
+ 
+-    return utf8.decode(bytes);
++    return _utf8DecodeOffMain(bytes);
+   }
+ }

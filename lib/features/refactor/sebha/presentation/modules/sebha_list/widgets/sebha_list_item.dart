@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/features/refactor/sebha/domain/entity/sebha_entity.dart';
 import 'package:azkark/models/sebha_model.dart' as legacy;
 import 'package:azkark/pages/sebha/tasbih_page.dart';
@@ -174,8 +175,8 @@ class SebhaListItem extends StatelessWidget {
       ),
       child: Text(
         sebha.counter == 0
-            ? 'عدد الحبات : بدون'
-            : 'عدد الحبات : ${sebha.counter}',
+            ? 'beads_none'.tr()
+            : 'beads_n'.tr(namedArgs: {'n': '${sebha.counter}'}),
         style: TextStyle(
           color: teal[700],
           fontWeight: sebha.counter == 0 ? FontWeight.w500 : null,

@@ -65,11 +65,19 @@ class PageBuild extends StatelessWidget {
 
     // التحميل الكسول: تأكد أن خط هذه الصفحة جاهز
     final int pageNumber = pageIndex + 1;
-    if (!QuranFontsService.isPageReady(pageNumber)) {
+    if (!QuranFontsService.isPageReady(pageNumber, isDark: isDark)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        QuranFontsService.ensurePagesLoaded(pageNumber, radius: 10).then((_) {
-          quranCtrl.update();
-          quranCtrl.update(['_pageViewBuild']);
+        // هذه الصفحة وحدها: الجارات تُحمَّل بعد توقف التقليب (_onPageChange)
+        // فلا ينافس تسجيلها إطارات السحب.
+        QuranFontsService.ensurePagesLoaded(pageNumber,
+                radius: 0, isDark: isDark)
+            .then((_) {
+          // تحديث هذه الصفحة وحدها: update() العام كان يعيد بناء الشاشة كلها
+          // وكل الصفحات الحيّة مع كل صفحة يكتمل خطها. والشرط يمنع حلقة
+          // إعادة بناء لا تنتهي إن فشل تحميل خط الصفحة.
+          if (QuranFontsService.isPageReady(pageNumber, isDark: isDark)) {
+            quranCtrl.update(['qpc_page_$pageIndex']);
+          }
         });
       });
       return const Center(child: CircularProgressIndicator.adaptive());

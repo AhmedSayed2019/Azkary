@@ -95,6 +95,16 @@ class CompassViewModel extends ChangeNotifier {
     _sensorError = null;
     _directionSubscription = _getQiblaDirectionStream().listen(
       (reading) {
+        // المستشعر يبثّ عشرات القراءات في الثانية وكل إشعار يعيد بناء الشاشة
+        // والبوصلة كاملة؛ ما دون نصف درجة لا تراه العين. المقارنة بآخر قراءة
+        // *معروضة* لا بآخر قراءة واردة، وإلا ضاع الدوران البطيء كله.
+        final shown = _direction;
+        if (_sensorError == null &&
+            shown != null &&
+            _angleDelta(shown.direction, reading.direction) < 0.5 &&
+            _angleDelta(shown.qiblah, reading.qiblah) < 0.5) {
+          return;
+        }
         _direction = reading;
         _sensorError = null;
         _notify();
@@ -108,6 +118,12 @@ class CompassViewModel extends ChangeNotifier {
         _notify();
       },
     );
+  }
+
+  /// الفرق الأصغر بين زاويتين بالدرجات، مع الالتفاف عند 360.
+  static double _angleDelta(double a, double b) {
+    final d = (a - b).abs() % 360;
+    return d > 180 ? 360 - d : d;
   }
 
   void _cancelDirectionSubscription() {

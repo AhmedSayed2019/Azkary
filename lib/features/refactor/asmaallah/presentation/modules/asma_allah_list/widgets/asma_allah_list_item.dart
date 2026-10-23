@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/features/refactor/asmaallah/domain/entity/asma_allah_entity.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:flutter/material.dart';
@@ -113,7 +114,7 @@ class AsmaAllahListItem extends StatelessWidget {
             : BorderRadius.circular(10),
       ),
       child: Text(
-        'المعني',
+        'meaning'.tr(),
         textAlign: TextAlign.center,
         style: TextStyle(
           color: teal[700],

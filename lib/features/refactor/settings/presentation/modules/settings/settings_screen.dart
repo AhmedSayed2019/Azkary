@@ -1,3 +1,6 @@
+import 'package:azkark/widgets/islamic_header_background.dart';
+import 'package:azkark/core/localization/app_locales.dart';
+import 'package:azkark/core/localization/language_sheet.dart';
 import 'package:azkark/core/res/resources.dart';
 import 'package:azkark/features/refactor/settings/domain/entity/settings_entity.dart';
 import 'package:azkark/features/refactor/settings/presentation/settings_view_model.dart';
@@ -54,6 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Background(),
       Scaffold(
         appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
           elevation: 0.0,
           title: Text(
             tr('settings_bar'),
@@ -106,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: <Widget>[
           Align(
             alignment: Alignment.topRight,
-            child: _buildTitle(context, 'إعدادات الأذكار'),
+            child: _buildTitle(context, 'azkar_settings'.tr()),
           ),
           Container(
             decoration: _decoration(context),
@@ -158,11 +164,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: <Widget>[
           Align(
               alignment: Alignment.topRight,
-              child: _buildTitle(context, 'الإعدادات العامة')),
+              child: _buildTitle(context, 'general_settings'.tr())),
           Container(
             decoration: _decoration(context),
             child: Column(
               children: <Widget>[
+                // اختيار اللغة — أول بند لأنه يغيّر بقية الشاشة
+                ListTile(
+                  leading: Icon(Icons.translate_rounded, color: teal),
+                  title: Text(
+                    tr('language'),
+                    style: const TextStyle()
+                        .semiBoldStyle(fontSize: 15)
+                        .primaryTextColor(),
+                  ),
+                  subtitle: Text(
+                    context.locale.displayName,
+                    style: const TextStyle()
+                        .mediumStyle(fontSize: 12)
+                        .customColor(AppColor.hintColor.themeColor),
+                  ),
+                  trailing: const Icon(Icons.keyboard_arrow_down_rounded),
+                  onTap: () => LanguageSheet.show(context),
+                ),
+                const Divider(height: 1),
                 SettingFontType(
                   borderRadius:
                       const BorderRadius.only(topLeft: Radius.circular(20)),

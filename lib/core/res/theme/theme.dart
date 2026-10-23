@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 
-import 'text.dart';
 
 ThemeData lightTheme =_buildTheme(false);
 ThemeData darkTheme =_buildTheme(true);

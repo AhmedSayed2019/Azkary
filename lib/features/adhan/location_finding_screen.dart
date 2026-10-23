@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/core/utils/helpers/extensions.dart';
 import 'package:azkark/generated/assets.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class LocationFindingScreen extends StatelessWidget {
             Image.asset(Assets.adanLocationNa, width: 156,),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Finding Location...", style: context.textTheme.headlineMedium,),
+              child: Text('finding_location'.tr(), style: context.textTheme.headlineMedium,),
             ),
             const LinearProgressIndicator()
           ],

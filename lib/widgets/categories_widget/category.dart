@@ -1,9 +1,9 @@
-import 'package:azkark/features/azkar/view_azkar.dart';
+import 'package:azkark/features/refactor/azkar/presentation/modules/azkar_list/azkar_list_screen.dart';
+import 'package:azkark/features/refactor/categories/domain/entity/category_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/category_model.dart';
-import '../../providers/azkar_provider.dart';
 import '../../providers/categories_provider.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -32,7 +32,6 @@ class _CategoryState extends State<Category> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final categoriesProvider = Provider.of<CategoriesProvider>(context, listen: false);
-    final azkarProvider = Provider.of<AzkarProvider>(context, listen: false);
 
     return Card(
       color: Theme.of(context).cardColor,
@@ -42,9 +41,28 @@ class _CategoryState extends State<Category> {
         child: InkWell(
           highlightColor: teal[100],
           borderRadius: BorderRadius.circular(10),
-          onTap: () async {
-            await azkarProvider.initialAllAzkar(categoriesProvider.getCategory(widget._category.id).azkarIndex);
-            Navigator.push(context, FadeRoute(page: ViewAzkar()));
+          onTap: () {
+            // جسر مؤقت حتى تُهاجر الصفحات التي تستعمل هذه البطاقة (الأقسام،
+            // المفضّلة، البحث): نحوّل الموديل القديم إلى كيان النطاق الذي
+            // تنتظره الشاشة الجديدة. azkarIndex يُقرأ من الموديل نفسه لا
+            // بالبحث في القائمة بالموضع كما كان — ذاك كان يفتح فئة أخرى
+            // كلما اختلف الترتيب عن المعرّفات.
+            Navigator.push(
+              context,
+              FadeRoute(
+                page: AzkarListScreen(
+                  category: CategoryEntity(
+                    id: widget._category.id,
+                    sectionId: widget._category.sectionId,
+                    nameWithDiacritics: widget._category.nameWithDiacritics,
+                    nameWithoutDiacritics:
+                        widget._category.nameWithoutDiacritics,
+                    azkarIndex: widget._category.azkarIndex,
+                    favorite: widget._category.favorite == 1,
+                  ),
+                ),
+              ),
+            );
           },
           child: Column(
             children: <Widget>[

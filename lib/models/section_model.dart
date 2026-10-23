@@ -1,3 +1,4 @@
+import 'package:azkark/core/localization/db_translations.dart';
 import 'dart:convert';
 
 class SectionModel {
@@ -15,7 +16,7 @@ class SectionModel {
 
   int get id => _id;
 
-  String get name => _name;
+  String get name => DbTranslations.section(_id, _name);
 
   List<int> get categoriesIndex => _categoriesIndex;
 

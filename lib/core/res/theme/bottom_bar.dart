@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../font_manager.dart';
 import '../color.dart';
 
 BottomNavigationBarThemeData bottomNavigationBarTheme = BottomNavigationBarThemeData(

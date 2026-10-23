@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../util/colors.dart';
@@ -24,7 +25,7 @@ class EmptyFavorite extends StatelessWidget {
           ),
         ),
         Text(
-          'المفضلة فارغة',
+          'favorites_empty'.tr(),
           style: new TextStyle(
             color: teal[700],
             fontWeight: FontWeight.w700,

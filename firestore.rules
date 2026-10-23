@@ -1,0 +1,48 @@
+rules_version = '2';
+
+// قواعد أمان مجموعة البلاغات (`reports`).
+//
+// التطبيق يكتب البلاغات من العميل مباشرة بلا مصادقة — لا حسابات فيه — فهذه
+// القواعد هي الحارس الوحيد. انشرها قبل إطلاق النسخة:
+//
+//     firebase deploy --only firestore:rules
+//
+// بدونها يبقى المشروع على قاعدته الافتراضية: إما رفض كل شيء (فلا يصل بلاغ)
+// أو السماح بكل شيء (فتصير بلاغات المستخدمين وبريدهم مقروءة للجميع).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // يمنع إغراق المجموعة بمستندات ضخمة أو بحقول لم يكتبها التطبيق:
+    // الكتابة بلا مصادقة تعني أن أي أحد يملك مفتاح الـ API (وهو داخل حزمة
+    // التطبيق) يستطيع النداء، فالحدّ على الشكل والحجم هو ما يبقى.
+    function isWellFormedReport() {
+      return request.resource.data.keys().hasOnly([
+               'type', 'subject', 'message', 'contact', 'reference',
+               'app_version', 'build_number', 'platform', 'os_version',
+               'locale', 'created_at'
+             ])
+             && request.resource.data.type in ['bug', 'feature', 'adhan', 'content']
+             && request.resource.data.message is string
+             && request.resource.data.message.size() >= 10
+             && request.resource.data.message.size() <= 5000
+             && request.resource.data.subject is string
+             && request.resource.data.subject.size() <= 200
+             && request.resource.data.contact is string
+             && request.resource.data.contact.size() <= 320
+             && request.resource.data.created_at == request.time;
+    }
+
+    match /reports/{reportId} {
+      // الإنشاء فقط. لا قراءة ولا تعديل ولا حذف من العميل: البلاغات تُقرأ
+      // من لوحة Firebase أو من خادم بصلاحيات المشرف، ولا شيء في التطبيق
+      // يحتاج استرجاعها — وفتح القراءة يكشف بريد كل من أرسل بلاغًا.
+      allow read, update, delete: if false;
+      allow create: if isWellFormedReport();
+    }
+
+    // كل ما عداها مغلق صراحةً.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

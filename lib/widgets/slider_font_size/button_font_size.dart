@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -16,7 +17,7 @@ class ButtonFontSize extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: 'تغيير حجم الخط',
+      tooltip: 'change_font_size'.tr(),
       padding: EdgeInsets.all(0.0),
       highlightColor: Colors.transparent,
       splashColor: teal[700],

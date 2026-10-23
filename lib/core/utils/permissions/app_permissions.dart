@@ -9,6 +9,7 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -20,6 +21,10 @@ enum AppPermissionKind {
   /// SCHEDULE_EXACT_ALARM — أندرويد ١٢+ يرفضه افتراضيًا مع targetSdk 31+،
   /// وبدونه تتأخر التنبيهات داخل نافذة تقارب الساعة.
   exactAlarm,
+
+  /// USE_FULL_SCREEN_INTENT — شاشة الأذان فوق القفل. أندرويد ١٤+ لا يمنحه
+  /// تلقائيًا، وبدونه يصل الأذان إشعارًا عاديًا في الدرج.
+  fullScreen,
 
   /// استثناء من تحسين البطارية — يمنع النظام من تأجيل/إسقاط المنبهات
   /// أثناء وضع السكون العميق.
@@ -49,6 +54,8 @@ class AppPermissionState {
 class AppPermissions {
   AppPermissions._();
 
+  static const _azanChannel = MethodChannel('azkary/azan');
+
   static AndroidFlutterLocalNotificationsPlugin? get _android {
     if (!Platform.isAndroid) return null;
     return FlutterLocalNotificationsPlugin()
@@ -71,6 +78,7 @@ class AppPermissions {
       case AppPermissionKind.location:
         return Platform.isAndroid || Platform.isIOS;
       case AppPermissionKind.exactAlarm:
+      case AppPermissionKind.fullScreen:
       case AppPermissionKind.batteryOptimization:
         // كلها مفاهيم أندرويد بحتة — iOS يدير الجدولة والطاقة بنفسه
         return Platform.isAndroid;
@@ -92,6 +100,12 @@ class AppPermissions {
 
         case AppPermissionKind.exactAlarm:
           return await _android?.canScheduleExactNotifications() ?? true;
+
+        case AppPermissionKind.fullScreen:
+          // أقدم من أندرويد ١٤ يُمنح تلقائيًا من المانيفست (MainActivity.kt)
+          return await _azanChannel
+                  .invokeMethod<bool>('canUseFullScreenIntent') ??
+              true;
 
         case AppPermissionKind.batteryOptimization:
           return await Permission.ignoreBatteryOptimizations.isGranted;
@@ -150,6 +164,10 @@ class AppPermissions {
 
         case AppPermissionKind.exactAlarm:
           await _android?.requestExactAlarmsPermission();
+          return await isGranted(kind);
+
+        case AppPermissionKind.fullScreen:
+          await _android?.requestFullScreenIntentPermission();
           return await isGranted(kind);
 
         case AppPermissionKind.batteryOptimization:

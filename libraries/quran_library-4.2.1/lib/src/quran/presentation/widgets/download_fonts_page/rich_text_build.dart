@@ -120,7 +120,8 @@ class _QpcV4RichTextLineState extends State<QpcV4RichTextLine> {
     return GetBuilder<QuranCtrl>(
       id: 'selection_page_${widget.pageIndex}',
       builder: (_) => GetBuilder<WordInfoCtrl>(
-        id: 'word_info_data',
+        // معرّف خاص بالصفحة: تحديد كلمة يعيد بناء أسطر صفحتها فقط.
+        id: WordInfoCtrl.pageUpdateId(widget.pageIndex),
         builder: (_) {
           // قراءة القيم داخل الـ builder حتى تعكس آخر حالة عند كل rebuild
           final withTajweed = QuranCtrl.instance.state.isTajweedEnabled.value;

@@ -1,3 +1,5 @@
+import 'package:azkark/core/utils/helpers/extensions.dart';
+import 'package:azkark/core/utils/permissions/app_permissions.dart';
 import 'dart:async';
 
 import 'package:azkark/core/extensions/num_extensions.dart';
@@ -10,7 +12,6 @@ import 'package:azkark/widgets/sheet/sheet.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hijri/hijri_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// شاشة "مواقيت الصلاة" الكاملة: عدّاد تنازلي للصلاة القادمة، تصفّح
@@ -98,6 +99,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     final granted =
         await AzanScheduler.requestExactAlarmPermission(service: _service);
     if (mounted) setState(() => _exactAlarmsOk = granted);
+    // شاشة الأذان فوق القفل — لا تفتح الإعدادات إن كان الإذن ممنوحًا
+    await AppPermissions.request(AppPermissionKind.fullScreen);
   }
 
   String _dateKey(DateTime d) =>
@@ -255,7 +258,7 @@ class _Header extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  'مواقيت الصلاة',
+                  'prayer_times'.tr(),
                   textAlign: TextAlign.center,
                   style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 16.sp),
                 ),
@@ -280,7 +283,7 @@ class _Header extends StatelessWidget {
             ),
           ),
           SizedBox(height: kFormPaddingAllLarge.h),
-          Text('الصلاة القادمة', style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white70)),
+          Text('next_prayer'.tr(), style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white70)),
           SizedBox(height: 4.h),
           Text(day.next.name, style: const TextStyle().boldStyle().customColor(AppColor.rateColor.themeColor).copyWith(fontSize: 26.sp)),
           SizedBox(height: 4.h),
@@ -291,18 +294,18 @@ class _Header extends StatelessWidget {
             children: [
               Text(clock, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 22.sp)),
               SizedBox(width: 6.w),
-              Text(isPm ? 'مساءً' : 'صباحًا', style: const TextStyle().mediumStyle(fontSize: 12).customColor(Colors.white70)),
+              Text(isPm ? 'pm'.tr() : 'am_long'.tr(), style: const TextStyle().mediumStyle(fontSize: 12).customColor(Colors.white70)),
             ],
           ),
           SizedBox(height: kFormPaddingAllLarge.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _CountdownBox(value: h, label: 'ساعة'),
+              _CountdownBox(value: h, label: 'hour'.tr()),
               SizedBox(width: kFormPaddingAllNormal.w),
-              _CountdownBox(value: m, label: 'دقيقة'),
+              _CountdownBox(value: m, label: 'minute'.tr()),
               SizedBox(width: kFormPaddingAllNormal.w),
-              _CountdownBox(value: s, label: 'ثانية'),
+              _CountdownBox(value: s, label: 'second'.tr()),
             ],
           ),
         ],
@@ -312,20 +315,20 @@ class _Header extends StatelessWidget {
   }
 
   void _showMethodSheet(BuildContext context) {
-    const methods = <String, String>{
-      'egyptian': 'الهيئة المصرية العامة للمساحة',
-      'ummAlQura': 'أم القرى',
-      'muslimWorldLeague': 'رابطة العالم الإسلامي',
-      'dubai': 'دبي',
-      'qatar': 'قطر',
-      'kuwait': 'الكويت',
-      'karachi': 'كراتشي',
-      'northAmerica': 'أمريكا الشمالية (ISNA)',
+    final methods = <String, String>{
+      'egyptian': 'method_egyptian'.tr(),
+      'ummAlQura': 'method_umm_al_qura'.tr(),
+      'muslimWorldLeague': 'method_mwl'.tr(),
+      'dubai': 'method_dubai'.tr(),
+      'qatar': 'method_qatar'.tr(),
+      'kuwait': 'method_kuwait'.tr(),
+      'karachi': 'method_karachi'.tr(),
+      'northAmerica': 'method_isna'.tr(),
     };
     CustomModalSheet.show<void>(
       context: context,
       child: BaseSheetShell(
-        title: 'طريقة حساب المواقيت',
+        title: 'calc_method'.tr(),
         body: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -379,8 +382,6 @@ class _DateNavigator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    HijriCalendar.setLocal(context.locale.languageCode == 'ar' ? 'ar' : 'en');
-    final hijri = HijriCalendar.fromDate(date);
     final gregorian = DateFormat('d MMMM yyyy', context.locale.languageCode).format(date);
 
     return Container(
@@ -398,7 +399,7 @@ class _DateNavigator extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('${hijri.toFormat("d MMMM yyyy")} هـ', style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor()),
+                Text('${date.getHizriDateForLocale(separator: ' ')} ${'hijri_suffix'.tr()}', style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor()),
                 SizedBox(height: 2.h),
                 Text(gregorian, style: const TextStyle().mediumStyle(fontSize: 11).customColor(AppColor.hintColor.themeColor)),
               ],
@@ -436,7 +437,7 @@ class _PrayerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final hour12 = slot.time.hour % 12 == 0 ? 12 : slot.time.hour % 12;
     final isPm = slot.time.hour >= 12;
-    final time = '$hour12:${slot.time.minute.toString().padLeft(2, '0')} ${isPm ? "م" : "ص"}'.toArabicNumbers;
+    final time = '$hour12:${slot.time.minute.toString().padLeft(2, '0')} ${isPm ? 'pm_short'.tr() : 'am_short'.tr()}'.toArabicNumbers;
 
     final Color fg = isNext
         ? Colors.white
@@ -473,7 +474,7 @@ class _PrayerRow extends StatelessWidget {
                 Text(slot.name, style: const TextStyle().semiBoldStyle(fontSize: 15).customColor(fg)),
                 if (isNext) ...[
                   SizedBox(height: 2.h),
-                  Text('الصلاة القادمة', style: const TextStyle().mediumStyle(fontSize: 10).customColor(AppColor.rateColor.themeColor)),
+                  Text('next_prayer'.tr(), style: const TextStyle().mediumStyle(fontSize: 10).customColor(AppColor.rateColor.themeColor)),
                 ],
               ],
             ),
@@ -533,12 +534,12 @@ class _ExactAlarmNotice extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'فعّل المنبهات الدقيقة',
+                      'enable_exact_alarms'.tr(),
                       style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor(),
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      'حتى ينطلق الأذان في وقته تمامًا، اسمح للتطبيق بـ«المنبهات والتذكيرات».',
+                      'enable_exact_alarms_desc'.tr(),
                       style: const TextStyle().mediumStyle(fontSize: 11).customColor(AppColor.hintColor.themeColor),
                     ),
                   ],
@@ -570,8 +571,8 @@ class _TodayProgress extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('صلوات اليوم', style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor()),
-              Text('$done من $total'.toArabicNumbers, style: const TextStyle().mediumStyle(fontSize: 12).customColor(AppColor.hintColor.themeColor)),
+              Text('todays_prayers'.tr(), style: const TextStyle().semiBoldStyle(fontSize: 13).primaryTextColor()),
+              Text('x_of_y'.tr(namedArgs: {'done': '$done', 'total': '$total'}).toArabicNumbers, style: const TextStyle().mediumStyle(fontSize: 12).customColor(AppColor.hintColor.themeColor)),
             ],
           ),
           SizedBox(height: kFormPaddingAllNormal.h),

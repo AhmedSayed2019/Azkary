@@ -1,6 +1,11 @@
 part of '/quran.dart';
 
-/// ويدجت مساعدة للحفاظ على الصفحة حيّة ضمن PageView
+/// كانت تُبقي كل صفحة زارها المستخدم حيّة إلى الأبد: تتراكم الذاكرة، وكل
+/// إعادة بناء للـ PageView تعيد بناء تلك الصفحات كلها. صارت لا تُبقي شيئًا —
+/// preloadPagesCount يحفظ الجارات (±2) أصلًا، وكتل QPC مخزّنة في QuranCtrl
+/// فإعادة بناء صفحة عادت إليها رخيصة.
+///
+/// No longer keeps pages alive; the preload window already retains ±2.
 class _KeepAlive extends StatefulWidget {
   const _KeepAlive({required this.child});
   final Widget child;
@@ -11,7 +16,7 @@ class _KeepAlive extends StatefulWidget {
 class _KeepAliveState extends State<_KeepAlive>
     with AutomaticKeepAliveClientMixin {
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => false;
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -82,7 +87,8 @@ class PageViewBuild extends StatelessWidget {
     // تحضير مجموعات وبيانات ثابتة لتقليل الحسابات داخل البناء الداخلي
     final bookmarksCtrl = BookmarksCtrl.instance;
     final Map<int, List<BookmarkModel>> bookmarksMap = bookmarksCtrl.bookmarks;
-    final Set<int> bookmarksAyahSet = bookmarksCtrl.bookmarksAyahs.toSet();
+    // قائمة بلا تكرار مخزّنة في BookmarksCtrl — لا toSet().toList() لكل بناء.
+    final List<int> bookmarksAyahsUnique = bookmarksCtrl.bookmarksAyahsUnique;
     // final bookmarkCtrl = BookmarksCtrl.instance;
     return GetBuilder<QuranCtrl>(
       id: '_pageViewBuild',
@@ -118,7 +124,7 @@ class PageViewBuild extends StatelessWidget {
               basmalaStyle: basmalaStyle,
               onSurahBannerPress: onSurahBannerPress,
               surahNumber: surahNumber,
-              bookmarksAyahs: bookmarksAyahSet.toList(),
+              bookmarksAyahs: bookmarksAyahsUnique,
               ayahSelectedBackgroundColor: ayahSelectedBackgroundColor,
               isDark: isDark,
               circularProgressWidget: circularProgressWidget,

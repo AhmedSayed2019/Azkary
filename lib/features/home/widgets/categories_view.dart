@@ -61,6 +61,9 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
                             fit: BoxFit.contain,
                             width: size.width * 0.15,
                             height: size.width * 0.15,
+                            // بعض الأيقونات 800×800 وتُعرض بنحو 160px: تُفكّ
+                            // بحجم العرض بدل حجزها كاملة في الذاكرة.
+                            cacheWidth: (size.width * 0.15 * MediaQuery.devicePixelRatioOf(context)).round(),
                           ),
                         ),
                 ),
@@ -79,56 +82,8 @@ class _HomeCategoriesViewState extends State<HomeCategoriesView> {
     );
   }
 
-  Widget _buildLargeItemsCard({
-    required BuildContext context,
-    required String text,
-    required String pathIcon,
-    required GestureTapCallback? onTap,
-  }) {
-    final size = MediaQuery.of(context).size;
-    return Card(
-      color: Theme.of(context).cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: InkWell(
-        highlightColor: teal[400],
-        borderRadius: BorderRadius.circular(10),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          height: size.height * 0.1,
-          width: size.width,
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: Image.asset(
-                    pathIcon,
-                    fit: BoxFit.contain,
-                    width: size.width * 0.24,
-                    height: size.width * 0.24,
-                  ),
-                ),
-              ),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: const TextStyle()
-                    .semiBoldStyle(fontSize: 12)
-                    .customColor(
-                      teal,
-                    ) /*(color: teal, fontWeight: FontWeight.w700, fontSize: 13)*/,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final locationProvider = context.read<AdanLocationProvider>();
 
     // var quarterjsonData = context.watch<GetDataProvider>().quarterjsonData;

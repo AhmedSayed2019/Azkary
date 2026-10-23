@@ -137,11 +137,17 @@ class AudioCtrl extends GetxController {
     try {
       await AudioService.init(
         builder: () => AudioHandler.instance,
+        // `ongoing: false` + `stopForegroundOnPause: false` معًا لا صدفةً:
+        // AudioServiceConfig يؤكّد أن `ongoing` يستلزم `stopForegroundOnPause`،
+        // والتركيبة السابقة (كلاهما true) كانت تُنزل الخدمة من المقدمة عند
+        // الإيقاف المؤقت فيختفي المشغّل من مركز الإشعارات ويصير استئناف
+        // التلاوة مستحيلًا من خارج التطبيق. الآن يبقى الإشعار ظاهرًا أثناء
+        // الإيقاف المؤقت، ويظل قابلًا للمسح بالسحب حين ينتهي المستخدم منه.
         config: const AudioServiceConfig(
           androidNotificationChannelId: 'com.alheekmah.quranPackage.audio',
           androidNotificationChannelName: 'Audio playback',
-          androidNotificationOngoing: true,
-          androidStopForegroundOnPause: true,
+          androidNotificationOngoing: false,
+          androidStopForegroundOnPause: false,
         ),
       );
       state.audioServiceInitialized.value = true;
@@ -370,6 +376,31 @@ class AudioCtrl extends GetxController {
     }
   }
 
+  /// أسماء الملفات (basename) في مجلد واحد — قراءة واحدة للمجلد بدل
+  /// `await File.exists()` لكل ملف (114 سورة و6236 آية متتاليًا عند التهيئة).
+  /// مجلد غير موجود = مجموعة فارغة.
+  Future<Set<String>> _listFileNames(String dirPath) async {
+    final names = <String>{};
+    try {
+      await for (final entity in Directory(dirPath).list(followLinks: false)) {
+        names.add(basename(entity.path));
+      }
+    } catch (_) {
+      // المجلد غير موجود أو تعذّرت قراءته: لا ملفات.
+    }
+    return names;
+  }
+
+  /// يعيد دالة فحص وجود ملفات تقرأ كل مجلد مرة واحدة فقط (كاش لكل مجلد).
+  Future<bool> Function(String filePath) _batchedExistsChecker() {
+    final cache = <String, Set<String>>{};
+    return (String filePath) async {
+      final parent = dirname(filePath);
+      final names = cache[parent] ??= await _listFileNames(parent);
+      return names.contains(basename(filePath));
+    };
+  }
+
   Future<void> initializeSurahDownloadStatus() async {
     Map<String, bool> initialStatus = await checkAllSurahsDownloaded();
     state.surahDownloadStatus.value = initialStatus;
@@ -399,13 +430,13 @@ class AudioCtrl extends GetxController {
       return surahDownloadStatus;
     }
     final directory = await state.dir;
+    final exists = _batchedExistsChecker();
 
     for (int i = 1; i <= 114; i++) {
       String filePath =
           '${directory.path}/${state.surahReaderNamePath}${i.toString().padLeft(3, '0')}.mp3';
-      File file = File(filePath);
       String key = '${currentReaderIndex}_$i';
-      surahDownloadStatus[key] = await file.exists();
+      surahDownloadStatus[key] = await exists(filePath);
     }
     return surahDownloadStatus;
   }
@@ -436,13 +467,12 @@ class AudioCtrl extends GetxController {
       return;
     }
     final directory = await state.dir;
+    final exists = _batchedExistsChecker();
     for (int i = 1; i <= 114; i++) {
       String filePath =
           '${directory.path}/${state.surahReaderNamePath}${i.toString().padLeft(3, '0')}.mp3';
 
-      File file = File(filePath);
-
-      if (await file.exists()) {
+      if (await exists(filePath)) {
         state.downloadSurahsPlayList.add({
           i: AudioSource.file(
             filePath,

@@ -13,9 +13,7 @@ import 'sebha_provider.dart';
 class SectionsProvider with ChangeNotifier {
   List<SectionModel> _sections =[];
   DatabaseHelper databaseHelper = new DatabaseHelper();
-  bool _newUser = true;
-
-  bool get isNewUser => _newUser;
+  Future<bool>? _dataInitialization;
 
   String get table => 'sections';
 
@@ -49,28 +47,35 @@ class SectionsProvider with ChangeNotifier {
   }
 
   Future<bool> tryToGetData(BuildContext context) async {
-    bool doesUserExists = await databaseHelper.isFileExists();
+    return _dataInitialization ??= _loadData(context);
+  }
 
-    if (doesUserExists) {
-      print('_newUser = false');
-      _newUser = false;
-      return false;
-    }
+  Future<bool> _loadData(BuildContext context) async {
+    // كان هنا isFileExists() وهو يعني فعليًا "القاعدة مفتوحة مسبقًا": لو
+    // فتحها أي كود آخر قبل هذه اللحظة لتخطّى التحميل كله وظهرت الرئيسية
+    // بلا أقسام. البيانات في الذاكرة فقط، فتُحمَّل مرة في كل تشغيل دائمًا.
+    // فتح القاعدة (ونسخها عند أول تثبيت) يسبق إطلاق الاستعلامات معًا.
+    await databaseHelper.database;
 
-    _newUser = true;
-    print('tryToGetData _newUser = true');
-    notifyListeners();
-
-    await initialAllSections();
-    print('initialAllSections');
+    // كل مزوّد يقرأ جدوله الخاص فلا ترتيب بينها: تُطلق معًا بدل أن ينتظر
+    // كل استعلام سابقه، والرئيسية محجوبة بشاشة التحميل حتى تنتهي كلها.
+    // المزوّدات تُلتقط قبل أي await حتى لا يُستعمل السياق بعد فجوة غير متزامنة.
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final categories = Provider.of<CategoriesProvider>(context, listen: false);
+    final sebha = Provider.of<SebhaProvider>(context, listen: false);
+    final favorites = Provider.of<FavoritesProvider>(context, listen: false);
+    final prayer = Provider.of<PrayerProvider>(context, listen: false);
+    final asmaAllah = Provider.of<AsmaAllahProvider>(context, listen: false);
     try {
-      await Provider.of<SettingsProvider>(context, listen: false).initialSettings();
-      await Provider.of<CategoriesProvider>(context, listen: false).initialAllCategories();
-      await Provider.of<SebhaProvider>(context, listen: false).initialAllItemsOfSebha();
-      await Provider.of<FavoritesProvider>(context, listen: false).initialAllFavorites();
-      await Provider.of<PrayerProvider>(context, listen: false).initialAllPrayer();
-      await Provider.of<AsmaAllahProvider>(context, listen: false).initialAllAsmaAllah();
-      print('initialAll Categories, AllItemsOfSebha, AllFavorites, AllPrayer');
+      await Future.wait([
+        if (_sections.isEmpty) initialAllSections(),
+        settings.initialSettings(),
+        categories.initialAllCategories(),
+        sebha.initialAllItemsOfSebha(),
+        favorites.initialAllFavorites(),
+        prayer.initialAllPrayer(),
+        asmaAllah.initialAllAsmaAllah(),
+      ]);
     } catch (e) {
       print('_initial e  : $e');
     }

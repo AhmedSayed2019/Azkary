@@ -1,6 +1,5 @@
 import 'package:animated_analog_clock/animated_analog_clock.dart';
 import 'package:azkark/core/res/resources.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:mq_app_ui/mq_app_ui.dart';
 import 'package:mq_prayer_time/mq_prayer_time.dart';
@@ -66,7 +65,6 @@ class _MqSalaahCardState extends State<MqSalaahCard> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final prTextTheme = Theme.of(context).primaryTextTheme;
     return GradientDecoratedBox(
       child: Container(
         color: Theme.of(context).cardColor,
@@ -222,7 +220,6 @@ class SalaahItemTimeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final prTextTheme = Theme.of(context).primaryTextTheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       color: isActive

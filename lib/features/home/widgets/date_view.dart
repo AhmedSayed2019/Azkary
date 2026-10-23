@@ -4,7 +4,6 @@ import 'package:azkark/util/colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hijri/hijri_calendar.dart';
-import 'package:screenshot/screenshot.dart';
 
 class HomeDateView extends StatefulWidget {
   const HomeDateView({Key? key}) : super(key: key);

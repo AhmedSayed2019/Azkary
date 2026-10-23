@@ -1,7 +1,3 @@
-import 'dart:convert';
-
-import 'package:azkark/data/models/surah_model.dart';
-import 'package:flutter/services.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -916,33 +912,3 @@ List<int> noOfVerses = [
 ];
 
 
-// List arabic =[];
-// List malayalam =[];
-// List quran =[];
-List<SurahModel> ayatElQuran=[];
-
-Future<List<SurahModel>> readJson ()async{
-  final String response =await rootBundle.loadString("assets/hafs_smart_v8.json");
-  final data=json.decode(response);
-
-  ayatElQuran = List<SurahModel>.from((data["quran"]??[]).map((x) => SurahModel.fromJson(x)));
-
-  print('zzzzzzzzzzzz ${ayatElQuran.length}');
-  // arabic=data["quran"];
-  // malayalam=data["malayalam"];
-  return ayatElQuran;//quran=[arabic,malayalam];
-}
-
-Future<List<SurahModel>> readData ()async{
-
-
-  final String response =await rootBundle.loadString("assets/hafs_smart_v8.json");
-  final data=json.decode(response);
-
-  ayatElQuran = List<SurahModel>.from((data["quran"]??[]).map((x) => SurahModel.fromJson(x)));
-
-  print('zzzzzzzzzzzz ${ayatElQuran.length}');
-  // arabic=data["quran"];
-  // malayalam=data["malayalam"];
-  return ayatElQuran;//quran=[arabic,malayalam];
-}

@@ -22,6 +22,10 @@
          التطبيق قبل النشر، فلم يُفعَّل هنا. -->
     <uses-permission  android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- شاشة الأذان فوق القفل (fullScreenIntent). أندرويد 14+ لا يمنحه
+         تلقائيًا إلا لتطبيقات المنبّه/الاتصال، فيُطلب عبر
+         AppPermissions.fullScreen. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- إعادة جدولة الأذان والتذكيرات بعد إقلاع الجهاز -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -30,8 +34,10 @@
     <!-- الخدمات الأمامية: أندرويد 14+ يشترط إذنًا مستقلًا لكل
          foregroundServiceType مُعلن أدناه، وإلا رفض تشغيل الخدمة. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- تشغيل التلاوة في الخلفية داخل شاشة المصحف (quran_library / audio_service).
+         مُعلن أيضًا في مانيفست quran_library ويُدمج تلقائيًا، ويُكرَّر هنا
+         ليكون سبب الإذن ظاهرًا عند المراجعة. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- النافذة العائمة للأذكار فوق التطبيقات الأخرى. إذن خاص يُمنح من
          شاشة إعدادات مستقلة (Settings.canDrawOverlays) لا بحوار عادي. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -121,28 +127,8 @@ android:value="false" /> -->
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBogqnASso-oa85MSmbd3OdGCNSdpvI7oA" />
 
-        <service
-            android:name="com.ryanheise.audioservice.AudioService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
-            <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".MyMediaPlaybackService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback"></service>
-
-        <receiver
-            android:name="com.ryanheise.audioservice.MediaButtonReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-
-        </receiver>
+        <!-- خدمة تشغيل التلاوة ومستقبل أزرار الوسائط يأتيان من مانيفست
+             quran_library عبر دمج المانيفست، فلا يُعادان هنا. -->
 
         <!-- خدمة النافذة العائمة (flutter_overlay_window المُضمَّنة) -->
         <service
@@ -151,14 +137,8 @@ android:value="false" /> -->
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="عرض ذكر عائم فوق التطبيقات في مواعيد يحددها المستخدم" />
+                android:value="Displays a user-scheduled floating dhikr (Islamic remembrance) reminder over other apps at intervals the user configures in the app settings." />
         </service>
-
-        <!-- Warning: Do not change service name. "Adan" -->
-        <service
-            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
-            android:foregroundServiceType="dataSync|remoteMessaging"
-            android:exported="false" />
 
     </application>
 </manifest>

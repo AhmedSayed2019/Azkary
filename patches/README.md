@@ -30,7 +30,48 @@ libraries/quran_library-4.2.1/lib/src/quran/data/models/styles_models/ayah_menu_
 libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/ayah_menu_dialog.dart
 libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/features_sheet/all_features_sheet.dart  (new)
 libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/tabs/quran_top_bar.dart
+libraries/quran_library-4.2.1/lib/src/audio/controller/audio_ctrl.dart
+libraries/quran_library-4.2.1/lib/src/flutter_quran_utils.dart
+libraries/quran_library-4.2.1/lib/src/pages/quran_library_screen.dart
+libraries/quran_library-4.2.1/lib/src/pages/surah_display_screen.dart
+libraries/quran_library-4.2.1/lib/src/quran/core/services/quran_fonts_service.dart
+libraries/quran_library-4.2.1/lib/src/quran/data/qpc_v4/qpc_v4_assets_loader.dart
+libraries/quran_library-4.2.1/lib/src/quran/data/repositories/quran_repository.dart
+libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_ctrl.dart
+libraries/quran_library-4.2.1/lib/src/quran/presentation/controllers/quran/quran_getters.dart
+libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/page_build.dart
+libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/download_fonts_page/quran_fonts_page.dart
+libraries/quran_library-4.2.1/lib/src/quran/presentation/widgets/page_view_build.dart
+libraries/quran_library-4.2.1/lib/src/service/gzip_json_asset_service_io.dart
 ```
+
+### Performance changes (second batch of customizations)
+
+- **Init:** `QuranLibrary.init()` loads core data through the shared
+  `QuranCtrl.ensureCoreDataLoaded()` future. Before, it raced `onInit` and
+  decoded the Quran JSON twice. It also no longer creates `AudioCtrl`, which
+  is now created lazily by its `instance` getter.
+- **Core data:** `loadQuranDataV3` re-checks after its await, so concurrent
+  callers can't duplicate ayahs. Ayahs are grouped into pages in a single
+  pass. The QPC v4 JSON (~15 MB) is no longer loaded eagerly; the first page
+  build requests it.
+- **Decoding:** `GzipJsonAssetService` (IO) runs gunzip, UTF-8 decode and
+  `jsonDecode` in `Isolate.run` for payloads ≥ 64 KB. The one-shot Quran
+  and QPC files pass `cache: false`, so their raw text isn't kept in memory.
+- **Fonts:** only a small window of page fonts is loaded (radius 3 around
+  the current page, again on every page change). `loadRemainingInBackground`
+  is no longer called anywhere, and font gunzip runs in `Isolate.run`.
+  Side effect: `state.fontsReady` / `fontsLoadProgress` no longer reach
+  true / 1.0; nothing in the UI depends on them.
+- **Reader:** pages are no longer kept alive (`_KeepAlive.wantKeepAlive` is
+  false). Font-ready refreshes use `update(['qpc_page_$pageIndex'])` instead
+  of a global `update()`. `scheduleQpcV4AllPagesPrebuild` now prewarms only
+  the current page ±2 instead of building all 604 pages on the UI isolate.
+
+These edits were uncommitted when the patch was regenerated, so it was
+built with `git diff 995989f -- libraries/quran_library-4.2.1 ...` (working
+tree) instead of `995989f..HEAD`. Once they're committed, the step-1
+command below produces the same patch.
 
 ## How to update the package while keeping these customizations
 

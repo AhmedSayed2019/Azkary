@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/features/refactor/prayer/domain/entity/prayer_entity.dart';
 import 'package:azkark/features/refactor/prayer/presentation/modules/prayer_list/widgets/prayer_aya_card.dart';
 import 'package:azkark/util/colors.dart';
@@ -115,7 +116,7 @@ class PrayerSurahSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Text(
-        'سورة $surah',
+        'surah_n'.tr(namedArgs: {'surah': surah}),
         textAlign: TextAlign.center,
         style: TextStyle(
           color: teal,

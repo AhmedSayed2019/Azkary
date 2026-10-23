@@ -14,17 +14,20 @@ class DatabaseHelper {
 
   Database? _database;
 
+  /// فتح واحد مشترك: مستدعيان متزامنان في أول تشغيل كانا يفتحان القاعدة
+  /// مرتين وقد ينسخان ملف الأصول فوق بعضه.
+  Future<Database>? _opening;
+
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    _database = await initialDatabase();
-    return _database!;
+    return _database = await (_opening ??= initialDatabase());
   }
 
   Future<bool> isFileExists() async {
     if (_database != null) return true;
 
-    _database = await initialDatabase();
+    _database = await (_opening ??= initialDatabase());
     return false;
   }
 

@@ -1,3 +1,4 @@
+import 'package:azkark/core/utils/helpers/extensions.dart';
 import 'dart:async';
 
 import 'package:azkark/core/extensions/num_extensions.dart';
@@ -8,8 +9,8 @@ import 'package:azkark/features/prayer/prayer_times_screen.dart';
 import 'package:azkark/features/prayer/prayer_times_service.dart';
 import 'package:azkark/widgets/arabic_numbers.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hijri/hijri_calendar.dart';
 
 /// قسم "مواقيت الصلاة" في الشاشة الرئيسية كشريحة محتوى (Sliver):
 /// التاريخ + عدّاد الصلاة القادمة + بطاقة الصلوات العائمة، يتمرر ويختفي
@@ -25,7 +26,11 @@ class _AzanSectionState extends State<AzanSection> {
   final PrayerTimesService _service = PrayerTimesService();
 
   Timer? _ticker;
-  DateTime _now = DateTime.now();
+
+  /// الساعة تتقدّم كل ثانية عبر هذا المُخطِر لا عبر setState: لا يُعاد بناء
+  /// ورسم إلا العدّاد وإطاره، لا صورة الهيدر المضبّبة ولا صف الصلوات.
+  final ValueNotifier<DateTime> _clock = ValueNotifier(DateTime.now());
+  DateTime get _now => _clock.value;
   PrayerDay? _day;
   bool _ready = false;
   bool _refreshingLocation = false;
@@ -44,17 +49,16 @@ class _AzanSectionState extends State<AzanSection> {
     _init();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
+      // الرئيسية تبقى مبنيّة تحت كل شاشة تُفتح فوقها؛ عدّاد لا يُرى لا يُحدَّث.
+      if (!TickerMode.getValuesNotifier(context).value.enabled) return;
       final now = DateTime.now();
+      final previous = _clock.value;
+      _clock.value = now;
       final day = _day;
-      // أعد حساب مواقيت اليوم فقط عند دخول وقت صلاة جديد، لا كل ثانية —
-      // العدّاد نفسه (المتبقي/الدائرة) يُعاد رسمه من _now بلا إعادة حساب.
-      if (day == null || !now.isBefore(day.next.time)) {
-        setState(() {
-          _now = now;
-          _day = _service.compute(now: now);
-        });
-      } else {
-        setState(() => _now = now);
+      // أعد بناء القسم كله فقط عند دخول وقت صلاة جديد أو يوم جديد (سطر
+      // التاريخ) — العدّاد نفسه يتبع _clock وحده.
+      if (day == null || !now.isBefore(day.next.time) || now.day != previous.day) {
+        setState(() => _day = _service.compute(now: now));
       }
     });
   }
@@ -69,8 +73,10 @@ class _AzanSectionState extends State<AzanSection> {
     }
     // تحديث الموقع في الخلفية دون حجب أول عرض
     final changed = await _service.refreshLocation();
-    if (changed && mounted) setState(() => _day = _service.compute(now: _now));
-    // جدولة صوت الأذان القادمة وفق أحدث موقع/مواقيت
+    // main() يعيد الجدولة عند كل إقلاع؛ هنا فقط إن تغيّر الموقع فعلًا، وإلا
+    // كانت عشرات عمليات الإلغاء والجدولة تتكرّر بلا فائدة أول ما تظهر الرئيسية.
+    if (!changed) return;
+    if (mounted) setState(() => _day = _service.compute(now: _now));
     AzanScheduler.reschedule(service: _service);
   }
 
@@ -88,6 +94,7 @@ class _AzanSectionState extends State<AzanSection> {
   @override
   void dispose() {
     _ticker?.cancel();
+    _clock.dispose();
     super.dispose();
   }
 
@@ -130,7 +137,7 @@ class _AzanSectionState extends State<AzanSection> {
                           children: [
                             _CountdownHeader(
                               day: day,
-                              now: _now,
+                              clock: _clock,
                               refreshingLocation: _refreshingLocation,
                               onRefreshLocation: _refreshLocation,
                             ),
@@ -159,31 +166,26 @@ class _AzanSectionState extends State<AzanSection> {
 class _CountdownHeader extends StatelessWidget {
   const _CountdownHeader({
     required this.day,
-    required this.now,
+    required this.clock,
     required this.refreshingLocation,
     required this.onRefreshLocation,
   });
 
   final PrayerDay day;
-  final DateTime now;
+
+  /// يتقدّم كل ثانية — لا يستمع له إلا العدّاد، فبقية الهيدر (التاريخ
+  /// الهجري، اسم الصلاة، الموقع) لا تُبنى إلا حين يُعاد بناء القسم.
+  final ValueListenable<DateTime> clock;
   final bool refreshingLocation;
   final VoidCallback onRefreshLocation;
 
   @override
   Widget build(BuildContext context) {
-    HijriCalendar.setLocal(context.locale.languageCode == 'ar' ? 'ar' : 'en');
-    final hijri = HijriCalendar.now();
-    final gregorian = DateFormat('d MMMM yyyy', context.locale.languageCode).format(now);
-
-    final remaining = day.remaining(now);
-    final h = remaining.inHours;
-    final m = remaining.inMinutes.remainder(60);
-    final s = remaining.inSeconds.remainder(60);
-    final countdown = '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'.toArabicNumbers;
+    final gregorian = DateFormat('d MMMM yyyy', context.locale.languageCode).format(clock.value);
 
     final isPm = day.next.time.hour >= 12;
     final hour12 = day.next.time.hour % 12 == 0 ? 12 : day.next.time.hour % 12;
-    final clock = '$hour12:${day.next.time.minute.toString().padLeft(2, '0')}'.toArabicNumbers;
+    final nextClock = '$hour12:${day.next.time.minute.toString().padLeft(2, '0')}'.toArabicNumbers;
 
     final Color gold = AppColor.rateColor.themeColor;
 
@@ -197,7 +199,7 @@ class _CountdownHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('${hijri.toFormat("d MMMM yyyy")} هـ', style: const TextStyle().semiBoldStyle(fontSize: 12).customColor(gold)),
+              Text('${clock.value.getHizriDateForLocale(separator: ' ')} ${'hijri_suffix'.tr()}', style: const TextStyle().semiBoldStyle(fontSize: 12).customColor(gold)),
               Text('  •  ', style: const TextStyle().mediumStyle(fontSize: 12).customColor(Colors.white38)),
               Text(gregorian, style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white54)),
             ],
@@ -210,7 +212,7 @@ class _CountdownHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('الصلاة القادمة', style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white60)),
+                    Text('next_prayer'.tr(), style: const TextStyle().mediumStyle(fontSize: 11).customColor(Colors.white60)),
                     SizedBox(height: 2.h),
                     Text(day.next.name, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 32.sp, height: 1.2)),
                     SizedBox(height: 6.h),
@@ -253,38 +255,54 @@ class _CountdownHeader extends StatelessWidget {
               SizedBox(
                 width: 150.r,
                 height: 72.r,
-                child: CustomPaint(
-                  painter: _FrameProgressPainter(
-                    progress: day.progress(now),
-                    color: gold,
-                    trackColor: Colors.white12,
-                    strokeWidth: 6,
-                    radius: kFormRadius * 1.6,
-                  ),
-                  child: Center(
-                    // scaleDown يحمي من الطفح حين يبلغ العدّاد خانتين للساعة
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(countdown, style: const TextStyle().boldStyle().customColor(gold).copyWith(fontSize: 17.sp, height: 1.1)),
-                            SizedBox(width: 8.w),
-                            Container(width: 1, height: 26.h, color: Colors.white24),
-                            SizedBox(width: 8.w),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(clock, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 15.sp, height: 1.1)),
-                                Text(isPm ? 'مساءً' : 'صباحاً', style: const TextStyle().mediumStyle(fontSize: 9).customColor(Colors.white70)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                // حدّ رسم مستقل: تحديث العدّاد كل ثانية لا يعيد رسم الصفحة
+                child: RepaintBoundary(
+                  child: ValueListenableBuilder<DateTime>(
+                    valueListenable: clock,
+                    // موعد الصلاة ثابت بين الثواني فيُبنى مرة ويُمرَّر جاهزًا
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(nextClock, style: const TextStyle().boldStyle().customColor(Colors.white).copyWith(fontSize: 15.sp, height: 1.1)),
+                        Text(isPm ? 'pm'.tr() : 'am'.tr(), style: const TextStyle().mediumStyle(fontSize: 9).customColor(Colors.white70)),
+                      ],
                     ),
+                    builder: (context, now, nextPrayerTime) {
+                      final remaining = day.remaining(now);
+                      final h = remaining.inHours;
+                      final m = remaining.inMinutes.remainder(60);
+                      final s = remaining.inSeconds.remainder(60);
+                      final countdown = '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'.toArabicNumbers;
+
+                      return CustomPaint(
+                        painter: _FrameProgressPainter(
+                          progress: day.progress(now),
+                          color: gold,
+                          trackColor: Colors.white12,
+                          strokeWidth: 6,
+                          radius: kFormRadius * 1.6,
+                        ),
+                        child: Center(
+                          // scaleDown يحمي من الطفح حين يبلغ العدّاد خانتين للساعة
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10.w),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(countdown, style: const TextStyle().boldStyle().customColor(gold).copyWith(fontSize: 17.sp, height: 1.1)),
+                                  SizedBox(width: 8.w),
+                                  Container(width: 1, height: 26.h, color: Colors.white24),
+                                  SizedBox(width: 8.w),
+                                  nextPrayerTime!,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

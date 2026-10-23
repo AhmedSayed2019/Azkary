@@ -7,7 +7,7 @@ import 'dart:ui';
 // import 'dart:ui';
 
 import 'package:arabic_justified_text/arabic_justified_text.dart';
-import 'package:archive/archive.dart' show GZipDecoder, ZipDecoder;
+import 'package:archive/archive.dart' show ZipDecoder;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -24,6 +24,7 @@ import 'package:preload_page_view/preload_page_view.dart'
     hide PageScrollPhysics, PageMetrics;
 
 import 'src/audio/audio.dart';
+import 'src/core/platform/gzip_bytes.dart';
 import 'src/core/platform/io_helpers.dart';
 import 'src/core/utils/app_colors.dart';
 import 'src/core/utils/ui_helper.dart';

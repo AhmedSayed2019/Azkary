@@ -18,8 +18,11 @@ class QpcV4AssetsLoader {
 
   static Future<QpcV4AssetsStore> load() async {
     const jsonService = GzipJsonAssetService();
+    // cache: false — الملفان (~15MB نصًا) يُحلَّلان مرة واحدة إلى المخزن
+    // أدناه، فلا داعي لإبقاء نصهما الخام في الذاكرة. كاش القرص باقٍ.
     final ayahInfoDecoded = await jsonService.loadJsonDynamic(
       _ayahInfoGzPath,
+      cache: false,
     );
     if (ayahInfoDecoded is! List) {
       throw const FormatException('qpc_v4_ayah_info.json must be a JSON List');
@@ -38,6 +41,7 @@ class QpcV4AssetsLoader {
 
     final wordsDecoded = await jsonService.loadJsonDynamic(
       _wordsGzPath,
+      cache: false,
     );
     if (wordsDecoded is! Map) {
       throw const FormatException('qpc-v4.json must be a JSON Map');

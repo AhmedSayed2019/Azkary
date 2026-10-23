@@ -1,8 +1,8 @@
 import 'dart:convert' show base64Url, jsonDecode, utf8;
-import 'dart:io' show Directory, File;
+import 'dart:io' show Directory, File, gzip;
+import 'dart:isolate' show Isolate;
 import 'dart:typed_data' show Uint8List;
 
-import 'package:archive/archive.dart' show GZipDecoder;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart'
     show getApplicationDocumentsDirectory;
@@ -44,6 +44,13 @@ class GzipJsonAssetService {
   static final Map<String, Future<String>> _inflightText =
       <String, Future<String>>{};
 
+  /// ملفات المصحف تبلغ ~14MB بعد فك الضغط، وفكّ ترميزها على عزلة الواجهة
+  /// كان يجمّدها لمئات الأجزاء من الثانية. ما فوق هذا الحد يُعالج في عزلة
+  /// منفصلة عبر [Isolate.run]؛ وما دونه يبقى محليًا لأن كلفة العزلة تفوقه.
+  ///
+  /// Payloads at or above this size are decoded on a background isolate.
+  static const int _offMainThreshold = 64 * 1024;
+
   /// إرجاع مسار ملف الكاش للـ asset (أو null إن كان Disk Cache معطّل).
   ///
   /// هذا مفيد أيضًا للاختبارات.
@@ -54,14 +61,29 @@ class GzipJsonAssetService {
   }
 
   static String decodeGzipBytesToString(Uint8List gzBytes) {
-    final decodedBytes = const GZipDecoder().decodeBytes(gzBytes);
-    return utf8.decode(decodedBytes);
+    // zlib الأصلي (dart:io) أسرع بكثير من GZipDecoder المكتوب بـ Dart خالص.
+    return utf8.decode(gzip.decode(gzBytes));
   }
 
   static dynamic decodeGzipJsonBytes(Uint8List gzBytes) {
     final text = decodeGzipBytesToString(gzBytes);
     return jsonDecode(text);
   }
+
+  // دوال ثابتة عمدًا: الإغلاق المُرسل إلى العزلة يلتقط المعامل وحده، لا
+  // `this` (الذي قد يحمل documentsPathProvider غير القابل للإرسال).
+  static Future<dynamic> _jsonDecodeOffMain(String text) async {
+    if (text.length < _offMainThreshold) return jsonDecode(text);
+    return Isolate.run(() => jsonDecode(text));
+  }
+
+  static Future<String> _utf8DecodeOffMain(Uint8List bytes) async {
+    if (bytes.length < _offMainThreshold) return utf8.decode(bytes);
+    return Isolate.run(() => utf8.decode(bytes));
+  }
+
+  static Future<String> _gunzipToStringOffMain(Uint8List gzBytes) =>
+      Isolate.run(() => decodeGzipBytesToString(gzBytes));
 
   Future<dynamic> loadJsonDynamic(
     String assetPath, {
@@ -73,7 +95,7 @@ class GzipJsonAssetService {
       fallbackPlainAssetPath: fallbackPlainAssetPath,
       cache: cache,
     );
-    return jsonDecode(text);
+    return _jsonDecodeOffMain(text);
   }
 
   Future<List<dynamic>> loadJsonList(
@@ -187,7 +209,7 @@ class GzipJsonAssetService {
       if (!await file.exists()) return null;
       final bytes = await file.readAsBytes();
       if (bytes.isEmpty) return null;
-      return utf8.decode(bytes);
+      return await _utf8DecodeOffMain(bytes);
     } catch (_) {
       return null;
     }
@@ -227,14 +249,16 @@ class GzipJsonAssetService {
   }
 
   Future<String> _loadAndDecodeTextFromAssets(String assetPath) async {
+    // rootBundle يبقى على عزلة الواجهة؛ فك الضغط/الترميز (Dart خالص) خارجها.
     final data = await rootBundle.load(assetPath);
-    final bytes =
-        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    // نسخة مستقلة لا view على ذاكرة الـ asset، لتُرسل إلى العزلة بأمان.
+    final bytes = Uint8List.fromList(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
 
     if (assetPath.endsWith('.gz')) {
-      return decodeGzipBytesToString(bytes);
+      return _gunzipToStringOffMain(bytes);
     }
 
-    return utf8.decode(bytes);
+    return _utf8DecodeOffMain(bytes);
   }
 }

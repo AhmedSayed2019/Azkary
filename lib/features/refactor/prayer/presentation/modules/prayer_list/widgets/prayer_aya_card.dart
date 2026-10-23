@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/features/refactor/prayer/domain/entity/prayer_entity.dart';
 import 'package:azkark/util/colors.dart';
 import 'package:azkark/util/helpers.dart';
@@ -19,7 +20,7 @@ class PrayerAyaCard extends StatelessWidget {
   final ValueChanged<PrayerEntity> onToggleFavorite;
 
   String get _copyText =>
-      'بسم الله الرحمن الرحيم \n ﴿ ${prayer.aya} ﴾ \n***********\nسورة : ${prayer.surah}\n***********\nالأية : ${prayer.ayaNumber}';
+      'بسم الله الرحمن الرحيم \n ﴿ ${prayer.aya} ﴾ \n***********\n${'surah_n'.tr(namedArgs: {'surah': prayer.surah})}\n***********\n${'ayah_n'.tr(namedArgs: {'n': '${prayer.ayaNumber}'})}';
 
   @override
   Widget build(BuildContext context) {
@@ -115,11 +116,11 @@ class PrayerAyaCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text(
-            'سورة ${prayer.surah}',
+            'surah_n'.tr(namedArgs: {'surah': prayer.surah}),
             style: TextStyle(color: teal[50], fontSize: 13),
           ),
           Text(
-            'الآية ${prayer.ayaNumber}',
+            'ayah_n'.tr(namedArgs: {'n': '${prayer.ayaNumber}'}),
             style: TextStyle(color: teal[50], fontSize: 13),
           ),
         ],

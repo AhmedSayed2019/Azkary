@@ -212,6 +212,12 @@ class TafsirCtrl extends GetxController {
   /// ------------[FetchingMethod]------------
   /// شرح: جلب بيانات التفسير للصفحة المطلوبة
   /// Explanation: Fetch tafsir data for the requested page
+  /// التفسير المدمج بعد التحليل (ثابت طوال عمر التطبيق).
+  List<TafsirTableData>? _defaultTafsirParsedCache;
+
+  /// آخر قائمة مخزّنة أُسندت إلى [tafseerList] — لتجنب assignAll مكرر.
+  List<TafsirTableData>? _lastAssignedTafsirList;
+
   Future<void> fetchData(int pageNum) async {
     // await initializeDatabase();
     isLoading.value = true;
@@ -226,6 +232,7 @@ class TafsirCtrl extends GetxController {
               // .where((e) => e.pageNum == pageNum)
               .toList(growable: false);
           tafseerList.assignAll(items);
+          _lastAssignedTafsirList = null;
           log('Fetched tafsir: [31m${items.length} entries from custom tafsir.',
               name: 'TafsirCtrl');
         } else {
@@ -236,9 +243,23 @@ class TafsirCtrl extends GetxController {
       if (selectedTafsir.type == TafsirFileType.json) {
         String jsonString;
         if (selectedTafsir.fileName == _defaultDownloadedTafsirName) {
-          jsonString = await _gzipJsonService.loadText(
-            'packages/quran_library/assets/$_defaultDownloadedTafsirName.json.gz',
-          );
+          // التفسير المدمج (~6.9MB JSON) ثابت: يُحلَّل مرة واحدة خارج عزلة
+          // الواجهة ويُحفظ، بدل json.decode على الواجهة مع كل استدعاء.
+          var cached = _defaultTafsirParsedCache;
+          if (cached == null) {
+            final text = await _gzipJsonService.loadText(
+              'packages/quran_library/assets/$_defaultDownloadedTafsirName.json.gz',
+              cache: false,
+            );
+            cached = await compute<String, List<TafsirTableData>>(
+                _decodeTafsirTableJson, text);
+            _defaultTafsirParsedCache = cached;
+          }
+          if (!identical(_lastAssignedTafsirList, cached)) {
+            tafseerList.assignAll(cached);
+            _lastAssignedTafsirList = cached;
+          }
+          return;
         } else {
           if (kIsWeb) {
             final url =
@@ -258,17 +279,10 @@ class TafsirCtrl extends GetxController {
             }
           }
         }
-        final jsonData =
-            List<Map<String, dynamic>>.from(json.decode(jsonString));
-        final fetchedTafsirsList = jsonData.map((e) => TafsirTableData(
-              id: e['index'],
-              surahNum: e['sura'],
-              ayahNum: e['aya'],
-              tafsirText: e['text'],
-              pageNum: e['PageNum'],
-            ));
-        final items = fetchedTafsirsList; //.where((e) => e.pageNum == pageNum);
+        // التحليل خارج عزلة الواجهة (compute يعمل على الواجهة في الويب).
+        final items = await compute(_decodeTafsirTableJson, jsonString);
         tafseerList.assignAll(items);
+        _lastAssignedTafsirList = null;
         return;
       }
     } catch (e) {
@@ -724,4 +738,19 @@ class CustomTafsirEntry {
         'items': items.map((e) => e.toJson()).toList(),
         'index': index,
       };
+}
+
+/// تحليل ملف تفسير JSON إلى [TafsirTableData] — دالة عليا لتُمرَّر إلى
+/// [compute] (تعمل في عزلة منفصلة على المنصات الأصلية).
+List<TafsirTableData> _decodeTafsirTableJson(String jsonString) {
+  final jsonData = List<Map<String, dynamic>>.from(json.decode(jsonString));
+  return jsonData
+      .map((e) => TafsirTableData(
+            id: e['index'],
+            surahNum: e['sura'],
+            ayahNum: e['aya'],
+            tafsirText: e['text'],
+            pageNum: e['PageNum'],
+          ))
+      .toList(growable: false);
 }

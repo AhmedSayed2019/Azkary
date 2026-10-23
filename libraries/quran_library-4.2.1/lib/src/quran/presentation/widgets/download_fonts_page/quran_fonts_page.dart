@@ -63,10 +63,8 @@ class _QuranFontsPage extends StatelessWidget {
     return GetBuilder<QuranCtrl>(
       id: 'qpc_page_$pageIndex',
       builder: (quranCtrl) {
-        if (quranCtrl.isQpcV4Enabled && !quranCtrl.isQpcV4AllPagesPrebuilt) {
-          quranCtrl.scheduleQpcV4AllPagesPrebuild();
-        }
-
+        // لا جدولة تحضير هنا: بناء الصفحة يطلب كتلها بنفسه عبر
+        // getQpcV4BlocksForPageSync، والتحضير المجاور يتم عند تغيير الصفحة.
         if (quranCtrl.state.pages.isEmpty) {
           return circularProgressWidget ??
               const CircularProgressIndicator.adaptive();
@@ -136,11 +134,18 @@ class _QuranFontsPage extends StatelessWidget {
   /// وضع التكبير: عرض متدفق بخط QPC V4 مع تمرير عمودي
   Widget _buildFlowingLayout(QuranCtrl quranCtrl) {
     final int pageNumber = pageIndex + 1;
-    if (!QuranFontsService.isPageReady(pageNumber)) {
+    if (!QuranFontsService.isPageReady(pageNumber, isDark: isDark)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        QuranFontsService.ensurePagesLoaded(pageNumber, radius: 10).then((_) {
-          quranCtrl.update();
-          quranCtrl.update(['_pageViewBuild']);
+        // هذه الصفحة وحدها: الجارات تُحمَّل بعد توقف التقليب (_onPageChange)
+        // فلا ينافس تسجيلها إطارات السحب.
+        QuranFontsService.ensurePagesLoaded(pageNumber,
+                radius: 0, isDark: isDark)
+            .then((_) {
+          // تحديث هذه الصفحة وحدها (معرّف الـ GetBuilder أعلاه) بدل update()
+          // العام الذي يعيد بناء الشاشة كلها؛ والشرط يمنع حلقة عند الفشل.
+          if (QuranFontsService.isPageReady(pageNumber, isDark: isDark)) {
+            quranCtrl.update(['qpc_page_$pageIndex']);
+          }
         });
       });
       return circularProgressWidget ??

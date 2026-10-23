@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/core/utils/helpers/gps_location_helper.dart';
 import 'package:azkark/features/adhan/location_finding_screen.dart';
 import 'package:azkark/features/adhan/location_not_available_screen.dart';
@@ -20,7 +22,9 @@ class QiblaScreen extends StatelessWidget {
         context.watch<AdanLocationProvider>().locationState;
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
         title: Text(tr('qibla')),
       ),
       body: SafeArea(

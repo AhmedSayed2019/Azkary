@@ -118,7 +118,7 @@ TextSpan _qpcV4SpanSegment({
     )
       ..onQuickTapCallback = onPagePress
       ..onShortHoldStartCallback = () {
-        wordInfoCtrl.setSelectedWord(wordRef);
+        wordInfoCtrl.setSelectedWord(wordRef, pageIndex: pageIndex);
       }
       ..onShortHoldCompleteCallback = () {
         () async {

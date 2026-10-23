@@ -97,7 +97,8 @@ class _QpcV4FlowingTextState extends State<QpcV4FlowingText> {
     return GetBuilder<QuranCtrl>(
       id: 'selection_page_${widget.pageIndex}',
       builder: (_) => GetBuilder<WordInfoCtrl>(
-        id: 'word_info_data',
+        // معرّف خاص بالصفحة: تحديد كلمة يعيد بناء أسطر صفحتها فقط.
+        id: WordInfoCtrl.pageUpdateId(widget.pageIndex),
         builder: (_) {
           final withTajweed = QuranCtrl.instance.state.isTajweedEnabled.value;
           final isTenRecitations = wordInfoCtrl.isTenRecitations;

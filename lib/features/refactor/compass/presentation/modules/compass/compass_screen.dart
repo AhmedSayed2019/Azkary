@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/features/refactor/compass/domain/entity/compass_location_status_entity.dart';
 import 'package:azkark/features/refactor/compass/presentation/modules/compass/compass_view_model.dart';
 import 'package:azkark/features/refactor/compass/presentation/modules/compass/widgets/compass_status_message.dart';
@@ -40,6 +42,9 @@ class _CompassScreenState extends State<CompassScreen> {
       Background(),
       Scaffold(
         appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
           elevation: 0.0,
           title: Text(
             tr('compass'),
@@ -78,7 +83,7 @@ class _CompassScreenState extends State<CompassScreen> {
 
     if (!status.serviceEnabled) {
       return CompassStatusMessage(
-        message: 'Please enable Location service',
+        message: 'location_service_disabled'.tr(),
         onRetry: _vm.retry,
       );
     }
@@ -88,17 +93,17 @@ class _CompassScreenState extends State<CompassScreen> {
         break;
       case CompassPermissionStatus.denied:
         return CompassStatusMessage(
-          message: 'Location service permission denied',
+          message: 'location_permission_denied'.tr(),
           onRetry: _vm.retry,
         );
       case CompassPermissionStatus.deniedForever:
         return CompassStatusMessage(
-          message: 'Location service denied forever',
+          message: 'location_permission_denied_forever'.tr(),
           onRetry: _vm.retry,
         );
       case CompassPermissionStatus.unavailable:
         return CompassStatusMessage(
-          message: 'Unknown location service error',
+          message: 'location_unknown_error'.tr(),
           onRetry: _vm.retry,
         );
     }
@@ -119,10 +124,10 @@ class _CompassScreenState extends State<CompassScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(child: QiblaDial(direction: direction)),
-        const Padding(
-          padding: EdgeInsets.only(bottom: 16),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
           child: Text(
-            'قم بمحاذاة رأسي السهمين\nلا تضع الجهاز بالقرب من جسم معدني.\nقم بمعايرة البوصلة في كل مرة تستخدمها فيها.',
+            'compass_hint'.tr(),
             textAlign: TextAlign.center,
           ),
         ),

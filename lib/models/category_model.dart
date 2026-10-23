@@ -1,3 +1,4 @@
+import 'package:azkark/core/localization/db_translations.dart';
 class CategoryModel {
   final int _id, _sectionId;
 
@@ -20,9 +21,11 @@ class CategoryModel {
 
   int get sectionId => _sectionId;
 
-  String get nameWithDiacritics => _nameWithDiacritics;
+  String get nameWithDiacritics =>
+      DbTranslations.category(_id, _nameWithDiacritics);
 
-  String get nameWithoutDiacritics => _nameWithoutDiacritics;
+  String get nameWithoutDiacritics =>
+      DbTranslations.category(_id, _nameWithoutDiacritics);
 
   int get favorite => _favorite;
 

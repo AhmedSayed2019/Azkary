@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:azkark/util/helpers.dart';
 import 'package:azkark/util/navigate_between_pages/size_route.dart';
 import 'package:flutter/material.dart';
@@ -187,7 +188,7 @@ class _TasbihState extends State<Tasbih> {
           )),
       child: widget._tasbih.counter == 0
           ? Text(
-              'عدد الحبات : بدون',
+              'beads_none'.tr(),
               style: new TextStyle(
                 color: teal[700],
                 fontWeight: FontWeight.w500,
@@ -197,7 +198,7 @@ class _TasbihState extends State<Tasbih> {
               ),
             )
           : Text(
-              'عدد الحبات : ${widget._tasbih.counter}',
+              'beads_n'.tr(namedArgs: {'n': '${widget._tasbih.counter}'}),
               style: new TextStyle(
                 color: teal[700],
                 fontFamily:

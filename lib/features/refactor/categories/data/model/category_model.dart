@@ -1,3 +1,4 @@
+import 'package:azkark/core/localization/db_translations.dart';
 import 'package:azkark/features/refactor/categories/domain/entity/category_entity.dart';
 
 /// Data-layer DTO for a category row from the local `categories` table.
@@ -39,9 +40,11 @@ class CategoryModel {
 
   int get sectionId => _sectionId;
 
-  String get nameWithDiacritics => _nameWithDiacritics;
+  String get nameWithDiacritics =>
+      DbTranslations.category(_id, _nameWithDiacritics);
 
-  String get nameWithoutDiacritics => _nameWithoutDiacritics;
+  String get nameWithoutDiacritics =>
+      DbTranslations.category(_id, _nameWithoutDiacritics);
 
   String get azkarIndex => _azkarIndex;
 
@@ -50,8 +53,9 @@ class CategoryModel {
   CategoryEntity toEntity() => CategoryEntity(
         id: _id,
         sectionId: _sectionId,
-        nameWithDiacritics: _nameWithDiacritics,
-        nameWithoutDiacritics: _nameWithoutDiacritics,
+        // عبر الـ getters لا الحقول: هي التي تمرّ على DbTranslations
+        nameWithDiacritics: nameWithDiacritics,
+        nameWithoutDiacritics: nameWithoutDiacritics,
         azkarIndex: _azkarIndex,
         favorite: _favorite == 1,
       );

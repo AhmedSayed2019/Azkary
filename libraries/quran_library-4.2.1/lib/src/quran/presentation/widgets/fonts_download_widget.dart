@@ -140,10 +140,16 @@ class TajweedButtonWidget extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12.0),
                 child: InkWell(
-                  onTap: () {
-                    QuranCtrl.instance.state.isTajweedEnabled.toggle();
+                  onTap: () async {
+                    final ctrl = QuranCtrl.instance;
+                    ctrl.state.isTajweedEnabled.toggle();
                     GetStorage().write(_StorageConstants().isTajweed,
-                        QuranCtrl.instance.state.isTajweedEnabled.value);
+                        ctrl.state.isTajweedEnabled.value);
+                    // كل صفحة تسجّل متغير الخط المطلوب فقط؛ سجّل متغير الوضع
+                    // الجديد للصفحات القريبة أولًا كي لا تظهر مؤشرات تحميل.
+                    await QuranFontsService.ensurePagesLoaded(
+                        ctrl.state.currentPageNumber.value,
+                        radius: 2);
                     Get.forceAppUpdate();
                   },
                   borderRadius: BorderRadius.circular(12.0),

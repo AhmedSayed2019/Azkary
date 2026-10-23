@@ -1,5 +1,4 @@
 import 'package:azkark/app.dart';
-import 'package:azkark/core/res/theme/theme.dart';
 import 'package:azkark/core/res/theme_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -116,9 +115,11 @@ class AppColor {
 
 
 extension ColorTheme on ColorModel {
+  // isDarkMode لا `themeData == darkTheme`: مساواة ThemeData تقارن نحو مئة
+  // حقل ومتداخلاتها بلا اختصار للهوية، وهذه تُستدعى مئات المرات في كل بناء.
   Color get themeColor {
     if (appContext != null &&
-        Provider.of<ThemeHelper>(appContext!, listen: false).themeData == darkTheme) {
+        Provider.of<ThemeHelper>(appContext!, listen: false).isDarkMode) {
       return darkColor;
     }
     return lightColor;

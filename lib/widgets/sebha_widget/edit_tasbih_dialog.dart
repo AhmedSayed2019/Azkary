@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -42,7 +41,7 @@ class _EditTasbihState extends State<EditTasbih> {
       ),
       elevation: 0.0,
       child: TasbihForm(
-        title: tr( 'sebha_edit_dialog'),
+        title: widget._title,
         tasbih: _tasbih,
         onChangedName: (value) => setState(() {
           _tasbih.setName = value;

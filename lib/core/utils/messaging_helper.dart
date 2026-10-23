@@ -1,14 +1,14 @@
+import 'package:azkark/features/prayer/azan_alarm.dart';
 // import 'package:freeloot/consts.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:hive/hive.dart';
 // import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-Future<void> _firebaseMessagingBackgroundHandler( message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  print('Handling a background message ${message.messageId}');
-}
+// Firebase messaging is disabled; the handler stays parked next to the
+// commented-out onBackgroundMessage registration below.
+// Future<void> _firebaseMessagingBackgroundHandler(message) async {
+//   print('Handling a background message ${message.messageId}');
+// }
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 void initMessaging() async {
@@ -40,7 +40,7 @@ void initMessaging() async {
           // قناع أبيض شفاف — 'icon' الملوّن كان يظهر مربّعًا مصمتًا
           'ic_stat_azkary'
       )
-  ));
+  ), onDidReceiveNotificationResponse: AzanAlarm.onResponse);
 
   // FirebaseMessaging.instance
   //     .getInitialMessage()

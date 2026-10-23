@@ -18,6 +18,12 @@
 @import audio_session;
 #endif
 
+#if __has_include(<cloud_firestore/FLTFirebaseFirestorePlugin.h>)
+#import <cloud_firestore/FLTFirebaseFirestorePlugin.h>
+#else
+@import cloud_firestore;
+#endif
+
 #if __has_include(<connectivity_plus/ConnectivityPlusPlugin.h>)
 #import <connectivity_plus/ConnectivityPlusPlugin.h>
 #else
@@ -42,12 +48,6 @@
 @import flutter_compass_v2;
 #endif
 
-#if __has_include(<flutter_foreground_task/FlutterForegroundTaskPlugin.h>)
-#import <flutter_foreground_task/FlutterForegroundTaskPlugin.h>
-#else
-@import flutter_foreground_task;
-#endif
-
 #if __has_include(<flutter_local_notifications/FlutterLocalNotificationsPlugin.h>)
 #import <flutter_local_notifications/FlutterLocalNotificationsPlugin.h>
 #else
@@ -64,12 +64,6 @@
 #import <flutter_timezone/FlutterTimezonePlugin.h>
 #else
 @import flutter_timezone;
-#endif
-
-#if __has_include(<fluttertoast/FluttertoastPlugin.h>)
-#import <fluttertoast/FluttertoastPlugin.h>
-#else
-@import fluttertoast;
 #endif
 
 #if __has_include(<geocoding_ios/GeocodingPlugin.h>)
@@ -90,22 +84,16 @@
 @import just_audio;
 #endif
 
+#if __has_include(<package_info_plus/FPPPackageInfoPlusPlugin.h>)
+#import <package_info_plus/FPPPackageInfoPlusPlugin.h>
+#else
+@import package_info_plus;
+#endif
+
 #if __has_include(<permission_handler_apple/PermissionHandlerPlugin.h>)
 #import <permission_handler_apple/PermissionHandlerPlugin.h>
 #else
 @import permission_handler_apple;
-#endif
-
-#if __has_include(<rive_common/RivePlugin.h>)
-#import <rive_common/RivePlugin.h>
-#else
-@import rive_common;
-#endif
-
-#if __has_include(<share_plus/FPPSharePlusPlugin.h>)
-#import <share_plus/FPPSharePlusPlugin.h>
-#else
-@import share_plus;
 #endif
 
 #if __has_include(<shared_preferences_foundation/SharedPreferencesPlugin.h>)
@@ -120,42 +108,26 @@
 @import sqflite_darwin;
 #endif
 
-#if __has_include(<url_launcher_ios/URLLauncherPlugin.h>)
-#import <url_launcher_ios/URLLauncherPlugin.h>
-#else
-@import url_launcher_ios;
-#endif
-
-#if __has_include(<webview_flutter_wkwebview/WebViewFlutterPlugin.h>)
-#import <webview_flutter_wkwebview/WebViewFlutterPlugin.h>
-#else
-@import webview_flutter_wkwebview;
-#endif
-
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
   [AudioServicePlugin registerWithRegistrar:[registry registrarForPlugin:@"AudioServicePlugin"]];
   [AudioSessionPlugin registerWithRegistrar:[registry registrarForPlugin:@"AudioSessionPlugin"]];
+  [FLTFirebaseFirestorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseFirestorePlugin"]];
   [ConnectivityPlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"ConnectivityPlusPlugin"]];
   [FirebaseAnalyticsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FirebaseAnalyticsPlugin"]];
   [FLTFirebaseCorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCorePlugin"]];
   [FlutterCompassPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterCompassPlugin"]];
-  [FlutterForegroundTaskPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterForegroundTaskPlugin"]];
   [FlutterLocalNotificationsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterLocalNotificationsPlugin"]];
   [FlutterQiblahPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterQiblahPlugin"]];
   [FlutterTimezonePlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterTimezonePlugin"]];
-  [FluttertoastPlugin registerWithRegistrar:[registry registrarForPlugin:@"FluttertoastPlugin"]];
   [GeocodingPlugin registerWithRegistrar:[registry registrarForPlugin:@"GeocodingPlugin"]];
   [GeolocatorPlugin registerWithRegistrar:[registry registrarForPlugin:@"GeolocatorPlugin"]];
   [JustAudioPlugin registerWithRegistrar:[registry registrarForPlugin:@"JustAudioPlugin"]];
+  [FPPPackageInfoPlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPPackageInfoPlusPlugin"]];
   [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];
-  [RivePlugin registerWithRegistrar:[registry registrarForPlugin:@"RivePlugin"]];
-  [FPPSharePlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPSharePlusPlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];
   [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
-  [URLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"URLLauncherPlugin"]];
-  [WebViewFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"WebViewFlutterPlugin"]];
 }
 
 @end

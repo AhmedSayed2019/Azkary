@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/core/extensions/num_extensions.dart';
 import 'package:azkark/features/refactor/calender/presentation/modules/calendar/calendar_view_model.dart';
 import 'package:azkark/providers.dart';
@@ -49,6 +51,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Background(),
         Scaffold(
           appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
             title: Text(tr('calender'), style: const TextStyle(color: Colors.white)),
             iconTheme: const IconThemeData(color: Colors.white),
           ),

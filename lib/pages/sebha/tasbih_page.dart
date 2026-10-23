@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:azkark/widgets/sebha_widget/Expansion_tile_sebha.dart';
 import 'package:azkark/widgets/sebha_widget/button_drag.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -50,6 +52,9 @@ class _SebhaPageState extends State<SebhaPage> {
       resizeToAvoidBottomInset: false,
       backgroundColor: teal,
       appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
         elevation: 0.0,
         title: Text(
           tr( 'sebha_bar'),
@@ -168,12 +173,12 @@ class _SebhaPageState extends State<SebhaPage> {
       ),
       child: widget._tasbih.counter == 0
           ? Text(
-              'عدد المرات : بدون',
+              'times_none'.tr(),
               style: new TextStyle(
                   color: teal[50], fontWeight: FontWeight.w500, fontSize: 14),
             )
           : Text(
-              'عدد المرات : ${widget._tasbih.counter}',
+              'times_n'.tr(namedArgs: {'n': '${widget._tasbih.counter}'}),
               style: new TextStyle(
                 color: teal[50],
                 fontWeight: FontWeight.w500,
@@ -191,7 +196,7 @@ class _SebhaPageState extends State<SebhaPage> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        'مرة : $round',
+        'round_n'.tr(namedArgs: {'n': '$round'}),
         style: new TextStyle(
           color: teal[50],
           fontWeight: FontWeight.w500,
@@ -209,7 +214,7 @@ class _SebhaPageState extends State<SebhaPage> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        'العدد الحالي : $currentCounter',
+        'current_count_n'.tr(namedArgs: {'n': '$currentCounter'}),
         style: new TextStyle(
           color: teal[50],
           fontWeight: FontWeight.w500,

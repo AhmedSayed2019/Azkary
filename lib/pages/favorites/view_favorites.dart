@@ -1,3 +1,5 @@
+import 'package:azkark/core/res/resources.dart';
+import 'package:azkark/widgets/islamic_header_background.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +23,9 @@ class _FavoritesViewState extends State<FavoritesView> {
       Background(),
       Scaffold(
         appBar: AppBar(
+      // نسيج النجوم الموحّد — انظر IslamicAppBar
+      flexibleSpace: const IslamicHeaderBackground(child: SizedBox.expand()),
+      backgroundColor: AppColor.primaryColor.themeColor,
           elevation: 0.0,
           title: Text(
             tr( 'favorite_bar'),
@@ -37,11 +42,11 @@ class _FavoritesViewState extends State<FavoritesView> {
             physics: NeverScrollableScrollPhysics(),
             children: <Widget>[
               _buildItemsCard(
-                  'assets/images/sections/8_128px.png', 'الأذكار', size),
+                  'assets/images/sections/8_128px.png', 'adhkar'.tr(), size),
               _buildItemsCard('assets/images/icons/prayer/prayer_256px.png',
-                  'الأدعية', size),
+                  'duas'.tr(), size),
               _buildItemsCard('assets/images/icons/sebha/sebha_256px.png',
-                  'المسبحة الإلكترونية', size),
+                  'electronic_tasbih'.tr(), size),
             ],
           ),
         ),
@@ -58,19 +63,19 @@ class _FavoritesViewState extends State<FavoritesView> {
         highlightColor: teal[400],
         borderRadius: BorderRadius.circular(10),
         onTap: () {
-          if (text == 'الأذكار')
+          if (text == 'adhkar'.tr())
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) {
                 return ViewFavoriteCategories();
               }),
             );
-          else if (text == 'الأدعية')
+          else if (text == 'duas'.tr())
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) {
                 return ViewFavoritePrayer();
               }),
             );
-          if (text == 'المسبحة الإلكترونية')
+          if (text == 'electronic_tasbih'.tr())
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) {
                 return ViewFavoriteSebha();

@@ -114,16 +114,17 @@ class QuranLibrary {
     //   QuranCtrl.instance.deleteOldFonts();
     // }
 
-    // Load data in parallel
-    final futures = <Future<void>>[
-      QuranCtrl.instance.loadQuranDataV3(),
-      QuranCtrl.instance.fetchSurahs(),
-    ];
+    // تحميل بيانات المصحف عبر Future واحد مشترك: QuranCtrl.onInit يطلق
+    // ensureCoreDataLoaded بالفعل، واستدعاء loadQuranDataV3/fetchSurahs
+    // مباشرة هنا كان يسابقه فيُفك JSON المصحف مرتين وتتضاعف allAyahs.
+    // Load core data through the single shared future (QuranCtrl.onInit
+    // already starts it); calling the loaders directly here raced it.
+    await QuranCtrl.instance.ensureCoreDataLoaded();
 
-    await Future.wait<void>(futures);
-
-    /// must be initilized after QuranCtrl, because it uses it
-    AudioCtrl.instance;
+    // AudioCtrl لا يُنشأ هنا: AudioCtrl.instance ينشئه كسولًا عند أول وصول.
+    // إنشاؤه عند التهيئة كان يفحص وجود ملفات 6236 آية ويشغّل AudioService
+    // مع كل تشغيل للتطبيق حتى لمن لا يستمع أبدًا.
+    // AudioCtrl is created lazily by its `instance` getter on first use.
 
     // تسجيل الخطوط المحفوظة دفعة واحدة في الخلفية إن كانت متاحة
     // if (kIsWeb) {
